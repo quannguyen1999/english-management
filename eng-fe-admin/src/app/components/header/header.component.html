@@ -1,0 +1,83 @@
+<header class="bg-white text-gray-800 px-4 py-2 flex items-center justify-between fixed w-full top-0 z-50 shadow-sm">
+    <!-- Left section -->
+    <div class="flex items-center space-x-4">
+      <a href="/" class="flex items-center space-x-2">
+        <img src="assets/logo.png" alt="Prime" class="h-8" />
+      </a>
+      <nav class="flex items-center space-x-4">
+        <h1 class="text-2xl font-bold">{{TITLE}}</h1>
+      </nav>
+    </div>
+  
+    <!-- Right section -->
+    <div class="flex items-center space-x-4">
+      <button [matMenuTriggerFor]="helpMenu" class="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 text-gray-600">
+        <mat-icon>help_outline</mat-icon>
+      </button>
+     
+      <button [matMenuTriggerFor]="notificationMenu" class="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 text-gray-600 relative">
+        <mat-icon>notifications</mat-icon>
+        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+      </button>
+
+      <!-- User Avatar Button -->
+      <button [matMenuTriggerFor]="menuNotification" 
+              class="w-8 h-8 rounded-full bg-[#4355B9] flex items-center justify-center cursor-pointer hover:bg-[#3a489e] transition-colors duration-200">
+        <span class="text-sm font-medium text-white uppercase">{{userName[0]}}</span>
+      </button>
+
+      <!-- Help Menu -->
+      <mat-menu #helpMenu="matMenu">
+        <div class="px-4 py-2">
+          <div class="text-sm">
+            <p>Feel free to contact me:</p>
+            <p class="mt-1">Phone: {{PHONE}}</p>
+            <p>Email: {{EMAIL}}</p>
+          </div>
+        </div>
+      </mat-menu>
+
+      <!-- Notification Menu -->
+      <mat-menu #notificationMenu="matMenu" class="w-80">
+        <div class="px-4 py-2">
+          <div class="font-medium text-gray-800">NOTIFICATIONS</div>
+          <div class="mt-2" *ngIf="notifications?.length; else noNotifications">
+            <!-- Notification items would go here -->
+          </div>
+          <ng-template #noNotifications>
+            <div class="text-center py-4 text-gray-500">
+              <mat-icon class="text-gray-400">notifications_off</mat-icon>
+              <p class="mt-2">No notifications at this time</p>
+            </div>
+          </ng-template>
+        </div>
+      </mat-menu>
+
+      <!-- User Profile Menu -->
+      <mat-menu #menuNotification="matMenu" class="min-w-[200px]">
+        <!-- Account Section -->
+        <div class="px-4 py-3">
+          <div class="font-medium text-gray-800 mb-2">ACCOUNT</div>
+          <div class="text-gray-700">{{userName}}</div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Settings Section -->
+        <div class="px-4 py-2 text-gray-800 font-medium">
+          SETTINGS
+        </div>
+        <button mat-menu-item (click)="openProfileDialog()">
+          <span>Profile</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <!-- Logout -->
+        <button mat-menu-item (click)="logout()">
+          <span>Log out</span>
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+  
