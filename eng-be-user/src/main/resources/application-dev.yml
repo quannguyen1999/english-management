@@ -1,0 +1,86 @@
+spring:
+  # MySQL Database Configuration
+  datasource:
+    port: 3306  # MySQL database port
+    schema: eng_dev  # Database schema name
+    hikari:
+      connectionTimeout: 20000  # Connection timeout in milliseconds
+      maximum-pool-size: 5  # Maximum number of connections in the pool
+    url: jdbc:mysql://localhost:${spring.datasource.port}/${spring.datasource.schema}  # Database connection URL
+    username: root  # Database username
+    password: mysql  # Database password
+
+  # Flyway Database Migration Tool Configuration
+  flyway:
+    url: jdbc:mysql://localhost:${spring.datasource.port}/  # Flyway connection URL
+    schemas: ${spring.datasource.schema}  # Schema for migrations
+    user: ${spring.datasource.username}  # Flyway migration user
+    password: ${spring.datasource.password}  # Flyway migration password
+    enabled: true  # Disable Flyway migrations
+    validate-migration-naming: true  # Enforce naming validation for migrations
+
+#Config Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Application Information
+info:
+  app:
+    name: "Eng Project"  # Application name
+    description: "Eng be user dev"  # Application description
+    version: "1.0.0"  # Application version
+
+# Security Configuration
+custom-security:
+  issuer: http://localhost:8070  # OAuth2 token issuer URL
+
+# Custom Token Expiration Settings (Durations in hours or days)
+security:
+  duration:
+    authorization: 2  # Authorization validity in days
+    token: 1  # Access token validity in hours
+    refreshToken: 6  # Refresh token validity in hours
+
+# OAuth2 JWT Secret Key
+jwt:
+  secret:
+    key: yVMO9QNJ5i2IBZLZCuJPGg==  # Secret key for signing JWT tokens
+
+# Eureka Client Configuration
+eureka:
+  preferIdAddress: true  # Prefer IP address over hostname for Eureka registration
+  client:
+    fetchRegistry: true  # Enable fetching of registered services from Eureka
+    registerWithEureka: true  # Enable registration of this service with Eureka
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/  # Eureka server URL
+
+# Logging Configuration
+#logging:
+#  config: classpath:logback-spring.xml
+#  level:
+#    root: INFO
+#    com.eng: DEBUG
+#    org.springframework.security: DEBUG
+#    org.springframework.web: INFO
+#    org.hibernate: INFO
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+#  logback:
+#    rollingpolicy:
+#      max-file-size: 10MB
+#      max-history: 30
+#      total-size-cap: 1GB

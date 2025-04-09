@@ -1,0 +1,9 @@
+server:
+  port: 9000  # Default port
+spring:
+  profiles:
+    active: dev # Change the active
+  application:
+    name: eng-gateway-project
+  main:
+    web-application-type: reactive

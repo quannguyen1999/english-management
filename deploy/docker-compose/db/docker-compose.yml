@@ -1,0 +1,54 @@
+# Define all services in the microservices architecture
+services:
+  # MySQL database service
+  mysql-prime:
+    image: mysql:8.0.41
+    container_name: mysql-prime
+    ports:
+      - "3306:3306"  # Expose MySQL port for external connections
+    volumes:
+      - mysql_data:/var/lib/mysql  # Persist database data
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql    # Root password
+      MYSQL_DATABASE: prime_dev     # Default database name
+      MYSQL_USER: prime             # Database user
+      MYSQL_PASSWORD: prime         # Database user password
+    command: --default-authentication-plugin=mysql_native_password --lower_case_table_names=1  # MySQL configuration
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-pmysql" ]  # Check if MySQL is responsive
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
+  # Redis service
+  redis:
+    image: redis:7.2.3
+    container_name: redis-prime
+    ports:
+      - "6379:6379"  # Expose Redis port
+    volumes:
+      - redis_data:/data  # Persist Redis data
+    command: redis-server --appendonly yes  # Enable persistence
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]  # Check if Redis is responsive
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
+# Define network for inter-service communication
+networks:
+  prime-network:
+    driver: "bridge"  # Use bridge network driver
+
+# Define volumes for data persistence
+volumes:
+  mysql_data:  # MySQL data volume
+  redis_data:  # Redis data volume
+

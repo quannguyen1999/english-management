@@ -1,0 +1,141 @@
+# Define all services in the microservices architecture
+services:
+  # MySQL database service
+  mysql-prime:
+    image: mysql:8.0.41
+    container_name: mysql-prime
+    ports:
+      - "3306:3306"  # Expose MySQL port for external connections
+    volumes:
+      - mysql_data:/var/lib/mysql  # Persist database data
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql    # Root password
+      MYSQL_DATABASE: prime_dev     # Default database name
+      MYSQL_USER: prime             # Database user
+      MYSQL_PASSWORD: prime         # Database user password
+    command: --default-authentication-plugin=mysql_native_password --lower_case_table_names=1  # MySQL configuration
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-pmysql" ]  # Check if MySQL is responsive
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
+  # User service - handles user management
+  prime-be-user:
+    build:
+      context: ../../../prime-be-user/
+      dockerfile: Dockerfile
+    container_name: prime-be-user
+    ports:
+      - "8070:8070"  # Expose user service port
+    volumes:
+      - ./logs/user:/logs  # User service logs
+    healthcheck:
+      test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"  # Check service health
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      prime-be-eureka:
+        condition: service_healthy  # Wait for Eureka to be healthy
+      mysql-prime:
+        condition: service_healthy  # Wait for MySQL to be healthy
+    extends:
+      file: common-config.yml
+      service: microservice-config-server-config
+
+  # Eureka service - service discovery and registration
+  prime-be-eureka:
+    build:
+      context: ../../../prime-be-eureka/
+      dockerfile: Dockerfile
+    container_name: prime-be-eureka
+    ports:
+      - "8761:8761"  # Eureka dashboard port
+    volumes:
+      - ./logs/eureka:/logs  # Eureka service logs
+    networks:
+      - prime-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]  # Check Eureka health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    extends:
+      file: common-config.yml
+      service: microservice-config-eureka-config
+
+  # Project service - handles project management
+  prime-be-project:
+    build:
+      context: ../../../prime-be-project/
+      dockerfile: Dockerfile
+    container_name: prime-be-project
+    ports:
+      - "8080:8080"  # Expose project service port
+    volumes:
+      - ./logs/project:/logs  # Project service logs
+    depends_on:
+      prime-be-eureka:
+        condition: service_healthy  # Wait for Eureka
+      mysql-prime:
+        condition: service_healthy  # Wait for MySQL
+      prime-be-user:
+        condition: service_healthy  # Wait for user service
+    extends:
+      file: common-config.yml
+      service: microservice-config-server-config
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://prime-be-eureka:8761/eureka/  # Eureka server URL
+
+  # API Gateway service - handles routing and load balancing
+  prime-be-gateway:
+    build:
+      context: ../../../prime-be-gateway/
+      dockerfile: Dockerfile
+    container_name: prime-be-gateway
+    ports:
+      - "9000:9000"  # Gateway port
+    volumes:
+      - ./logs/gateway:/logs  # Gateway service logs
+    depends_on:
+      prime-be-eureka:
+        condition: service_healthy  # Wait for Eureka
+    extends:
+      file: common-config.yml
+      service: microservice-config-server-config
+
+  # Frontend service - serves the web application
+  frontend:
+    build:
+      context: ../../../prime-fe-management/
+      dockerfile: Dockerfile
+    container_name: prime-fe-management
+    ports:
+      - "80:80"  # Web server port
+    volumes:
+      - ./logs/frontend:/var/log/nginx  # Frontend logs
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
+# Define network for inter-service communication
+networks:
+  prime-network:
+    driver: "bridge"  # Use bridge network driver
+
+# Define volumes for data persistence
+volumes:
+  mysql_data:  # MySQL data volume
+  frontend-dist:  # Frontend build files volume
+
+

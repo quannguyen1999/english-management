@@ -1,0 +1,7 @@
+services:
+  network-deploy-service:
+    networks:
+      - "prime-network"
+    # Active profile
+    environment:
+      SPRING_PROFILES_ACTIVE: dev

@@ -1,0 +1,59 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lowerCaseServiceId: true
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 30s
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowedMethods: "*"
+      default-filters:
+        # Remove any existing CORS headers
+        - RemoveResponseHeader=Access-Control-Allow-Origin
+        - RemoveResponseHeader=Access-Control-Allow-Methods
+        - RemoveResponseHeader=Access-Control-Allow-Headers
+        - RemoveResponseHeader=Access-Control-Allow-Credentials
+        - RemoveResponseHeader=Access-Control-Max-Age
+        - RemoveResponseHeader=Access-Control-Expose-Headers
+        # Add single set of CORS headers
+        - AddResponseHeader=Access-Control-Allow-Origin,*
+        - AddResponseHeader=Access-Control-Allow-Methods,"GET,POST,PUT,DELETE,OPTIONS"
+        - AddResponseHeader=Access-Control-Allow-Headers,"Authorization,Content-Type,Accept,Origin,X-Requested-With"
+        - AddResponseHeader=Access-Control-Max-Age,3600
+        - AddResponseHeader=Access-Control-Expose-Headers,"Content-Type,X-Response-Time"
+
+# Eureka Client Configuration
+eureka:
+  preferIdAddress: true  # Prefers using instance IP address instead of hostname when communicating with Eureka
+  client:
+    fetchRegistry: true  # Enables fetching service registry information from Eureka
+    registerWithEureka: true  # Registers this service with Eureka
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+# Logging Configuration
+#logging:
+#  config: classpath:logback-spring.xml
+#  level:
+#    root: INFO
+#    com.eng: DEBUG
+#    org.springframework.security: DEBUG
+#    org.springframework.web: INFO
+#    org.hibernate: INFO
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+#  logback:
+#    rollingpolicy:
+#      max-file-size: 10MB
+#      max-history: 30
+#      total-size-cap: 1GB
+

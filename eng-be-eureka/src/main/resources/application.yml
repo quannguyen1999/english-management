@@ -1,0 +1,8 @@
+server:
+  port: 8761     # Default port
+
+spring:
+  profiles:
+    active: dev  #Active env dev
+  application:
+    name: "eng-eureka"
