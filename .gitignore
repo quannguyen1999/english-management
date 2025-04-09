@@ -35,3 +35,12 @@ docker
 .mvn
 /deploy/docker-compose/dev/logs/
 /deploy/docker-compose/prod/logs/
+
+### Angular ###
+/eng-fe-admin/node_modules
+/eng-fe-admin/.angular
+/eng-fe-admin/dist
+/eng-fe-admin/.vscode/*
+!/eng-fe-admin/.vscode/extensions.json
+/eng-fe-admin/.DS_Store
+/eng-fe-admin/Thumbs.db
