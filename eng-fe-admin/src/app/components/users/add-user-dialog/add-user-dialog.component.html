@@ -1,0 +1,51 @@
+<div class="p-6">
+    <h2 class="text-2xl font-medium text-gray-900 mb-6">{{translationService.getTranslation('CREATE_USER')}}</h2>
+  
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <div class="space-y-4">
+        <!-- Username Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <input matInput formControlName="username" [placeholder]="translationService.getTranslation('USERNAME_PLACEHOLDER')">
+          <mat-error *ngIf="userForm.get('username')?.invalid">
+            {{getErrorMessage('username')}}
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Email Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <input matInput formControlName="email" [placeholder]="translationService.getTranslation('EMAIL_PLACEHOLDER')" type="email">
+          <mat-error *ngIf="userForm.get('email')?.invalid">
+            {{getErrorMessage('email')}}
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Role Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-select formControlName="role">
+            <mat-option *ngFor="let role of roles" [value]="role">
+              {{translationService.getTranslation('ROLE_' + role)}}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="userForm.get('role')?.invalid">
+            {{getErrorMessage('role')}}
+          </mat-error>
+        </mat-form-field>
+      </div>
+  
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-3 mt-6">
+        <button mat-button 
+                type="button" 
+                (click)="onCancel()"
+                [disabled]="isLoading">
+          {{translationService.getTranslation('CANCEL')}}
+        </button>
+        <button mat-flat-button 
+                color="primary" 
+                type="submit"
+                [disabled]="userForm.invalid || isLoading">
+          {{isLoading ? translationService.getTranslation('CREATING') : translationService.getTranslation('CREATE')}}
+        </button>
+      </div>
+    </form>
+  </div> 

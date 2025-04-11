@@ -1,0 +1,77 @@
+<div class="relative flex justify-center items-center min-h-screen bg-white">
+    <!-- Left side illustration -->
+    <div class="hidden lg:block absolute left-8 bottom-0 w-fit">
+      <img src="assets/login-left.svg" alt="Left login" class="w-full h-auto">
+    </div>
+  
+    <!-- Right side illustration -->
+    <div class="hidden lg:block absolute right-8 bottom-0 w-fit">
+      <img src="assets/login-right.svg" alt="Right login" class="w-full h-auto">
+    </div>
+  
+    <!-- Main login container -->
+    <div class="w-full max-w-[400px] bg-white rounded shadow-2xl p-8 text-center relative z-1">
+      <!-- Logo -->
+      <div class="mb-2">
+        <img src="assets/logo.png" alt="Eng" class="h-10 w-auto mx-auto"> <br/> Eng
+      </div>
+  
+      <h1 class="text-[#5E6C84] text-sm leading-2 mt-2.5 mb-6">{{translationService.getTranslation('LOGIN_TO_CONTINUE')}}</h1>
+  
+      <!-- Login Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Username Field -->
+        <div class="mb-4">
+          <input type="text" 
+                 formControlName="username" 
+                 [placeholder]="translationService.getTranslation('USERNAME_PLACEHOLDER')"
+                 class="w-full px-3 py-2 text-sm bg-[#FAFBFC] border-2 border-[#DFE1E6] rounded h-11 focus:bg-white focus:border-[#4C9AFF] focus:shadow-[0_0_0_2px_rgba(76,154,255,0.25)] outline-none">
+          <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+               class="text-[#EB5A46] text-xs mt-1 text-left">
+            {{getErrorMessage('username')}}
+          </div>
+        </div>
+  
+        <!-- Password Field -->
+        <div class="mb-4">
+          <div class="relative">
+            <input [type]="hidePassword ? 'password' : 'text'"
+                   formControlName="password" 
+                   [placeholder]="translationService.getTranslation('PASSWORD_PLACEHOLDER')"
+                   class="w-full px-3 py-2 text-sm bg-[#FAFBFC] border-2 border-[#DFE1E6] rounded h-11 focus:bg-white focus:border-[#4C9AFF] focus:shadow-[0_0_0_2px_rgba(76,154,255,0.25)] outline-none">
+            <button type="button" 
+                    (click)="hidePassword = !hidePassword"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+               class="text-[#EB5A46] text-xs mt-1 text-left">
+            {{getErrorMessage('password')}}
+          </div>
+        </div>
+  
+        <button type="submit" 
+                [disabled]="!loginForm.valid"
+                class="w-full bg-orange-500 text-white py-2 rounded h-11 text-sm font-bold mt-4 hover:bg-[#0065FF] disabled:bg-[#091E420F] disabled:text-[#091E424F] disabled:cursor-not-allowed">
+          {{translationService.getTranslation('CONTINUE')}}
+        </button>
+      </form>
+  
+      <!-- Footer Links -->
+      <div class="mt-6 text-sm">
+        <a routerLink="" class="text-orange-500 hover:underline pointer-events-none">{{translationService.getTranslation('CANT_LOGIN')}}</a>
+        <span class="mx-1 text-[#5E6C84]">•</span>
+        <a routerLink="/register" class="text-orange-500 hover:underline">{{translationService.getTranslation('CREATE_ACCOUNT')}}</a>
+      </div>
+  
+      <!-- Privacy Footer -->
+      <div class="mt-8 pt-8 border-t border-[#DFE1E6]">
+        <div class="text-xs">
+          <a href="#" class="pointer-events-none text-orange-500 hover:underline">{{translationService.getTranslation('PRIVACY_POLICY')}}</a>
+          <span class="mx-1 text-[#5E6C84]">•</span>
+          <a href="#" class="pointer-events-none text-orange-500 hover:underline">{{translationService.getTranslation('USER_NOTICE')}}</a>
+        </div>
+      </div>
+    </div>
+  </div>

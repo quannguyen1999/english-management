@@ -1,0 +1,143 @@
+<div class="p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-medium text-gray-900">{{translationService.getTranslation('USERS')}}</h1>
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</mat-icon>
+          <input type="text" 
+                 [(ngModel)]="searchTerm"
+                 (keyup.enter)="onSearch()"
+                 [placeholder]="translationService.getTranslation('SEARCH_USERS')"
+                 class="pl-10 pr-4 py-2 w-[300px] border rounded-lg focus:outline-none focus:border-[#4355B9] text-sm">
+        </div>
+        <button mat-flat-button 
+                color="primary" 
+                class="flex items-center gap-2"
+                (click)="openAddUserDialog()">
+          <mat-icon>add</mat-icon>
+          <span>{{translationService.getTranslation('CREATE_USER')}}</span>
+        </button>
+      </div>
+    </div>
+  
+    <!-- Table -->
+    <div class="bg-white rounded-lg overflow-hidden">
+      <table mat-table [dataSource]="dataSource" class="w-full">
+        <!-- Username Column -->
+        <ng-container matColumnDef="username">
+          <th mat-header-cell *matHeaderCellDef class="bg-white text-xs font-medium text-gray-500 px-6 py-3 border-b">{{translationService.getTranslation('USERNAME')}}</th>
+          <td mat-cell *matCellDef="let user" class="px-6 py-4 text-sm">
+            {{user.username}}
+          </td>
+        </ng-container>
+  
+        <!-- Email Column -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef class="bg-white text-xs font-medium text-gray-500 px-6 py-3 border-b">{{translationService.getTranslation('EMAIL')}}</th>
+          <td mat-cell *matCellDef="let user" class="px-6 py-4 text-sm">{{user.email}}</td>
+        </ng-container>
+  
+        <!-- Role Column -->
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef class="bg-white text-xs font-medium text-gray-500 px-6 py-3 border-b">{{translationService.getTranslation('ROLE')}}</th>
+          <td mat-cell *matCellDef="let user" class="px-6 py-4">
+            <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getRoleBadgeClass(user.role)">
+              {{translationService.getTranslation('ROLE_' + user.role)}}
+            </span>
+          </td>
+        </ng-container>
+  
+        <!-- Created At Column -->
+        <ng-container matColumnDef="createAt">
+          <th mat-header-cell *matHeaderCellDef class="bg-white text-xs font-medium text-gray-500 px-6 py-3 border-b">{{translationService.getTranslation('CREATED_AT')}}</th>
+          <td mat-cell *matCellDef="let user" class="px-6 py-4 text-sm">
+            {{formatDate(user.createAt)}}
+          </td>
+        </ng-container>
+  
+        <!-- Updated At Column -->
+        <ng-container matColumnDef="updatedAt">
+          <th mat-header-cell *matHeaderCellDef class="bg-white text-xs font-medium text-gray-500 px-6 py-3 border-b">{{translationService.getTranslation('UPDATED_AT')}}</th>
+          <td mat-cell *matCellDef="let user" class="px-6 py-4 text-sm">
+            {{formatDate(user.updatedAt)}}
+          </td>
+        </ng-container>
+  
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>STATUS</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="px-2 py-1 rounded-full text-xs"
+                  [ngClass]="{'bg-green-100 text-green-800': user.status === 'Active',
+                            'bg-red-100 text-red-800': user.status === 'Inactive'}">
+              {{user.status}}
+            </span>
+          </td>
+        </ng-container>
+  
+        <!-- Created On Column -->
+        <ng-container matColumnDef="createdOn">
+          <th mat-header-cell *matHeaderCellDef>CREATED ON</th>
+          <td mat-cell *matCellDef="let user">{{user.createdOn | date:'MMM d, y'}}</td>
+        </ng-container>
+  
+        <!-- Last Seen Column -->
+        <ng-container matColumnDef="lastSeen">
+          <th mat-header-cell *matHeaderCellDef>LAST SEEN</th>
+          <td mat-cell *matCellDef="let user">{{user.lastSeen | timeAgo}}</td>
+        </ng-container>
+  
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="bg-white text-xs font-medium text-gray-500 px-6 py-3 border-b">{{translationService.getTranslation('ACTIONS')}}</th>
+          <td mat-cell *matCellDef="let user" class="px-6 py-4">
+            <button mat-icon-button 
+                    color="primary" 
+                    (click)="openUpdateUserDialog(user)"
+                    [disabled]="user.role === 'ADMIN'"
+                    [matTooltip]="translationService.getTranslation('EDIT_USER')">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+  
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+            class="border-b border-gray-100 hover:bg-gray-50"></tr>
+      </table>
+  
+      <!-- Footer with Pagination -->
+      <div class="px-6 py-3 flex items-center justify-between border-t">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-600">{{translationService.getTranslation('ITEMS_PER_PAGE')}}:</span>
+          <mat-form-field appearance="outline" class="w-16">
+            <mat-select [value]="pageSize" (selectionChange)="onPageSizeChange($event)">
+              <mat-option [value]="5">5</mat-option>
+              <mat-option [value]="10">10</mat-option>
+              <mat-option [value]="25">25</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+  
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-600">
+            {{total === 0 ? '0 of 0' : (pageIndex * pageSize) + 1 + ' - ' + Math.min((pageIndex + 1) * pageSize, total) + ' of ' + total}}
+          </span>
+          <div class="flex gap-2">
+            <button mat-icon-button 
+                    [disabled]="pageIndex === 0"
+                    (click)="onPageChange({pageIndex: pageIndex - 1, pageSize: pageSize, length: total})">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button mat-icon-button 
+                    [disabled]="(pageIndex + 1) * pageSize >= total"
+                    (click)="onPageChange({pageIndex: pageIndex + 1, pageSize: pageSize, length: total})">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

@@ -2,7 +2,7 @@
     <!-- Left section -->
     <div class="flex items-center space-x-4">
       <a href="/" class="flex items-center space-x-2">
-        <img src="assets/logo.png" alt="Prime" class="h-8" />
+        <img src="assets/logo.png" alt="Eng" class="h-8" />
       </a>
       <nav class="flex items-center space-x-4">
         <h1 class="text-2xl font-bold">{{TITLE}}</h1>
@@ -30,9 +30,9 @@
       <mat-menu #helpMenu="matMenu">
         <div class="px-4 py-2">
           <div class="text-sm">
-            <p>Feel free to contact me:</p>
-            <p class="mt-1">Phone: {{PHONE}}</p>
-            <p>Email: {{EMAIL}}</p>
+            <p>{{getTranslation('HEADER_CONTACT_ME')}}</p>
+            <p class="mt-1">{{getTranslation('HEADER_PHONE')}} {{PHONE}}</p>
+            <p>{{getTranslation('HEADER_EMAIL')}} {{EMAIL}}</p>
           </div>
         </div>
       </mat-menu>
@@ -40,24 +40,24 @@
       <!-- Notification Menu -->
       <mat-menu #notificationMenu="matMenu" class="w-80">
         <div class="px-4 py-2">
-          <div class="font-medium text-gray-800">NOTIFICATIONS</div>
+          <div class="font-medium text-gray-800">{{getTranslation('HEADER_NOTIFICATIONS')}}</div>
           <div class="mt-2" *ngIf="notifications?.length; else noNotifications">
             <!-- Notification items would go here -->
           </div>
           <ng-template #noNotifications>
             <div class="text-center py-4 text-gray-500">
               <mat-icon class="text-gray-400">notifications_off</mat-icon>
-              <p class="mt-2">No notifications at this time</p>
+              <p class="mt-2">{{getTranslation('HEADER_NO_NOTIFICATIONS')}}</p>
             </div>
           </ng-template>
         </div>
       </mat-menu>
 
       <!-- User Profile Menu -->
-      <mat-menu #menuNotification="matMenu" class="min-w-[200px]">
+      <mat-menu #menuNotification="matMenu" class="w-80">
         <!-- Account Section -->
         <div class="px-4 py-3">
-          <div class="font-medium text-gray-800 mb-2">ACCOUNT</div>
+          <div class="font-medium text-gray-800 mb-2">{{getTranslation('HEADER_ACCOUNT')}}</div>
           <div class="text-gray-700">{{userName}}</div>
         </div>
 
@@ -65,17 +65,17 @@
 
         <!-- Settings Section -->
         <div class="px-4 py-2 text-gray-800 font-medium">
-          SETTINGS
+          {{getTranslation('HEADER_SETTINGS')}}
         </div>
         <button mat-menu-item (click)="openProfileDialog()">
-          <span>Profile</span>
+          <span>{{getTranslation('HEADER_PROFILE')}}</span>
         </button>
 
         <mat-divider></mat-divider>
 
         <!-- Logout -->
         <button mat-menu-item (click)="logout()">
-          <span>Log out</span>
+          <span>{{getTranslation('HEADER_LOGOUT')}}</span>
         </button>
       </mat-menu>
     </div>

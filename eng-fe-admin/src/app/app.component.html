@@ -1,1 +1,13 @@
-<app-header></app-header>
+<ng-container *ngIf="!isLoginPage(); else loginTemplate">
+    <app-header></app-header>
+    <div class="flex min-h-screen bg-gray-50">
+      <app-side-bar></app-side-bar>
+      <main [class]="isExpanded ? 'ml-[230px]' : 'ml-[45px]'" 
+            class="flex-1 p-8 mt-16 transition-all duration-300">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  </ng-container>
+  <ng-template #loginTemplate>
+    <router-outlet></router-outlet>
+  </ng-template>

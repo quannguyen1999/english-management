@@ -7,7 +7,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { TITLE, PHONE, EMAIL } from '../../constants/infor';
-
+import { TranslationService } from '../../services/translation.service';
+import { PATH_LOGIN } from '../../constants/paths';
+import { ProfileDialogComponent } from './profile-dialog/profile-dialog.component';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -29,15 +31,23 @@ export class HeaderComponent {
 
   constructor(
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {}
 
+  getTranslation(key: string): string {
+    return this.translationService.getTranslation(key);
+  }
+
   openProfileDialog(): void {
-    // Implement your profile dialog logic here
+    this.dialog.open(ProfileDialogComponent, {
+      width: '500px',
+      disableClose: true
+    });
   }
 
   logout(): void {
     // Implement your logout logic here
-    this.router.navigate(['/login']);
+    this.router.navigate(['/' + PATH_LOGIN]);
   }
 }
