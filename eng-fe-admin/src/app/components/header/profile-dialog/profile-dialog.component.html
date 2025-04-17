@@ -1,0 +1,49 @@
+<div class="p-6">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-2xl font-bold">Profile Information</h2>
+      <button mat-icon-button (click)="dialogRef.close()" class="bg-gray-100 hover:bg-gray-200">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <form [formGroup]="profileForm" class="space-y-6">
+      <div class="flex justify-center mb-8">
+        <div class="w-32 h-32 rounded-full bg-[#4355B9] flex items-center justify-center">
+          <span class="text-4xl font-medium text-white uppercase">{{userName[0]}}</span>
+        </div>
+      </div>
+
+      <mat-form-field appearance="outline" class="w-full">
+       
+        <input matInput formControlName="username" placeholder="Enter username">
+        <mat-error *ngIf="profileForm.get('username')?.errors?.['required']">
+          Username is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+     
+        <input matInput [value]="userRole" readonly>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+     
+        <input matInput [value]="userStatus" readonly>
+      </mat-form-field>
+
+      <div class="flex justify-end space-x-3 pt-4">
+        <button mat-button 
+                class="px-6"
+                (click)="dialogRef.close()">
+          Cancel
+        </button>
+        <button mat-flat-button 
+                color="primary"
+                class="px-6"
+                [disabled]="!profileForm.valid || !profileForm.dirty"
+                (click)="onSubmit()">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
