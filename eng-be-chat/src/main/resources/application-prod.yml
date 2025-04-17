@@ -1,0 +1,62 @@
+spring:
+  # Database Configuration
+  datasource:
+    port: 3306  # MySQL default port
+    schema: eng_dev  # Database schema name
+    hikari:
+      connectionTimeout: 20000  # Maximum wait time for a connection (in ms)
+      maximum-pool-size: 5  # Max number of connections in the pool
+    url: jdbc:mysql://localhost:${spring.datasource.port}/${spring.datasource.schema}  # JDBC URL
+    username: root  # Database username
+    password: mysql  # Database password
+  jpa:
+    show-sql: true
+
+  # WebSocket Configuration
+  websocket:
+    allowed-origins: http://localhost:4200  # Allowed WebSocket origins
+    message-size-limit: 128KB  # Maximum message size
+    send-timeout: 5000  # Send timeout in milliseconds
+    send-buffer-size-limit: 512KB  # Send buffer size limit
+    time-to-first-message: 20000  # Time to first message in milliseconds
+
+  # Flyway Database Migration
+  flyway:
+    url: jdbc:mysql://localhost:${spring.datasource.port}/  # Flyway migration base URL
+    schemas: ${spring.datasource.schema}  # Flyway migration schema
+    user: ${spring.datasource.username}  # Uses the same database username
+    password: ${spring.datasource.password}  # Uses the same database password
+    enabled: true  # Enables Flyway for automatic migration
+    validate-migration-naming: true  # Ensures migration files follow correct naming conventions
+
+  # Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${custom.security.oauth2Url}  # OAuth2 issuer URL
+
+# Application Metadata
+info:
+  app:
+    name: "Prime Project"  # Application name
+    description: "Prime backend project for development"  # Short description
+    version: "1.0.0"  # Current application version
+
+# Custom Configuration
+custom:
+  user:
+    url: http://localhost:8080  # Custom user service URL
+  security:
+    clientId: admin  # OAuth2 client ID
+    clientSecret: password  # OAuth2 client secret (consider using environment variables for security)
+    oauth2Url: http://localhost:8070  # OAuth2 authentication server URL
+
+# Eureka Service Discovery Configuration
+eureka:
+  preferIdAddress: true  # Prefer instance ID address for service resolution
+  client:
+    fetchRegistry: true  # Enables fetching the registry from Eureka
+    registerWithEureka: true  # Registers this service with Eureka
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/  # Eureka server URL

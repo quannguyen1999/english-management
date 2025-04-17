@@ -1,0 +1,16 @@
+server:
+  port: 8080  # Defines the port the application runs on
+
+spring:
+  profiles:
+    active: dev  # Specifies the active profile (e.g., dev, prod)
+  application:
+    name: eng-chat-project  # Sets the application name
+
+# SpringDoc Configuration for API Documentation
+springdoc:
+  swagger-ui:
+    enabled: true  # Enables Swagger UI for API documentation
+    path: /swagger-ui.html  # Defines the URL path for Swagger UI
+  api-docs:
+    version: OPENAPI_3_0  # Uses OpenAPI 3.0 specification

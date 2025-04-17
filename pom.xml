@@ -8,10 +8,10 @@
 		<module>eng-be-eureka</module>
 		<module>eng-be-gateway</module>
 		<module>eng-be-user</module>
-
+		<module>eng-be-chat</module>
 	</modules>
-	<groupId>com.prime</groupId>
-	<artifactId>prime-be</artifactId>
+	<groupId>com.eng</groupId>
+	<artifactId>eng-be</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>prime-be</name>
+	<name>eng-be</name>
 </project>

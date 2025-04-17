@@ -18,6 +18,8 @@ spring:
     password: ${spring.datasource.password}  # Flyway migration password
     enabled: true  # Disable Flyway migrations
     validate-migration-naming: true  # Enforce naming validation for migrations
+    clean-on-validation-error: false # Automatic remove file flyway error - only enable in dev
+    repair: true # Automatic remove file flyway error - only enable in dev
 
 #Config Actuator
 management:
