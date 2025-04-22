@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-gif-picker',
@@ -53,7 +54,7 @@ export class GifPickerComponent {
   @Output() gifSelected = new EventEmitter<string>();
   @Output() close = new EventEmitter<void>();
 
-  private readonly GIPHY_API_KEY = '7Labx1mK8QroJrvK7v0qzwfednypcNP5';
+  private readonly GIPHY_API_KEY = environment.giphyApiKey;
   private searchSubject = new Subject<string>();
 
   searchQuery = '';
