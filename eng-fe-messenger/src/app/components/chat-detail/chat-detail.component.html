@@ -1,0 +1,96 @@
+<div class="flex flex-col h-screen bg-white">
+  <!-- Header -->
+  <div class="flex items-center p-4 border-b border-gray-200" roughBox>
+    <div class="flex items-center flex-1">
+      <div class="relative">
+        <img [src]="currentUser.avatar" 
+             [alt]="currentUser.name"
+             class="w-10 h-10 rounded-full object-cover">
+        <span *ngIf="currentUser.isOnline" 
+              class="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+      </div>
+      <div class="ml-3">
+        <h2 class="text-gray-800 font-medium sketch-text">{{currentUser.name}}</h2>
+      </div>
+    </div>
+    <div class="flex space-x-4">
+      <button class="text-gray-600">
+        <span class="sketch-text">📞</span>
+      </button>
+      <button class="text-gray-600" >
+        <span class="sketch-text">📹</span>
+      </button>
+      <button class="text-gray-600" >
+        <span class="sketch-text">🔍</span>
+      </button>
+      <button class="text-gray-600" >
+        <span class="sketch-text">⋯</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="flex-1 overflow-y-auto p-4 space-y-4">
+    <ng-container *ngFor="let message of messages">
+      <!-- System Message -->
+      <div *ngIf="message.content.includes('update your app')" 
+           class="flex justify-center">
+        <div roughBox>
+          <div class="p-3 bg-white text-center">
+            <p class="text-gray-800 text-sm sketch-text">{{message.content}}</p>
+            <a href="#" class="text-blue-600 hover:underline sketch-text">Update app</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regular Message -->
+      <div *ngIf="!message.content.includes('update your app')"
+           class="flex" 
+           [ngClass]="{'justify-end': message.isMe}">
+        <div class="max-w-sm" 
+             [ngClass]="{'order-2': message.isMe}">
+          <!-- Image Message -->
+          <div *ngIf="message.isImage" class="mb-1" roughBox>
+            <div class="rounded-lg overflow-hidden">
+              <img [src]="message.content" class="w-full h-auto">
+            </div>
+          </div>
+          
+          <!-- Text Message -->
+          <div *ngIf="!message.isImage" messageRoughBox>
+            <div class="p-2 bg-white">
+              <p class="sketch-text">{{message.content}}</p>
+            </div>
+          </div>
+          
+          <div class="mt-1 text-xs text-gray-500"
+               [ngClass]="{'text-right': message.isMe}">
+            {{message.timestamp}}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Input Area -->
+  <div class="p-4 border-t border-gray-200" roughBox>
+    <div class="flex items-center space-x-2">
+      <button class="p-2 text-gray-600" >
+        <span class="sketch-text">➕</span>
+      </button>
+      <div class="flex-1" >
+        <input type="text"
+               [(ngModel)]="newMessage"
+               (keyup.enter)="sendMessage()"
+               placeholder="Type a message..."
+               class="w-full bg-transparent p-3 text-gray-800 focus:outline-none sketch-text">
+      </div>
+      <button class="p-2 text-gray-600" >
+        <span class="sketch-text">😊</span>
+      </button>
+      <button class="p-2 text-gray-600" >
+        <span class="sketch-text">❤️</span>
+      </button>
+    </div>
+  </div>
+</div>

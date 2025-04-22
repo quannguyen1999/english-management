@@ -1,0 +1,37 @@
+.sketch-box {
+  position: relative;
+  border-radius: 4px;
+  background-color: white;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translate(-3px, -3px);
+  }
+}
+
+.sketch-text {
+  font-family: 'Comic Sans MS', cursive;
+  letter-spacing: 0.5px;
+}
+
+.sketch-checkbox {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  border-radius: 3px;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+
+  &:checked {
+    &::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 14px;
+      color: #2d3748;
+    }
+  }
+}

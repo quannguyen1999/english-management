@@ -1,0 +1,85 @@
+<div class="flex h-screen bg-white">
+  <!-- Left Sidebar - Chat List -->
+  <div class="w-[360px] flex flex-col border-r border-gray-200">
+    <!-- Header -->
+    <div class="p-4 flex justify-between items-center" roughBox>
+      <h1 class="text-2xl text-gray-800 sketch-text">Chats</h1>
+      <button class="p-2 text-gray-600" roughBox (click)="onNewChat()">
+        <span class="sketch-text">✏️</span>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class=" mx-4 mb-4 mt-5">
+      <div class="relative" roughBox>
+        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 sketch-text">🔍</span>
+        <input 
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="onSearch(searchQuery)"
+          placeholder="Search (#K)"
+          class="w-full p-3 pl-10 bg-transparent text-gray-800 focus:outline-none sketch-text">
+      </div>
+    </div>
+
+    <!-- Online Users -->
+    <div class="px-4 mb-4">
+      <div class="flex space-x-4 overflow-x-auto pb-2">
+        <div *ngFor="let user of onlineUsers" 
+             class="flex flex-col items-center space-y-1 min-w-[4rem]">
+          <div class="relative rounded-full border-2 border-black p-1 cursor-pointer">
+            <img [src]="user.avatar" 
+                 [alt]="user.name"
+                 class="w-10 h-10 rounded-full object-cover">
+            <span *ngIf="user.isOnline" 
+                  class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+          </div>
+          <span class="text-xs text-gray-800 text-center sketch-text">{{user.name}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update Notice -->
+    <div class="mx-4 mb-4" *ngIf="showUpdateNotice" roughBox>
+      <div class="p-4 bg-white">
+        <h3 class="text-lg mb-2 text-gray-800 sketch-text">Restart to use the latest version</h3>
+        <p class="text-gray-600 text-sm mb-4 sketch-text">To make sure you're on the fastest and most up-to-date version, restart the app.</p>
+        <button class="w-full p-2 bg-gray-100 text-gray-800" roughBox>
+          Restart
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Chats -->
+    <div class="flex-1 overflow-y-auto px-2">
+      <div class="space-y-1">
+        <div *ngFor="let chat of recentChats" 
+             class="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+             (click)="onChatSelect(chat)"
+             roughBox>
+          <div class="flex items-center space-x-3">
+            <div class="relative">
+              <img [src]="chat.avatar" 
+                   [alt]="chat.name"
+                   class="w-12 h-12 rounded-full object-cover">
+              <span *ngIf="chat.isOnline" 
+                    class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-baseline">
+                <h3 class="text-gray-800 truncate sketch-text">{{chat.name}}</h3>
+                <span class="text-xs text-gray-500 sketch-text">{{chat.lastMessageTime}}</span>
+              </div>
+              <p class="text-gray-600 text-sm truncate sketch-text">{{chat.lastMessage}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side - Chat Detail -->
+  <div class="flex-1">
+    <app-chat-detail></app-chat-detail>
+  </div>
+</div> 

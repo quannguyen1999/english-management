@@ -1,0 +1,60 @@
+<div class="min-h-screen flex items-center justify-center bg-white">
+
+  <div class="bg-white p-8 w-96 relative " roughBox>    
+    <!-- Close button in corner -->
+    <div class="absolute top-2 right-2 p-1" roughBox>
+      <span class="text-lg">×</span>
+    </div>
+
+    <!-- Lock icon -->
+    <div class="flex justify-center mb-8"> 
+        <h1 class="block text-2xl text-gray-800 mb-2 sketch-text">Login</h1>
+    </div>
+
+    <form class="space-y-6">
+      <!-- Username field -->
+      <div>
+        <label class="block text-gray-800 mb-2 sketch-text">Username</label>
+        <div roughBox>
+          <input type="text" 
+                 [(ngModel)]="username"
+                 name="username"
+                 class="w-full p-2 bg-transparent focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Password field -->
+      <div>
+        <label class="block text-gray-800 mb-2 sketch-text">Password</label>
+        <div roughBox>
+          <input type="password" 
+                 [(ngModel)]="password"
+                 name="password"
+                 class="w-full p-2 bg-transparent focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Remember password checkbox -->
+      <div class="flex items-center">
+        <input type="checkbox" 
+               [(ngModel)]="rememberMe" 
+               name="rememberMe"
+               class="sketch-checkbox">
+        <span class="ml-2 text-gray-800 sketch-text">Remember password</span>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex space-x-4">
+        <button type="submit"
+                (click)="onLogin()"
+                class="flex-1 p-2 bg-gray-100" roughBox>
+          OK
+        </button>
+        <button type="button"
+                class="flex-1 p-2 hover:bg-gray-100" roughBox>
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
