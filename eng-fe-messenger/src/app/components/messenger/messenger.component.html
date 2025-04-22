@@ -24,10 +24,10 @@
 
     <!-- Online Users -->
     <div class="px-4 mb-4">
-      <div class="flex space-x-4 overflow-x-auto pb-2">
+      <div class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide" horizontalScroll>
         <div *ngFor="let user of onlineUsers" 
              class="flex flex-col items-center space-y-1 min-w-[4rem]">
-          <div class="relative rounded-full border-2 border-black p-1 cursor-pointer">
+          <div class="relative rounded-full border-1 border-black p-1 cursor-pointer">
             <img [src]="user.avatar" 
                  [alt]="user.name"
                  class="w-10 h-10 rounded-full object-cover">

@@ -2,10 +2,10 @@ import { Directive, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import rough from 'roughjs';
 
 @Directive({
-  selector: '[messageRoughBox]',
+  selector: '[imageRoughBox]',
   standalone: true
 })
-export class MessageRoughBoxDirective implements AfterViewInit, OnDestroy {
+export class ImageBoxDirective implements AfterViewInit, OnDestroy {
   private resizeObserver: ResizeObserver;
   private svg: SVGSVGElement | null = null;
 
@@ -31,28 +31,21 @@ export class MessageRoughBoxDirective implements AfterViewInit, OnDestroy {
   private updateRoughElement() {
     // Remove existing SVG if any
     this.svg?.remove();
-  
-    // Create new SVG
+
+    // Create new SVG with correct type
     this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg') as SVGSVGElement;
     const rc = rough.svg(this.svg);
     
-    // Set container styles first
+    // Set container styles first to ensure proper positioning
     const containerStyle = this.el.nativeElement.style;
     containerStyle.position = 'relative';
     containerStyle.display = 'inline-block';
-    containerStyle.padding = '8px';
-    containerStyle.margin = '4px 0';
+    containerStyle.padding = '10px';
     
-    // Get dimensions after styles are applied
+    // Get dimensions after padding is applied
     const rect = this.el.nativeElement.getBoundingClientRect();
     
-    // Calculate SVG dimensions
-    const strokeWidth = 2;
-    const padding = 8;
-    const width = rect.width;
-    const height = rect.height;
-    
-    // Configure SVG
+    // Set SVG attributes and styles
     this.svg.style.position = 'absolute';
     this.svg.style.top = '0';
     this.svg.style.left = '0';
@@ -61,18 +54,15 @@ export class MessageRoughBoxDirective implements AfterViewInit, OnDestroy {
     this.svg.style.pointerEvents = 'none';
     this.svg.style.zIndex = '1';
     
-    // Set SVG viewport
-    this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    
-    // Draw the rectangle
+    // Draw the rectangle to match container size
     const roughRect = rc.rectangle(
       0,
       0,
-      width,
-      height,
+      rect.width,
+      rect.height,
       {
         stroke: '#2d3748',
-        strokeWidth,
+        strokeWidth: 2,
         roughness: 1.5,
         bowing: 1,
         seed: Math.random() * 100,
@@ -81,6 +71,6 @@ export class MessageRoughBoxDirective implements AfterViewInit, OnDestroy {
     );
   
     this.svg.appendChild(roughRect);
-    this.el.nativeElement.appendChild(this.svg);
+    this.el.nativeElement.insertBefore(this.svg, this.el.nativeElement.firstChild);
   }
 } 

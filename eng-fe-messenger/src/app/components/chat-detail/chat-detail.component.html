@@ -50,9 +50,9 @@
         <div class="max-w-sm" 
              [ngClass]="{'order-2': message.isMe}">
           <!-- Image Message -->
-          <div *ngIf="message.isImage" class="mb-1" roughBox>
-            <div class="rounded-lg overflow-hidden">
-              <img [src]="message.content" class="w-full h-auto">
+          <div *ngIf="message.isImage" class="mb-1" >
+            <div class="rounded-full overflow-hidden">
+              <img [src]="message.content" class="w-auto h-auto">
             </div>
           </div>
           

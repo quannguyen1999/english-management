@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RoughBoxDirective } from '../../directives';
+import { ImageBoxDirective, RoughBoxDirective } from '../../directives';
 import { MessageRoughBoxDirective } from '../../directives/message-rough-box.directive';
 interface ChatMessage {
   id: string;
@@ -14,7 +14,7 @@ interface ChatMessage {
 @Component({
   selector: 'app-chat-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RoughBoxDirective, MessageRoughBoxDirective],
+  imports: [CommonModule, FormsModule, RoughBoxDirective, MessageRoughBoxDirective, ImageBoxDirective ],
   templateUrl: './chat-detail.component.html',
   styleUrls: ['./chat-detail.component.scss']
 })
@@ -48,7 +48,7 @@ export class ChatDetailComponent {
     },
     {
       id: '4',
-      content: '/assets/chat/sample-image.jpg',
+      content: 'assets/avatars/user1.jpg',
       timestamp: 'APR 05, 11:03 PM',
       isMe: false,
       isImage: true

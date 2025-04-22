@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoughBoxDirective } from '../../directives';
 import { ChatDetailComponent } from '../chat-detail/chat-detail.component';
+import { HorizontalScrollDirective } from '../../directives/horizontal-scroll.directive';
 
 interface ChatUser {
   id: string;
@@ -17,7 +18,13 @@ interface ChatUser {
 @Component({
   selector: 'app-messenger',
   standalone: true,
-  imports: [CommonModule, FormsModule, RoughBoxDirective, ChatDetailComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RoughBoxDirective, 
+    ChatDetailComponent,
+    HorizontalScrollDirective
+  ],
   templateUrl: './messenger.component.html',
   styleUrls: ['./messenger.component.scss']
 })
@@ -51,6 +58,14 @@ export class MessengerComponent {
     },
     {
       id: '4',
+      name: 'Đăng Trường',
+      avatar: 'assets/avatars/user1.jpg', // Remove leading slash
+      isOnline: true,
+      lastMessage: 'Thanks!',
+      lastMessageTime: '1h'
+    },
+    {
+      id: '5',
       name: 'Đăng Trường',
       avatar: 'assets/avatars/user1.jpg', // Remove leading slash
       isOnline: true,
