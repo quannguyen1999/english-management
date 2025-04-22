@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoughBoxDirective } from '../../../directives/rough-box.directive';
@@ -6,6 +6,8 @@ import { MessageRoughBoxDirective } from '../../../directives/message-rough-box.
 import { ImageBoxDirective } from '../../../directives/image-box.directive';
 import { SunburstBoxDirective } from '../../../directives/sunburst-box.directive';
 import { PickerComponent, PickerModule } from '@ctrl/ngx-emoji-mart';
+import { GifPickerComponent } from '../gif-picker/gif-picker.component';
+import { HttpClientModule } from '@angular/common/http';
 
 interface ChatMessage {
   id: string;
@@ -37,13 +39,16 @@ interface ChatUser {
     ImageBoxDirective, 
     SunburstBoxDirective,
     PickerModule,
-    PickerComponent
+    PickerComponent,
+    GifPickerComponent,
+    HttpClientModule
   ],
   templateUrl: './chat-detail.component.html',
   styleUrls: ['./chat-detail.component.scss']
 })
 export class ChatDetailComponent implements OnChanges {
   @Input() selectedChat: ChatUser | null = null;
+  @ViewChild('messageContainer') private messageContainer!: ElementRef;
 
   currentUser = {
     name: 'Em 🌻',
@@ -100,6 +105,7 @@ export class ChatDetailComponent implements OnChanges {
   ];
 
   showEmojiPicker = false;
+  showGifPicker = false;
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['selectedChat'] && changes['selectedChat'].currentValue) {
@@ -110,6 +116,20 @@ export class ChatDetailComponent implements OnChanges {
         isOnline: this.selectedChat?.isOnline || false
       };
     }
+  }
+
+  ngAfterViewInit() {
+    this.scrollToBottom();
+  }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  private scrollToBottom(): void {
+    try {
+      this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
+    } catch(err) { }
   }
 
   sendMessage() {
@@ -124,6 +144,7 @@ export class ChatDetailComponent implements OnChanges {
     
     this.messages.push(newMsg);
     this.newMessage = '';
+    this.scrollToBottom();
   }
 
   canSendMessage(): boolean {
@@ -137,5 +158,25 @@ export class ChatDetailComponent implements OnChanges {
   onEmojiSelected(event: any) {
     this.newMessage += event.emoji.native;
     this.showEmojiPicker = false;
+  }
+
+  toggleGifPicker() {
+    this.showGifPicker = !this.showGifPicker;
+    this.showEmojiPicker = false;
+  }
+
+  onGifSelected(gifUrl: string) {
+    if (!this.selectedChat) return;
+    
+    const newMsg: ChatMessage = {
+      id: Date.now().toString(),
+      content: gifUrl,
+      timestamp: new Date().toLocaleString(),
+      isMe: true,
+      isImage: true
+    };
+    
+    this.messages.push(newMsg);
+    this.scrollToBottom();
   }
 } 

@@ -46,6 +46,7 @@ export class SunburstBoxDirective implements AfterViewInit, OnDestroy {
     this.svg.appendChild(roughRect);
     
     // Position SVG
+    this.svg.style.opacity = '0.5';
     this.svg.style.position = 'absolute';
     this.svg.style.top = '0';
     this.svg.style.left = '0';

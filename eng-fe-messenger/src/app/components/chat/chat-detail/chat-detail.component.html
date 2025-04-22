@@ -32,7 +32,7 @@
   </div>
 
   <!-- Chat Messages -->
-  <div class="flex-1 overflow-y-auto p-4">
+  <div class="flex-1 overflow-y-auto p-4" #messageContainer>
     <div class="space-y-4">
       <ng-container *ngIf="selectedChat">
         <!-- Friend Status Messages -->
@@ -57,26 +57,28 @@
         <ng-container *ngIf="selectedChat.friendStatus === 'friend'">
           <div *ngFor="let message of messages" 
                [class.flex-row-reverse]="message.isMe"
-               class="flex items-end space-x-2">
+               class="flex items-start space-x-2 mb-4">
             <div [class.ml-2]="message.isMe" 
                  [class.mr-2]="!message.isMe" 
                  class="flex-shrink-0">
               <img [src]="message.isMe ? currentUser.avatar : selectedChat.avatar" 
                    class="w-8 h-8 rounded-full">
             </div>
-            <div [class.bg-blue-100]="message.isMe"
-                 [class.bg-gray-100]="!message.isMe"
-                 class="max-w-xs rounded-lg p-3"
-                 messageRoughBox>
-              <ng-container *ngIf="!message.isImage">
-                {{message.content}}
-              </ng-container>
-              <img *ngIf="message.isImage" 
-                   [src]="message.content" 
-                   class="rounded-lg max-w-xs"
-                   imageRoughBox>
+            <div class="flex flex-col">
+              <div [class.bg-blue-100]="message.isMe"
+                   [class.bg-gray-100]="!message.isMe"
+                   class="max-w-xs rounded-lg p-3"
+                   messageRoughBox>
+                <ng-container *ngIf="!message.isImage">
+                  {{message.content}}
+                </ng-container>
+                <img *ngIf="message.isImage" 
+                     [src]="message.content" 
+                     class="rounded-lg max-w-xs"
+                     imageRoughBox>
+              </div>
+              <span class="text-xs text-gray-500 mt-1" [class.text-right]="message.isMe">{{message.timestamp}}</span>
             </div>
-            <span class="text-xs text-gray-500">{{message.timestamp}}</span>
           </div>
         </ng-container>
       </ng-container>
@@ -88,6 +90,9 @@
     <div class="flex items-center space-x-2">
       <button class="p-2 text-gray-600" (click)="toggleEmojiPicker()">
         <span class="sketch-text">😊</span>
+      </button>
+      <button class="p-2 text-gray-600" (click)="toggleGifPicker()">
+        <span class="sketch-text">🎬</span>
       </button>
       <div class="flex-1">
         <input type="text"
@@ -114,6 +119,12 @@
       emoji="point_up">
     </emoji-mart>
 
-    
+    <!-- GIF Picker -->
+    <app-gif-picker
+      *ngIf="showGifPicker"
+      (gifSelected)="onGifSelected($event)"
+      (close)="showGifPicker = false"
+      class="absolute bottom-full left-0 z-50">
+    </app-gif-picker>
   </div>
 </div>
