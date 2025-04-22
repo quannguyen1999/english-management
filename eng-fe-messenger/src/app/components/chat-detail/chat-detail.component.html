@@ -1,96 +1,109 @@
 <div class="flex flex-col h-screen bg-white">
   <!-- Header -->
-  <div class="flex items-center p-4 border-b border-gray-200" roughBox>
+  <div class="flex items-center p-3 border-b border-gray-200 z-10" sunburstBox>
     <div class="flex items-center flex-1">
       <div class="relative">
         <img [src]="currentUser.avatar" 
              [alt]="currentUser.name"
              class="w-10 h-10 rounded-full object-cover">
         <span *ngIf="currentUser.isOnline" 
-              class="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
       </div>
       <div class="ml-3">
-        <h2 class="text-gray-800 font-medium sketch-text">{{currentUser.name}}</h2>
+        <h2 class="text-lg font-medium text-gray-900">{{currentUser.name}}</h2>
+        <p class="text-sm text-gray-500">{{currentUser.isOnline ? 'Active now' : 'Offline'}}</p>
       </div>
     </div>
     <div class="flex space-x-4">
-      <button class="text-gray-600">
-        <span class="sketch-text">📞</span>
+      <button class="text-gray-600 ">
+        <span class="sketch-text text-2xl">📞</span>
       </button>
       <button class="text-gray-600" >
-        <span class="sketch-text">📹</span>
+        <span class="sketch-text text-2xl">📹</span>
       </button>
       <button class="text-gray-600" >
-        <span class="sketch-text">🔍</span>
+        <span class="sketch-text text-2xl">🔍</span>
       </button>
       <button class="text-gray-600" >
-        <span class="sketch-text">⋯</span>
+        <span class="sketch-text text-2xl">⋯</span>
       </button>
+    </div>
+
+  </div>
+
+  <!-- Chat Messages -->
+  <div class="flex-1 overflow-y-auto p-4">
+    <div class="space-y-4">
+      <ng-container *ngIf="selectedChat">
+        <!-- Friend Status Messages -->
+        <div *ngIf="selectedChat.friendStatus === 'none'" 
+             class="text-center py-4 text-gray-500">
+          Send a friend request to start chatting
+        </div>
+        <div *ngIf="selectedChat.friendStatus === 'pending_sent'" 
+             class="text-center py-4 text-gray-500">
+          Friend request sent. Waiting for response...
+        </div>
+        <div *ngIf="selectedChat.friendStatus === 'pending_received'" 
+             class="text-center py-4 text-gray-500">
+          This person wants to be your friend
+        </div>
+
+        <!-- Messages -->
+        <ng-container *ngIf="selectedChat.friendStatus === 'friend'">
+          <div *ngFor="let message of messages" 
+               [class.flex-row-reverse]="message.isMe"
+               class="flex items-end space-x-2">
+            <div [class.ml-2]="message.isMe" 
+                 [class.mr-2]="!message.isMe" 
+                 class="flex-shrink-0">
+              <img [src]="message.isMe ? currentUser.avatar : selectedChat.avatar" 
+                   class="w-8 h-8 rounded-full">
+            </div>
+            <div [class.bg-blue-100]="message.isMe"
+                 [class.bg-gray-100]="!message.isMe"
+                 class="max-w-xs rounded-lg p-3"
+                 messageRoughBox>
+              <ng-container *ngIf="!message.isImage">
+                {{message.content}}
+              </ng-container>
+              <img *ngIf="message.isImage" 
+                   [src]="message.content" 
+                   class="rounded-lg max-w-xs"
+                   imageRoughBox>
+            </div>
+            <span class="text-xs text-gray-500">{{message.timestamp}}</span>
+          </div>
+        </ng-container>
+      </ng-container>
     </div>
   </div>
 
-  <!-- Messages -->
-  <div class="flex-1 overflow-y-auto p-4 space-y-4">
-    <ng-container *ngFor="let message of messages">
-      <!-- System Message -->
-      <div *ngIf="message.content.includes('update your app')" 
-           class="flex justify-center">
-        <div roughBox>
-          <div class="p-3 bg-white text-center">
-            <p class="text-gray-800 text-sm sketch-text">{{message.content}}</p>
-            <a href="#" class="text-blue-600 hover:underline sketch-text">Update app</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Regular Message -->
-      <div *ngIf="!message.content.includes('update your app')"
-           class="flex" 
-           [ngClass]="{'justify-end': message.isMe}">
-        <div class="max-w-sm" 
-             [ngClass]="{'order-2': message.isMe}">
-          <!-- Image Message -->
-          <div *ngIf="message.isImage" class="mb-1" >
-            <div class="rounded-full overflow-hidden">
-              <img [src]="message.content" class="w-auto h-auto">
-            </div>
-          </div>
-          
-          <!-- Text Message -->
-          <div *ngIf="!message.isImage" messageRoughBox>
-            <div class="p-2 bg-white">
-              <p class="sketch-text">{{message.content}}</p>
-            </div>
-          </div>
-          
-          <div class="mt-1 text-xs text-gray-500"
-               [ngClass]="{'text-right': message.isMe}">
-            {{message.timestamp}}
-          </div>
-        </div>
-      </div>
-    </ng-container>
-  </div>
-
-  <!-- Input Area -->
-  <div class="p-4 border-t border-gray-200" roughBox>
+  <!-- Message Input -->
+  <div class="p-4 border-t" roughBox>
     <div class="flex items-center space-x-2">
       <button class="p-2 text-gray-600" >
-        <span class="sketch-text">➕</span>
+        <span class="sketch-text">😊</span>
       </button>
       <div class="flex-1" >
         <input type="text"
                [(ngModel)]="newMessage"
+               [placeholder]="canSendMessage() ? 'Type a message...' : 'You need to be friends to send messages'"
+               [disabled]="!canSendMessage()"
                (keyup.enter)="sendMessage()"
-               placeholder="Type a message..."
-               class="w-full bg-transparent p-3 text-gray-800 focus:outline-none sketch-text">
+               class="w-full p-2 bg-transparent focus:outline-none">
       </div>
-      <button class="p-2 text-gray-600" >
-        <span class="sketch-text">😊</span>
+      <button (click)="sendMessage()"
+      [disabled]="!canSendMessage()"
+      class="p-2 text-blue-600 disabled:text-gray-400"
+      >
+        <span class="sketch-text">💬</span>
       </button>
+     
       <button class="p-2 text-gray-600" >
         <span class="sketch-text">❤️</span>
       </button>
+     
     </div>
   </div>
 </div>
