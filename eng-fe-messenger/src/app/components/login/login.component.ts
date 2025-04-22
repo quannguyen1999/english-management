@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { RoughBoxDirective } from '../../directives';
+import { RoughBoxDirective } from '../../directives/rough-box.directive';
 
 @Component({
   selector: 'app-login',

@@ -1,8 +1,11 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ImageBoxDirective, RoughBoxDirective, SunburstBoxDirective } from '../../directives';
-import { MessageRoughBoxDirective } from '../../directives/message-rough-box.directive';
+import { RoughBoxDirective } from '../../../directives/rough-box.directive';
+import { MessageRoughBoxDirective } from '../../../directives/message-rough-box.directive';
+import { ImageBoxDirective } from '../../../directives/image-box.directive';
+import { SunburstBoxDirective } from '../../../directives/sunburst-box.directive';
+import { PickerComponent, PickerModule } from '@ctrl/ngx-emoji-mart';
 
 interface ChatMessage {
   id: string;
@@ -26,7 +29,16 @@ interface ChatUser {
 @Component({
   selector: 'app-chat-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RoughBoxDirective, MessageRoughBoxDirective, ImageBoxDirective, SunburstBoxDirective],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RoughBoxDirective, 
+    MessageRoughBoxDirective, 
+    ImageBoxDirective, 
+    SunburstBoxDirective,
+    PickerModule,
+    PickerComponent
+  ],
   templateUrl: './chat-detail.component.html',
   styleUrls: ['./chat-detail.component.scss']
 })
@@ -87,6 +99,8 @@ export class ChatDetailComponent implements OnChanges {
     }
   ];
 
+  showEmojiPicker = false;
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['selectedChat'] && changes['selectedChat'].currentValue) {
       // Update the current user info when selected chat changes
@@ -114,5 +128,14 @@ export class ChatDetailComponent implements OnChanges {
 
   canSendMessage(): boolean {
     return this.selectedChat?.friendStatus === 'friend';
+  }
+
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker;
+  }
+
+  onEmojiSelected(event: any) {
+    this.newMessage += event.emoji.native;
+    this.showEmojiPicker = false;
   }
 } 

@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RoughBoxDirective } from '../../directives';
-import { ChatDetailComponent } from '../chat-detail/chat-detail.component';
+import { ChatDetailComponent } from './chat-detail/chat-detail.component';
 import { HorizontalScrollDirective } from '../../directives/horizontal-scroll.directive';
+import { RoughBoxDirective } from '../../directives/rough-box.directive';
 
 type FriendStatus = 'none' | 'friend' | 'pending_sent' | 'pending_received';
 
@@ -19,7 +19,7 @@ interface ChatUser {
 }
 
 @Component({
-  selector: 'app-messenger',
+  selector: 'app-chat',
   standalone: true,
   imports: [
     CommonModule, 
@@ -28,10 +28,10 @@ interface ChatUser {
     ChatDetailComponent,
     HorizontalScrollDirective
   ],
-  templateUrl: './messenger.component.html',
-  styleUrls: ['./messenger.component.scss']
+  templateUrl: './chat.component.html',
+  styleUrls: ['./chat.component.scss']
 })
-export class MessengerComponent {
+export class ChatComponent {
   searchQuery: string = '';
   filteredUsers: ChatUser[] = [];
   selectedChat: ChatUser | null = null;
@@ -152,26 +152,40 @@ export class MessengerComponent {
   }
 
   addFriend(user: ChatUser): void {
-    const targetUser = this.onlineUsers.find(u => u.id === user.id) || 
-                      this.recentChats.find(u => u.id === user.id);
-    if (targetUser) {
-      targetUser.friendStatus = 'pending_sent';
-      // Refresh selected chat if it's the same user
-      if (this.selectedChat?.id === user.id) {
-        this.selectedChat = { ...targetUser };
-      }
+    // Update in onlineUsers array
+    const onlineUserIndex = this.onlineUsers.findIndex(u => u.id === user.id);
+    if (onlineUserIndex !== -1) {
+      this.onlineUsers[onlineUserIndex].friendStatus = 'pending_sent';
+    }
+
+    // Update in recentChats array
+    const recentChatIndex = this.recentChats.findIndex(u => u.id === user.id);
+    if (recentChatIndex !== -1) {
+      this.recentChats[recentChatIndex].friendStatus = 'pending_sent';
+    }
+
+    // Refresh selected chat if it's the same user
+    if (this.selectedChat?.id === user.id) {
+      this.selectedChat = { ...this.selectedChat, friendStatus: 'pending_sent' };
     }
   }
 
   removeFriend(user: ChatUser): void {
-    const targetUser = this.onlineUsers.find(u => u.id === user.id) || 
-                      this.recentChats.find(u => u.id === user.id);
-    if (targetUser) {
-      targetUser.friendStatus = 'none';
-      // Refresh selected chat if it's the same user
-      if (this.selectedChat?.id === user.id) {
-        this.selectedChat = { ...targetUser };
-      }
+    // Update in onlineUsers array
+    const onlineUserIndex = this.onlineUsers.findIndex(u => u.id === user.id);
+    if (onlineUserIndex !== -1) {
+      this.onlineUsers[onlineUserIndex].friendStatus = 'none';
+    }
+
+    // Update in recentChats array
+    const recentChatIndex = this.recentChats.findIndex(u => u.id === user.id);
+    if (recentChatIndex !== -1) {
+      this.recentChats[recentChatIndex].friendStatus = 'none';
+    }
+
+    // Refresh selected chat if it's the same user
+    if (this.selectedChat?.id === user.id) {
+      this.selectedChat = { ...this.selectedChat, friendStatus: 'none' };
     }
   }
 
