@@ -44,3 +44,4 @@ docker
 !/eng-fe-admin/.vscode/extensions.json
 /eng-fe-admin/.DS_Store
 /eng-fe-admin/Thumbs.db
+/logs/
