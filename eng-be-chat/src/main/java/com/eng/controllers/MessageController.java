@@ -1,7 +1,6 @@
 package com.eng.controllers;
 
-import com.eng.constants.PathApi;
-import com.eng.models.request.SendMessageRequest;
+import com.eng.models.request.MessageRequest;
 import com.eng.models.response.MessageResponse;
 import com.eng.service.MessageService;
 import jakarta.validation.Valid;
@@ -32,7 +31,7 @@ public class MessageController {
     @PostMapping
     public ResponseEntity<MessageResponse> sendMessage(
             @PathVariable UUID conversationId,
-            @Valid @RequestBody SendMessageRequest request) {
+            @Valid @RequestBody MessageRequest request) {
         return ResponseEntity.ok(messageService.sendMessage(
                 conversationId,
                 request.getContent(),
@@ -41,7 +40,7 @@ public class MessageController {
         ));
     }
 
-    @PutMapping(UPDATE_MESSAGE)
+    @PutMapping(MESSAGE_UPDATE)
     public ResponseEntity<MessageResponse> editMessage(
             @PathVariable UUID conversationId,
             @PathVariable UUID messageId,
@@ -49,33 +48,29 @@ public class MessageController {
         return ResponseEntity.ok(messageService.editMessage(messageId, newContent));
     }
 
-    @DeleteMapping(DELETE_MESSAGE)
+    @DeleteMapping(MESSAGE_DELETE)
     public ResponseEntity<Void> deleteMessage(
-            @PathVariable UUID conversationId,
             @PathVariable UUID messageId) {
         messageService.deleteMessage(messageId);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(DELIVERED_MESSAGE)
+    @PostMapping(MESSAGE_DELIVERED)
     public ResponseEntity<Void> markMessageAsDelivered(
-            @PathVariable UUID conversationId,
             @PathVariable UUID messageId) {
         messageService.markMessageAsDelivered(messageId);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(READ_MESSAGE)
+    @PostMapping(MESSAGE_READ)
     public ResponseEntity<Void> markMessageAsRead(
-            @PathVariable UUID conversationId,
             @PathVariable UUID messageId) {
         messageService.markMessageAsRead(messageId);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(REACTION_MESSAGE)
+    @PostMapping(MESSAGE_REACTION)
     public ResponseEntity<Void> addReaction(
-            @PathVariable UUID conversationId,
             @PathVariable UUID messageId,
             @RequestParam String reaction) {
         messageService.addReaction(messageId, reaction);

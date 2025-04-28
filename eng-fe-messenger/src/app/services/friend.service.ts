@@ -1,0 +1,60 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { ChatUser } from '../models/chat.model';
+import { FriendSearchResponse, FriendRequest, FriendResponse, PendingFriend } from '../models/friend.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class FriendService {
+  private readonly BASE_URL_FRIEND = `${environment.port}/chat-service/friends`;
+  private readonly BASE_URL_CONVERSATIONS = `${environment.port}/chat-service/conversations`;
+
+  constructor(private http: HttpClient) {}
+
+  searchFriends(term: string): Observable<ChatUser[]> {
+    return this.http
+      .get<FriendSearchResponse>(`${this.BASE_URL_CONVERSATIONS}/friend-all?page=0&size=5&username=${term}`)
+      .pipe(
+        map(response => response.data.map(user => ({
+          id: user.userId.toString(),
+          name: user.username,
+          avatar: 'assets/avatars/default-avatar.png',
+          isOnline: false,
+          friendStatus: user.friendStatus,
+          conversationId: user.conversationId ? user.conversationId.toString() : '',
+          requestSentByMe: user.requestSentByMe
+        }))),
+        catchError((error) => {
+          if (error.status === 401) {
+            localStorage.clear();
+            sessionStorage.clear();
+          }
+          return of([]);
+        })
+      );
+  }
+
+  getPendingFriendRequests(): Observable<PendingFriend[]> {
+    return this.http.get<PendingFriend[]>(`${this.BASE_URL_FRIEND}/pending`);
+  }
+
+  acceptFriendRequest(userId: number): Observable<FriendResponse> {
+    return this.http.get<FriendResponse>(`${this.BASE_URL_FRIEND}/accept?requestId=${userId}`);
+  }
+
+  rejectFriendRequest(userId: number): Observable<void> {
+    return this.http.post<void>(`${this.BASE_URL_FRIEND}/reject/${userId}`, {});
+  }
+
+  sendFriendRequest(userId: number): Observable<FriendResponse> {
+    return this.http.post<FriendResponse>(`${this.BASE_URL_FRIEND}/send/${userId}`, {});
+  }
+
+  cancelFriendRequest(userId: number): Observable<void> {
+    return this.http.post<void>(`${this.BASE_URL_FRIEND}/cancel/${userId}`, {});
+  }
+} 

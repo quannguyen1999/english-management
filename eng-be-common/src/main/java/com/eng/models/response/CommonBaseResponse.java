@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 public class CommonBaseResponse {
 
-    private Date createAt;
+    private Date createdAt;
 
     private Date updatedAt;
 

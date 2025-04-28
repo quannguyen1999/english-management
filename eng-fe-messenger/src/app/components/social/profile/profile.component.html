@@ -1,0 +1,135 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-3xl mx-auto">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-8">
+      <mat-icon class="animate-spin text-4xl text-gray-400">sync</mat-icon>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="text-center py-8 text-red-500">
+      {{ error }}
+    </div>
+
+    <!-- Profile Content -->
+    <ng-container *ngIf="userProfile && !isLoading">
+      <!-- Profile Header -->
+      <div class="bg-white p-6 mb-6" roughBox>
+        <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+          <div class="relative group">
+            <div roughBox>
+              <img src="assets/avatars/user1.jpg" 
+                   [alt]="userProfile.username" 
+                   class="w-32 h-32 rounded-full object-cover">
+            </div>
+            <!-- Only show change photo button for current user -->
+            <button *ngIf="isCurrentUser"
+                    (click)="onChangePhoto()"
+                    class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full"
+                    roughBox>
+              <mat-icon>photo_camera</mat-icon>
+            </button>
+          </div>
+          <div class="flex-1 text-center md:text-left">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2 sketch-text">{{ userProfile.username }}</h1>
+            <p class="text-gray-600 mb-4 sketch-text">{{ userProfile.email }}</p>
+            <div class="flex flex-wrap justify-center md:justify-start gap-4">
+              <!-- Show these buttons only if viewing own profile -->
+              <ng-container *ngIf="isCurrentUser">
+                <button (click)="onEditProfile()"
+                        class="px-6 py-2 bg-blue-600 text-white"
+                        roughBox>
+                  {{ 'PROFILE.EDIT_PROFILE' | translate }}
+                </button>
+                <button (click)="onShareProfile()"
+                        class="px-6 py-2 bg-gray-100 text-gray-700"
+                        roughBox>
+                  {{ 'PROFILE.SHARE_PROFILE' | translate }}
+                </button>
+              </ng-container>
+
+              <!-- Show these buttons only if viewing another user's profile -->
+              <ng-container *ngIf="!isCurrentUser">
+                <!-- Friend Request Button -->
+                <ng-container [ngSwitch]="userProfile.friendStatus">
+                  <button *ngSwitchCase="'NONE'"
+                          (click)="onAddFriend()"
+                          class="px-6 py-2 bg-blue-600 text-white"
+                          roughBox>
+                    {{ 'PROFILE.ADD_FRIEND' | translate }}
+                  </button>
+                  <ng-container *ngSwitchCase="'PENDING'">
+                    <button *ngIf="userProfile.requestSentByMe"
+                            disabled
+                            class="px-6 py-2 bg-gray-400 text-white"
+                            roughBox>
+                      {{ 'PROFILE.REQUEST_SENT' | translate }}
+                    </button>
+                    <div *ngIf="!userProfile.requestSentByMe" class="flex gap-2">
+                      <button (click)="onAcceptFriend()"
+                              class="px-6 py-2 bg-green-600 text-white"
+                              roughBox>
+                        {{ 'PROFILE.ACCEPT' | translate }}
+                      </button>
+                      <button (click)="onRejectFriend()"
+                              class="px-6 py-2 bg-red-600 text-white"
+                              roughBox>
+                        {{ 'PROFILE.REJECT' | translate }}
+                      </button>
+                    </div>
+                  </ng-container>
+                  <button *ngSwitchCase="'ACCEPTED'"
+                          (click)="onRemoveFriend()"
+                          class="px-6 py-2 bg-red-600 text-white"
+                          roughBox>
+                    {{ 'PROFILE.REMOVE_FRIEND' | translate }}
+                  </button>
+                </ng-container>
+
+                <!-- Message Button -->
+                <button (click)="onMessage()"
+                        [disabled]="userProfile.friendStatus === 'PENDING'"
+                        class="px-6 py-2"
+                        [ngClass]="{'bg-green-600 text-white': userProfile.friendStatus !== 'PENDING', 'bg-gray-400 text-white cursor-not-allowed': userProfile.friendStatus === 'PENDING'}"
+                        roughBox>
+                  {{ 'PROFILE.MESSAGE' | translate }}
+                </button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Info -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Left Column - About -->
+        <div class="md:col-span-1">
+          <div class="bg-white p-6" roughBox>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4 sketch-text">{{ 'PROFILE.ABOUT' | translate }}</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-500 sketch-text">{{ 'PROFILE.EMAIL' | translate }}</label>
+                <p class="text-gray-900">{{ userProfile.email }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 sketch-text">{{ 'PROFILE.JOINED' | translate }}</label>
+                <p class="text-gray-900">{{ formatDate(userProfile.createdAt) }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 sketch-text">{{ 'PROFILE.FRIEND_STATUS' | translate }}</label>
+                <p class="text-gray-900">{{ userProfile.friendStatus }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="md:col-span-2">
+          <div class="bg-white p-6" roughBox>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4 sketch-text">{{ 'PROFILE.PROFILE_INFO' | translate }}</h2>
+            <p class="text-gray-600">{{ 'PROFILE.ADDITIONAL_INFO' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div> 

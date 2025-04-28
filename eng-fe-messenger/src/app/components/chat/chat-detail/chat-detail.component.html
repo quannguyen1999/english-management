@@ -1,130 +1,57 @@
-<div class="flex flex-col h-screen bg-white">
-  <!-- Header -->
-  <div class="flex items-center p-3 border-b border-gray-200 z-10" sunburstBox>
-    <div class="flex items-center flex-1">
+<div class="flex flex-col h-full" roughBox>
+  <!-- Chat Header -->
+  <div class="flex items-center p-4 border-b border-gray-200">
+    <div class="flex items-center space-x-3">
       <div class="relative">
-        <img [src]="currentUser.avatar" 
-             [alt]="currentUser.name"
-             class="w-10 h-10 rounded-full object-cover">
-        <span *ngIf="currentUser.isOnline" 
-              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+        <img [src]="chatUser?.avatar || 'assets/avatars/default-avatar.png'" 
+             alt="avatar" 
+             class="w-10 h-10 rounded-full">
+        <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full"
+             [class.bg-green-500]="chatUser?.isOnline"
+             [class.bg-gray-400]="!chatUser?.isOnline">
+        </div>
       </div>
-      <div class="ml-3">
-        <h2 class="text-lg font-medium text-gray-900">{{currentUser.name}}</h2>
-        <p class="text-sm text-gray-500">{{currentUser.isOnline ? 'Active now' : 'Offline'}}</p>
+      <div>
+        <h3 class="font-medium text-gray-900">{{ chatUser?.name }}</h3>
+        <p class="text-sm text-gray-500">
+          {{ chatUser?.isOnline ? 'Online' : 'Offline' }}
+        </p>
       </div>
     </div>
-    <div class="flex space-x-4">
-      <button class="text-gray-600 ">
-        <span class="sketch-text text-2xl">📞</span>
-      </button>
-      <button class="text-gray-600" >
-        <span class="sketch-text text-2xl">📹</span>
-      </button>
-      <button class="text-gray-600" >
-        <span class="sketch-text text-2xl">🔍</span>
-      </button>
-      <button class="text-gray-600" >
-        <span class="sketch-text text-2xl">⋯</span>
-      </button>
-    </div>
-
   </div>
 
-  <!-- Chat Messages -->
-  <div class="flex-1 overflow-y-auto p-4" #messageContainer>
-    <div class="space-y-4">
-      <ng-container *ngIf="selectedChat">
-        <!-- Friend Status Messages -->
-        <div *ngIf="selectedChat.friendStatus === 'none'" 
-             class="text-center py-4 text-gray-500">
-          Send a friend request to start chatting
-        </div>
-        <div *ngIf="selectedChat.friendStatus === 'pending_sent'" 
-             class="text-center py-4 text-gray-500">
-          Friend request sent. Waiting for response...
-        </div>
-        <div *ngIf="selectedChat.friendStatus === 'pending_received'" 
-             class="text-center py-4 text-gray-500">
-          This person wants to be your friend
-        </div>
-        <div *ngIf="selectedChat.friendStatus === 'friend'" 
-             class="text-center py-4 text-gray-500">
-          You are now friends! Start chatting below.
-        </div>
+  <!-- Messages Container -->
+  <div class="flex-1 overflow-y-auto p-4 space-y-4">
+    <div *ngIf="isLoading" class="flex justify-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>
 
-        <!-- Messages -->
-        <ng-container *ngIf="selectedChat.friendStatus === 'friend'">
-          <div *ngFor="let message of messages" 
-               [class.flex-row-reverse]="message.isMe"
-               class="flex items-start space-x-2 mb-4">
-            <div [class.ml-2]="message.isMe" 
-                 [class.mr-2]="!message.isMe" 
-                 class="flex-shrink-0">
-              <img [src]="message.isMe ? currentUser.avatar : selectedChat.avatar" 
-                   class="w-8 h-8 rounded-full">
-            </div>
-            <div class="flex flex-col">
-              <div [class.bg-blue-100]="message.isMe"
-                   [class.bg-gray-100]="!message.isMe"
-                   class="max-w-xs rounded-lg p-3"
-                   messageRoughBox>
-                <ng-container *ngIf="!message.isImage">
-                  {{message.content}}
-                </ng-container>
-                <img *ngIf="message.isImage" 
-                     [src]="message.content" 
-                     class="rounded-lg max-w-xs"
-                     imageRoughBox>
-              </div>
-              <span class="text-xs text-gray-500 mt-1" [class.text-right]="message.isMe">{{message.timestamp}}</span>
-            </div>
-          </div>
-        </ng-container>
-      </ng-container>
+    <div *ngFor="let message of messages" 
+         class="flex"
+         [class.justify-end]="isMessageFromMe(message)">
+      <div class="max-w-[70%] rounded-lg p-3"
+           [class.bg-blue-100]="isMessageFromMe(message)"
+           [class.bg-gray-100]="!isMessageFromMe(message)">
+        <p class="text-gray-900">{{ message.content }}</p>
+        <p class="text-xs text-gray-500 mt-1">
+          {{ formatTimestamp(message.timestamp) }}
+        </p>
+      </div>
     </div>
   </div>
 
   <!-- Message Input -->
-  <div class="p-4 border-t relative" roughBox>
+  <div class="p-4 border-t border-gray-200">
     <div class="flex items-center space-x-2">
-      <button class="p-2 text-gray-600" (click)="toggleEmojiPicker()">
-        <span class="sketch-text">😊</span>
-      </button>
-      <button class="p-2 text-gray-600" (click)="toggleGifPicker()">
-        <span class="sketch-text">🎬</span>
-      </button>
-      <div class="flex-1">
-        <input type="text"
-               [(ngModel)]="newMessage"
-               [placeholder]="canSendMessage() ? 'Type a message...' : 'You need to be friends to send messages'"
-               [disabled]="!canSendMessage()"
-               (keyup.enter)="sendMessage()"
-               class="w-full p-2 bg-transparent focus:outline-none">
-      </div>
+      <input type="text" 
+             [(ngModel)]="newMessage"
+             (keyup.enter)="sendMessage()"
+             placeholder="Type a message..."
+             class="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
       <button (click)="sendMessage()"
-              [disabled]="!canSendMessage()"
-              class="p-2 text-blue-600 disabled:text-gray-400">
-        <span class="sketch-text">💬</span>
+              class="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        Send
       </button>
     </div>
-
-    <!-- Emoji Picker -->
-    <emoji-mart
-      *ngIf="showEmojiPicker"
-      (emojiSelect)="onEmojiSelected($event)"
-      class="absolute bottom-full left-0 z-50"
-      set="twitter"
-      title="Pick your emoji"
-      emoji="point_up">
-    </emoji-mart>
-
-    <!-- GIF Picker -->
-    <app-gif-picker
-      *ngIf="showGifPicker"
-      (gifSelected)="onGifSelected($event)"
-      (close)="showGifPicker = false"
-      class="absolute bottom-full left-0 z-50">
-    </app-gif-picker>
   </div>
 </div>

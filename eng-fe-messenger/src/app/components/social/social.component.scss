@@ -1,0 +1,145 @@
+.social-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.social-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.create-post {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .post-input {
+    width: 100%;
+    border: none;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background: #f5f5f5;
+  }
+
+  .post-actions {
+    display: flex;
+    gap: 10px;
+  }
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .author-info {
+      .author-name {
+        font-weight: 600;
+      }
+
+      .post-time {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+
+  .post-content {
+    margin-bottom: 15px;
+  }
+
+  .post-image {
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+
+  .post-actions {
+    display: flex;
+    gap: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666;
+
+      &:hover {
+        color: #333;
+      }
+    }
+  }
+}
+
+.suggestions {
+  margin-top: 30px;
+
+  .suggestions-header {
+    margin-bottom: 15px;
+  }
+
+  .suggested-friends {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .suggested-friend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .friend-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .friend-info {
+      flex: 1;
+
+      .friend-name {
+        font-weight: 600;
+      }
+
+      .mutual-friends {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+} 

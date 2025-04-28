@@ -1,0 +1,37 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
+}
+
+::ng-deep {
+  .rough-style-autocomplete {
+    .mat-mdc-autocomplete-panel {
+      @apply bg-white mt-2;
+      
+      .mat-mdc-option {
+        @apply last:border-b-0;
+        
+        &:hover {
+          @apply bg-gray-50;
+        }
+        
+        &.mat-mdc-option-active {
+          @apply bg-gray-100;
+        }
+      }
+    }
+  }
+  
+  .mat-mdc-form-field {
+    width: 100%;
+  }
+} 

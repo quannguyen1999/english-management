@@ -1,0 +1,41 @@
+import { FriendStatus } from './chat.model';
+
+export interface FriendSearchResponse {
+  data: FriendSearchData[];
+  total: number;
+}
+
+export interface FriendSearchData {
+  userId: number;
+  username: string;
+  friendStatus: FriendStatus;
+  conversationId: number;
+  requestSentByMe: boolean;
+}
+
+export interface FriendRequest {
+  userId: number;
+  username: string;
+  avatar: string;
+  requestSentByMe: boolean;
+}
+
+export interface FriendResponse {
+  userId: number;
+  username: string;
+  avatar: string;
+  isOnline: boolean;
+  friendStatus: FriendStatus;
+  conversationId: number;
+}
+
+export interface PendingFriend {
+  id?: string;
+  requestId?: string;
+  senderId: number;
+  senderUsername: string;
+  senderAvatar?: string;
+  receiverId: number;
+  status: string;
+  createdAt: string;
+} 

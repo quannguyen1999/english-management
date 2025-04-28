@@ -1,32 +1,38 @@
 package com.eng.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
-@Table(name = "conversation_participant")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-@Builder
+@Entity
+@Table(name = "conversation_participant")
 @IdClass(ConversationParticipantId.class)
 public class ConversationParticipant {
 
     @Id
-    @ManyToOne
-    @JoinColumn(name = "conversation_id")
-    private Conversation conversation;
+    @Column(name = "conversation_id", columnDefinition = "char(36)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    private UUID conversationId;
 
-    @Column(columnDefinition = "char(36)")
+    @Id
+    @Column(name = "user_id", columnDefinition = "char(36)")
     @JdbcTypeCode(SqlTypes.CHAR)
     private UUID userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conversation_id", insertable = false, updatable = false)
+    private Conversation conversation;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "joined_at")

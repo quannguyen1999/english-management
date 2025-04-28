@@ -4,7 +4,7 @@
       <input type="text" 
              [(ngModel)]="searchQuery"
              (ngModelChange)="searchQueryChanged($event)"
-             placeholder="Search GIFs..."
+             [placeholder]="'CHAT_DETAIL.SEARCH_GIFS' | translate"
              class="w-full p-2 border rounded-lg text-sm">
     </div>
 
@@ -27,6 +27,6 @@
 
     <!-- No Results -->
     <div *ngIf="!isLoading && gifs.length === 0" class="text-center py-4 text-gray-500">
-      No GIFs found
+      {{ 'CHAT_DETAIL.NO_GIFS' | translate }}
     </div>
   </div>

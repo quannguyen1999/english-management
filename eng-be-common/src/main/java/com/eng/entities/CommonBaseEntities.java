@@ -27,7 +27,7 @@ public class CommonBaseEntities {
      * Automatically set when the entity is first persisted.
      */
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createAt;
+    private Date createdAt;
 
     /**
      * Timestamp when the entity was last updated.
@@ -42,7 +42,7 @@ public class CommonBaseEntities {
      */
     @PrePersist
     protected void onCreate() {
-        createAt = new Date();
+        createdAt = new Date();
         updatedAt = new Date();
     }
 

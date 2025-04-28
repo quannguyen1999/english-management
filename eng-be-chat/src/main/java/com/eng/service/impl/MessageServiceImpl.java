@@ -2,6 +2,7 @@ package com.eng.service.impl;
 
 import com.eng.constants.MessageStatusType;
 import com.eng.constants.MessageType;
+import com.eng.entities.ConversationParticipant;
 import com.eng.entities.Message;
 import com.eng.entities.MessageStatus;
 import com.eng.mappers.MessageMapper;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -63,7 +65,7 @@ public class MessageServiceImpl implements MessageService {
 
         // Create message status for all participants
         List<UUID> participantIds = message.getConversation().getParticipants().stream()
-                .map(participant -> participant.getUserId())
+                .map(ConversationParticipant::getUserId)
                 .toList();
 
         for (UUID participantId : participantIds) {
@@ -140,7 +142,7 @@ public class MessageServiceImpl implements MessageService {
         UUID currentUserId = SecurityUtil.getIDUser();
 
         MessageStatus status = messageStatusRepository.findByMessageIdAndUserId(messageId, currentUserId);
-        if (status != null && status.getStatus() != MessageStatusType.READ) {
+        if (!ObjectUtils.isEmpty(status) && status.getStatus() != MessageStatusType.READ) {
             status.setStatus(MessageStatusType.READ);
             status.setReadAt(new Date());
             messageStatusRepository.save(status);
@@ -162,7 +164,7 @@ public class MessageServiceImpl implements MessageService {
         UUID currentUserId = SecurityUtil.getIDUser();
 
         MessageStatus status = messageStatusRepository.findByMessageIdAndUserId(messageId, currentUserId);
-        if (status != null) {
+        if (!ObjectUtils.isEmpty(status)) {
             status.setReaction(reaction);
             messageStatusRepository.save(status);
 

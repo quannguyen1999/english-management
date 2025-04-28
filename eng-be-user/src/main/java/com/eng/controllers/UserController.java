@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.eng.constants.PathApi.FIND_USER_NAME;
-import static com.eng.constants.PathApi.LIST_USER_NAME;
+import static com.eng.constants.PathApi.USER_FIND_NAME;
+import static com.eng.constants.PathApi.USER_LIST_NAME;
 
 @RestController
 @RequestMapping(value = PathApi.USER)
@@ -61,7 +61,7 @@ public class UserController {
      * @param uuids The list of UUIDs of the users to retrieve.
      * @return A response entity containing a map of UUIDs and their corresponding usernames.
      */
-    @PostMapping(value = LIST_USER_NAME)
+    @PostMapping(value = USER_LIST_NAME)
     public ResponseEntity<Map<UUID, String>> getListUserNames(@RequestBody List<UUID> uuids) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getListUserNames(uuids));
     }
@@ -71,7 +71,7 @@ public class UserController {
      * @param username The username of the user to find.
      * @return A response entity containing the user details.
      */
-    @GetMapping(value = FIND_USER_NAME)
+    @GetMapping(value = USER_FIND_NAME)
     public ResponseEntity<UserResponse> findUserByUsername(@RequestParam String username) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findUserByUsername(username));
     }

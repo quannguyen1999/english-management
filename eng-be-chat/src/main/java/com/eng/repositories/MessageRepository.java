@@ -13,7 +13,7 @@ import java.util.UUID;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversationId AND m.deleted = false ORDER BY m.createAt DESC")
+    @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversationId AND m.deleted = false ORDER BY m.createdAt DESC")
     Page<Message> findByConversationId(@Param("conversationId") UUID conversationId, Pageable pageable);
 
 } 

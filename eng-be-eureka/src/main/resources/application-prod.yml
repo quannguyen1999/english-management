@@ -17,19 +17,19 @@ management:
       application: ${spring.application.name}  # Adds application name as a tag for metrics
 
 # Logging Configuration
-logging:
-  config: classpath:logback-spring.xml
-  level:
-    root: INFO
-    com.eng: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: INFO
-    org.hibernate: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-  logback:
-    rollingpolicy:
-      max-file-size: 10MB
-      max-history: 30
-      total-size-cap: 1GB
+#logging:
+#  config: classpath:logback-spring.xml
+#  level:
+#    root: INFO
+#    com.eng: DEBUG
+#    org.springframework.security: DEBUG
+#    org.springframework.web: INFO
+#    org.hibernate: INFO
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+#  logback:
+#    rollingpolicy:
+#      max-file-size: 10MB
+#      max-history: 30
+#      total-size-cap: 1GB

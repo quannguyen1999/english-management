@@ -45,3 +45,5 @@ docker
 /eng-fe-admin/.DS_Store
 /eng-fe-admin/Thumbs.db
 /logs/
+/eng-be-user/logs/
+/eng-be-chat/logs/

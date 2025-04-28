@@ -21,9 +21,7 @@ public class UserValidator extends  CommonValidator{
     public void validateCreate(UserRequest userRequest) {
         checkEmpty().accept(userRequest, USER_INVALID);
         validateCheckUserName(userRequest.getUsername());
-        if (ObjectUtils.isEmpty(SecurityUtil.getDetails())) {
-            validateCheckPassword(userRequest.getPassword());
-        }
+        validateCheckPassword(userRequest.getPassword());
         validateCheckEmail(userRequest.getEmail());
     }
 

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class CreateGroupConversationRequest {
+public class GroupConversationRequest {
     @NotBlank(message = "Group name is required")
     @Size(min = 1, max = 100, message = "Group name must be between 1 and 100 characters")
     private String name;

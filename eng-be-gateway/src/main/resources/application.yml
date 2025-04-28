@@ -7,3 +7,12 @@ spring:
     name: eng-gateway-project
   main:
     web-application-type: reactive
+gateway:
+  user-service:
+    path: /user-service
+    service-id: ENG-USER-SERVICE
+  chat-service:
+    path: /chat-service
+    service-id: ENG-CHAT-SERVICE
+  retry:
+    max-attempts: 3

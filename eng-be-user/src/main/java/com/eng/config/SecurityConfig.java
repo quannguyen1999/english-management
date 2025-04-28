@@ -1,13 +1,14 @@
 package com.eng.config;
 
+import com.eng.config.grantpassword.CustomPassordAuthenticationConverter;
+import com.eng.config.grantpassword.CustomPassordAuthenticationProvider;
+import com.eng.constants.PathApi;
+import com.eng.models.request.CustomPasswordUser;
+import com.eng.repositories.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import com.eng.config.grantpassword.CustomPassordAuthenticationConverter;
-import com.eng.config.grantpassword.CustomPassordAuthenticationProvider;
-import com.eng.models.request.CustomPasswordUser;
-import com.eng.repositories.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionEvent;
 import jakarta.servlet.http.HttpSessionListener;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -60,9 +62,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.eng.constants.PathApi.*;
-import static com.eng.constants.UserRole.ADMIN;
-import static com.eng.constants.UserRole.USER;
+import static com.eng.constants.PathApi.AUTHORIZE_PATH;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
@@ -81,7 +81,7 @@ public class SecurityConfig {
             "/oauth2/token",    // OAuth2 Token Generation
             "/registration",    // User Registration Endpoint
             "/authenticator",   // Custom Authentication
-            "/actuator/**"      // Actuator endpoints
+            "/actuator/**"      // Actuator endpoints,
     );
 
     @Value("${custom-security.issuer}")
@@ -103,9 +103,10 @@ public class SecurityConfig {
 
         http.securityMatcher(endpointsMatcher)
                 .authorizeHttpRequests(authorize ->
-                        authorize
-                                //.requestMatchers(ALLOW_REQUEST.toArray(new String[0])).permitAll()
-                                .anyRequest().authenticated()
+                                authorize
+                                .requestMatchers(ALLOW_REQUEST.toArray(new String[0])).permitAll()
+                                .requestMatchers(HttpMethod.POST, PathApi.USER).permitAll()
+                                        .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher))
                 .apply(authorizationServerConfigurer);
@@ -138,6 +139,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ALLOW_REQUEST.toArray(new String[0])).permitAll()
+                        .requestMatchers(HttpMethod.POST, PathApi.USER).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

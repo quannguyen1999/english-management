@@ -46,7 +46,7 @@ info:
 # Custom Configuration
 custom:
   user:
-    url: http://localhost:8080  # Custom user service URL
+    url: http://localhost:8070  # Custom user service URL
   security:
     clientId: admin  # OAuth2 client ID
     clientSecret: password  # OAuth2 client secret (consider using environment variables for security)
@@ -60,3 +60,19 @@ eureka:
     registerWithEureka: true  # Registers this service with Eureka
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/  # Eureka server URL
+
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.security.web.FilterChainProxy: TRACE
+    org.springframework.web: DEBUG
+    org.springframework.web.client: DEBUG
+    org.springframework.web.servlet: DEBUG
+    feign: DEBUG
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: FULL
+

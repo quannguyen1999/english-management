@@ -57,11 +57,7 @@ public class UserImpl implements UserService {
     public UserResponse createUser(UserRequest userRequest) {
         //Validate create user
         userValidator.validateCreate(userRequest);
-        if (!ObjectUtils.isEmpty(SecurityUtil.getDetails()) && SecurityUtil.isAdmin()) {
-            userRequest.setPassword(passwordEncoder.encode(DEFAULT_PASS));
-        } else {
-            userRequest.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        }
+        userRequest.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         userRequest.setRole(UserRole.USER);
         User user = userRepository.save(userMapper.userRequestToUser(userRequest));
         return userMapper.userToUserResponse(user);
@@ -82,8 +78,7 @@ public class UserImpl implements UserService {
     public CommonPageInfo<UserResponse> listUser(Integer page, Integer size, String username) {
         //Validate list user
         userValidator.validateGetList(page, size);
-        Page<User> user = StringUtils.hasLength(username) ? userRepository.searchUsers(username, PageRequest.of(page, size)) :
-                userRepository.findAll(PageRequest.of(page, size));
+        Page<User> user = userRepository.searchUsers(username, PageRequest.of(page, size));
         return CommonPageInfo.<UserResponse>builder()
                 .total(user.getTotalElements())
                 .page(user.getNumber())

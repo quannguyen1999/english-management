@@ -3,10 +3,18 @@
   <div class="w-[360px] flex flex-col">
     <!-- Header -->
     <div class="p-4 flex justify-between items-center" roughBox>
-      <h1 class="text-2xl text-gray-800 sketch-text">Chats</h1>
-      <button class="p-2 text-gray-600" roughBox (click)="onNewChat()">
-        <span class="sketch-text">✏️</span>
-      </button>
+      <h1 class="text-2xl text-gray-800 sketch-text">{{ 'CHAT.TITLE' | translate }}</h1>
+      <div class="grid grid-cols-3 gap-2">
+        <button class="p-2 text-gray-600 hover:text-red-600 transition-colors" roughBox (click)="onLogout()">
+          <mat-icon>logout</mat-icon>
+        </button>
+        <button class="p-2 text-gray-600 hover:text-blue-600 transition-colors" roughBox (click)="onProfile()">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <button class="p-2 text-gray-600 hover:text-green-600 transition-colors" roughBox (click)="onNewChat()">
+          <mat-icon>chat_add</mat-icon>
+        </button>
+      </div>
     </div>
 
     <!-- Search Box -->
@@ -16,14 +24,14 @@
         <input 
           type="text" 
           [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearch($event)"
-          placeholder="Search (#K)" 
+          (keyup.enter)="onSearch($event)"
+          [placeholder]="'CHAT.SEARCH_PLACEHOLDER' | translate" 
           class="bg-transparent w-full focus:outline-none text-gray-700">
       </div>
     </div>
 
     <!-- Online Users -->
-    <div class="px-4 mb-4">
+    <div class="px-4 mb-4" *ngIf="!searchQuery">
       <div class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide" horizontalScroll>
         <div *ngFor="let user of onlineUsers" 
              class="flex flex-col items-center space-y-1 min-w-[4rem]">
@@ -70,40 +78,40 @@
           <p class="text-sm text-gray-500 truncate">{{chat.lastMessage}}</p>
           <div class="flex mt-1">
             <!-- Add Friend Button -->
-            <button *ngIf="chat.friendStatus === 'none'" 
+            <button *ngIf="chat.friendStatus === FriendStatus.NONE" 
                     (click)="addFriend(chat); $event.stopPropagation()"
                     class="px-3 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded-full mr-2"
                     roughBox>
-              Add Friend
+              {{ 'FRIENDS.ADD_FRIEND' | translate }}
             </button>
 
             <!-- Pending Sent Status -->
-            <div *ngIf="chat.friendStatus === 'pending_sent'"
+            <div *ngIf="chat.friendStatus === FriendStatus.PENDING_SENT"
                  class="flex items-center text-xs text-gray-500">
               <span class="mr-2">✉️</span>
-              Friend request sent
+              {{ 'FRIENDS.PENDING' | translate }}
             </div>
 
             <!-- Pending Received Actions -->
-            <ng-container *ngIf="chat.friendStatus === 'pending_received'">
+            <ng-container *ngIf="chat.friendStatus === FriendStatus.PENDING_RECEIVED">
               <button (click)="acceptFriendRequest(chat); $event.stopPropagation()"
                       class="px-3 py-1 text-xs text-green-600 hover:bg-green-50 rounded-full mr-2"
                       roughBox>
-                Accept
+                {{ 'FRIENDS.ACCEPT' | translate }}
               </button>
               <button (click)="rejectFriendRequest(chat); $event.stopPropagation()"
                       class="px-3 py-1 text-xs text-red-600 hover:bg-red-50 rounded-full"
                       roughBox>
-                Reject
+                {{ 'FRIENDS.DECLINE' | translate }}
               </button>
             </ng-container>
 
             <!-- Remove Friend Button -->
-            <button *ngIf="chat.friendStatus === 'friend'" 
+            <button *ngIf="chat.friendStatus === FriendStatus.ACCEPTED" 
                     (click)="removeFriend(chat); $event.stopPropagation()"
                     class="px-3 py-1 text-xs text-red-600 hover:bg-red-50 rounded-full"
                     roughBox>
-              Remove
+              {{ 'FRIENDS.REMOVE' | translate }}
             </button>
           </div>
         </div>
@@ -111,7 +119,47 @@
       <!-- No Results Message -->
       <div *ngIf="searchQuery && filteredUsers.length === 0" 
            class="p-4 text-center text-gray-500">
-        No users found
+        {{ 'SOCIAL.NO_USERS' | translate }}
+      </div>
+    </div>
+
+    <!-- Search Results
+    <div class="mx-4 mb-4" *ngIf="searchQuery && filteredUsers.length > 0" roughBox>
+      <div class="p-4 bg-white">
+        <h3 class="text-lg mb-2 text-gray-800 sketch-text">Search Results</h3>
+        <div class="space-y-2">
+          <div *ngFor="let user of filteredUsers" 
+               (click)="onChatSelect(user)"
+               class="p-2 flex items-center space-x-3 hover:bg-gray-50 cursor-pointer">
+            <div class="relative">
+              <img [src]="user.avatar" 
+                   [alt]="user.name"
+                   class="w-10 h-10 rounded-full object-cover">
+              <span *ngIf="user.isOnline" 
+                    class="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-white"></span>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900">{{user.name}}</p>
+              <p class="text-xs text-gray-500">{{user.friendStatus === 'friend' ? 'Friend' : 'Not a friend'}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Loading State -->
+    <div class="mx-4 mb-4" *ngIf="searchQuery && isLoading" roughBox>
+      <div class="p-4 bg-white">
+        <div class="flex justify-center items-center h-20">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="mx-4 mb-4" *ngIf="searchQuery && !isLoading && filteredUsers.length === 0" roughBox>
+      <div class="p-4 bg-white">
+        <p class="text-center text-gray-500">{{ 'SOCIAL.NO_USERS' | translate }}</p>
       </div>
     </div>
   </div>
@@ -120,18 +168,18 @@
   <div class="flex-1 border-r border-gray-200 border-2">
     <ng-container *ngIf="selectedChat; else welcomeMessage">
       <app-chat-detail 
-        [selectedChat]="selectedChat"
+        [chatUser]="selectedChat"
       ></app-chat-detail>
     </ng-container>
     
     <ng-template #welcomeMessage>
       <div class="h-full flex flex-col items-center justify-center p-10 text-center" roughBox>
         <div class="max-w-86 p-10" roughBox>
-          <h1 class="text-2xl font-bold text-gray-800 mb-4 sketch-text">Welcome to Chat!</h1>
-          <p class="text-gray-600 mb-6">Select a chat from the left sidebar to start messaging, or search for someone to connect with.</p>
+          <h1 class="text-2xl font-bold text-gray-800 mb-4 sketch-text">{{ 'CHAT.WELCOME' | translate }}</h1>
+          <p class="text-gray-600 mb-6">{{ 'CHAT.WELCOME_MESSAGE' | translate }}</p>
           <div class="flex justify-center space-x-4">
             <button (click)="onNewChat()" class="px-4 py-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200" roughBox>
-              New Chat
+              {{ 'CHAT.NEW_CHAT' | translate }}
             </button>
           </div>
         </div>

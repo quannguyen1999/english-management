@@ -5,7 +5,7 @@ spring:
   profiles:
     active: dev  # Specifies the active profile (e.g., dev, prod)
   application:
-    name: eng-chat-project  # Sets the application name
+    name: eng-chat-service  # Sets the application name
 
 # SpringDoc Configuration for API Documentation
 springdoc:

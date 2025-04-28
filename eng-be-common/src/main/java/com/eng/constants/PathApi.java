@@ -1,22 +1,32 @@
 package com.eng.constants;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-
-import java.util.UUID;
-
 /**
  * Interface defining all API endpoint paths used throughout the application.
  * This centralizes all API route definitions to maintain consistency and make updates easier.
- * 
+ * <p>
  * The paths are organized by feature area:
  * - User management endpoints
  * - Authentication and authorization endpoints
  */
 public interface PathApi {
+    /**
+     * Wildcard path matching all routes - used for security configurations
+     */
+    String FULL_PATH = "/**";
+
+    // Authentication and Authorization Endpoints
+    /**
+     * Path for authentication operations
+     */
+    String AUTHENTICATOR_PATH = "/authenticator";
+    /**
+     * Path for OAuth2 authorization
+     */
+    String AUTHORIZE_PATH = "/oauth2/authorize";
+    /**
+     * Path for user registration
+     */
+    String REGISTRATION_PATH = "/registration";
 
     // User Management Endpoints
     /**
@@ -26,19 +36,11 @@ public interface PathApi {
     /**
      * Path for retrieving a list of user names
      */
-    String LIST_USER_NAME = "/getListUserNames";
+    String USER_LIST_NAME = "/getListUserNames";
     /**
      * Path for finding a user by their name
      */
-    String FIND_USER_NAME = "/findUserByName";
-
-    // Authentication and Authorization Endpoints
-    /** Path for authentication operations */
-    String AUTHENTICATOR_PATH = "/authenticator";
-    /** Path for OAuth2 authorization */
-    String AUTHORIZE_PATH = "/oauth2/authorize";
-    /** Path for user registration */
-    String REGISTRATION_PATH = "/registration";
+    String USER_FIND_NAME = "/findUserByName";
 
     // Conversation Management Endpoints
     /**
@@ -46,9 +48,15 @@ public interface PathApi {
      */
     String CONVERSATION = "/conversations";
 
-    String PRIVATE_CONVERSATION = "/private/{userId}";
+    String CONVERSATION_PRIVATE = "/private";
 
-    String GROUP_CONVERSATION = "/group";
+    String CONVERSATION_FRIEND = "/friend";
+
+    String CONVERSATION_FRIEND_ALL = "/friend-all";
+
+    String CONVERSATION_CURRENT_PROFILE = "/current-profile";
+
+    String CONVERSATION_GROUP = "/group";
 
     // Message Management Endpoints
     /**
@@ -56,16 +64,27 @@ public interface PathApi {
      */
     String MESSAGE = "/messages/{conversationId}";
 
-    String UPDATE_MESSAGE = "/{messageId}";
+    String MESSAGE_UPDATE = "/{messageId}";
 
-    String DELETE_MESSAGE = "/{messageId}";
+    String MESSAGE_DELETE = "/{messageId}";
 
-    String DELIVERED_MESSAGE = "/{messageId}/delivered";
+    String MESSAGE_DELIVERED = "/{messageId}/delivered";
 
-    String READ_MESSAGE = "/{messageId}/read";
+    String MESSAGE_READ = "/{messageId}/read";
 
-    String REACTION_MESSAGE = "/{messageId}/reaction";
+    String MESSAGE_REACTION = "/{messageId}/reaction";
 
-    /** Wildcard path matching all routes - used for security configurations */
-    String FULL_PATH = "/**";
+    // Friend Management Endpoints
+    /**
+     * Base path for all friend-related operations
+     */
+    String FRIEND = "/friends";
+
+    String FRIEND_SEND = "/send";
+    
+    String FRIEND_ACCEPT = "/accept";
+
+    String FRIEND_REJECT = "/reject";
+
+    String FRIEND_REQUEST_PENDING = "/pending";
 }

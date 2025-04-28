@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class SendMessageRequest {
+public class MessageRequest {
     @NotBlank(message = "Message content is required")
     private String content;
 

@@ -38,6 +38,7 @@ eureka:
     registerWithEureka: true  # Registers this service with Eureka
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 2
 
 # Logging Configuration
 #logging:

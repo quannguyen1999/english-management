@@ -11,11 +11,11 @@ import java.util.UUID;
 
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
-    
-    @Query("SELECT c FROM Conversation c JOIN c.participants p WHERE p.userId = :userId ORDER BY c.lastMessageAt DESC")
-    List<Conversation> findByUserId(@Param("userId") UUID userId);
 
     @Query("SELECT c FROM Conversation c JOIN c.participants p1 JOIN c.participants p2 " +
-           "WHERE p1.userId = :userId1 AND p2.userId = :userId2 AND c.isGroup = false")
+            "WHERE p1.userId = :userId1 AND p2.userId = :userId2 AND c.isGroup = false")
     Conversation findPrivateConversation(@Param("userId1") UUID userId1, @Param("userId2") UUID userId2);
+
+    List<Conversation> findByParticipantsUserId(UUID userId);
+
 } 

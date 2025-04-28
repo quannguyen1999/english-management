@@ -1,25 +1,54 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { PickerComponent } from '@ctrl/ngx-emoji-mart';
+import { RouterModule } from '@angular/router';
+import { HeaderComponent } from './components/header/header.component';
+import { HeaderService } from './services/header.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatMenuModule, MatIconModule, CommonModule],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  imports: [CommonModule, RouterModule, HeaderComponent],
+  template: `
+    <app-header 
+      *ngIf="headerService.showHeader$ | async"
+      [currentUser]="currentUser"
+      class="app-header">
+    </app-header>
+    <main 
+      class="min-h-screen bg-gray-50"
+      [class.pt-16]="headerService.showHeader$ | async"
+      [class.pt-0]="!(headerService.showHeader$ | async)">
+      <router-outlet></router-outlet>
+    </main>
+  `,
+  styles: [`
+    :host {
+      display: block;
+      min-height: 100vh;
+    }
+    main {
+      min-height: 100vh;
+      background-color: rgb(249, 250, 251);
+    }
+    .app-header {
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  `]
 })
 export class AppComponent {
-  title = 'eng-fe-messenger';
-  helpMenu = [
-    { text: 'Help Center', icon: 'help' },
-    { text: 'Contact Support', icon: 'contact_support' }
-  ];
-  notificationMenu = [
-    { text: 'New Message', icon: 'message' },
-    { text: 'System Update', icon: 'system_update' }
-  ];
+  currentUser = {
+    name: 'John Doe',
+    avatar: 'assets/avatars/user1.jpg'
+  };
+
+  constructor(public headerService: HeaderService) {}
 }
