@@ -40,8 +40,8 @@
                      type="search">
             </div>
           </form>
-          <div *ngIf="searchResults$ | async as results" class="absolute left-0 right-0 z-10 mt-1 w-full rounded-md shadow-lg">
-            <div class="rounded-md bg-white shadow-xs">
+          <div *ngIf="searchResults$ | async as results" class="absolute left-0 right-0 z-20 mt-1 w-full rounded-md shadow-lg">
+            <div class="rounded-md bg-white shadow-xs z-20">
               <div class="py-1">
                 <div *ngFor="let user of results" 
                      (click)="viewProfile(user)"

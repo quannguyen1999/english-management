@@ -42,7 +42,7 @@ export class SunburstBoxDirective implements AfterViewInit, OnDestroy {
     this.svg.setAttribute('height', `${rect.height}px`);
     
     // Draw sketchy border rectangle
-    const roughRect = rc.rectangle(2, 2, rect.width - 4, rect.height - 4, { roughness: 1, fill: 'black' });
+    const roughRect = rc.rectangle(2, 2, rect.width - 4, rect.height - 4, { roughness: 1, fill: 'gray' });
     this.svg.appendChild(roughRect);
     
     // Position SVG

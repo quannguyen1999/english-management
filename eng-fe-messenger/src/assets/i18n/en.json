@@ -10,7 +10,8 @@
     "NEW_TO_PLATFORM": "New to our platform?",
     "CREATE_NEW_ACCOUNT": "Create a new account",
     "ENTER_CREDENTIALS": "Please enter both email and password",
-    "WARNING": "Warning"
+    "WARNING": "Warning",
+    "SUCCESS": "Success"
   },
   "REGISTER": {
     "TITLE": "Create your account",
@@ -117,6 +118,7 @@
     "FIND_FRIENDS": "Find Friends",
     "SEARCH_PLACEHOLDER": "Search users...",
     "ADD_FRIEND": "Add Friend",
+    "ADD_FRIEND_SUCCESS": "Add Friend Success",
     "PENDING": "Pending",
     "ACCEPTED": "Accepted",
     "NO_FRIENDS": "No friends yet",

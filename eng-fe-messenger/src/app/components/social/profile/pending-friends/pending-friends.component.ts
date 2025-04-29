@@ -4,7 +4,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FriendService } from '../../../../services/friend.service';
 import { PendingFriend } from '../../../../models/friend.model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-pending-friends',
@@ -17,7 +18,7 @@ export class PendingFriendsComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
 
-  constructor(private friendService: FriendService) {}
+  constructor(private friendService: FriendService, private toastr: ToastrService, private translate: TranslateService) {}
 
   ngOnInit(): void {
     this.loadPendingRequests();
@@ -40,7 +41,13 @@ export class PendingFriendsComponent implements OnInit {
   acceptRequest(userId: number): void {
     console.log(userId);
     this.friendService.acceptFriendRequest(userId).subscribe({
-      next: () => this.loadPendingRequests(),
+      next: () => {
+        this.loadPendingRequests()
+        this.toastr.warning(
+          this.translate.instant('LOGIN.ADD_FRIEND_SUCCESS'),
+          this.translate.instant('LOGIN.SUCCESS')
+        );
+      },
       error: (error) => this.error = error.message
     });
   }

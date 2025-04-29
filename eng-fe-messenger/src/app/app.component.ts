@@ -5,6 +5,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { HeaderService } from './services/header.service';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { filter } from 'rxjs/operators';
+import { ProfileComponent } from "./components/social/profile/profile.component";
 @Component({
   selector: 'app-root',
   standalone: true,

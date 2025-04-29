@@ -1,7 +1,7 @@
 <app-header 
 *ngIf="headerService.showHeader$ | async"
 [currentUser]="currentUser"
-class="app-header">
+class="app-header z-10">
 </app-header>
 
 <!-- In your main layout or app.component.html -->
@@ -9,14 +9,16 @@ class="app-header">
     <app-sidebar 
       *ngIf="headerService.showHeader$ | async" 
       class="col-span-2 md:col-span-2 sm:col-span-2 xs:col-span-2 hidden md:block">
-    </app-sidebar>
+    </app-sidebar> 
     <main 
       [ngClass]="{
-        'col-span-10 md:col-span-10 sm:col-span-10 xs:col-span-10': canShowSideBar,
-        'col-span-10 md:col-span-8 sm:col-span-10 xs:col-span-10': !canShowSideBar
+        'col-span-10 md:col-span-10 sm:col-span-10 xs:col-span-10 -z-1': canShowSideBar,
+        'col-span-10 md:col-span-8 sm:col-span-10 xs:col-span-10 -z-1': !canShowSideBar
       }"
       [class.pt-16]="headerService.showHeader$ | async"
       [class.pt-0]="!(headerService.showHeader$ | async)">
       <router-outlet></router-outlet>
     </main>
+   
+  
 </div>
