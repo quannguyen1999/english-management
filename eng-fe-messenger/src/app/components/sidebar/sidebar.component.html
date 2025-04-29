@@ -1,0 +1,44 @@
+<div sunburstBox class="sidebar text-black h-screen flex flex-col justify-between p-4 w-8">
+    <!-- User Profile -->
+    <div>
+      <div class="flex items-center space-x-3 mb-6">
+        <img src="assets/avatars/user1.jpg" alt="User Avatar" class="w-12 h-12 rounded-full object-cover">
+        <span class="font-semibold text-lg">Nguyễn Quân</span>
+      </div>
+      <!-- Shortcuts -->
+      <button class="bg-blue-600 mt-8 grid grid-cols-10 w-full text-white hover:opacity-80 transition-opacity translate-x-0" roughBox (click)="onProfile()">
+        <div class="col-span-8 flex m-auto z-10"> {{ 'PROFILE.PROFILE' | translate }}</div>
+        <div class="z-10 col-span-2 p-2  hover:text-red-600 transition-colors">
+            <mat-icon>account_box</mat-icon>  
+        </div>
+      </button>
+      <button class="bg-blue-600 mt-8 grid grid-cols-10 w-full text-white hover:opacity-80 transition-opacity translate-x-0" roughBox (click)="onPendingFriends()">
+        <div class="col-span-8 flex m-auto z-10"> {{ 'PROFILE.PENDING_FRIENDS' | translate }}</div>
+        <div class="z-10 col-span-2 p-2  hover:text-red-600 transition-colors">
+            <mat-icon>person_add</mat-icon>  
+        </div>
+       </button>
+       <button class="bg-blue-600 mt-8 grid grid-cols-10 w-full text-white hover:opacity-80 transition-opacity translate-x-0" roughBox (click)="onChat()">
+        <div class="col-span-8 flex m-auto z-10"> {{ 'CHAT.TITLE' | translate }}</div>
+        <div class="z-10 col-span-2 p-2 hover:text-red-600 transition-colors">
+            <mat-icon>chat</mat-icon>  
+        </div>
+       </button>
+       <button class="bg-red-500 mt-8 grid grid-cols-10 w-full text-white hover:opacity-80 transition-opacity translate-x-0" roughBox (click)="onLogout()">
+        <div class="col-span-8 flex m-auto z-10"> {{ 'HEADER.LOGOUT' | translate }}</div>
+        <div class="z-10 col-span-2 p-2 hover:text-red-600 transition-colors">
+            <mat-icon>logout</mat-icon>  
+        </div>
+       </button>
+    </div>
+    <!-- Footer -->
+    <!-- <div class="text-xs text-gray-400 space-x-2 mt-8">
+      <a href="#">Privacy</a> ·
+      <a href="#">Terms</a> ·
+      <a href="#">Advertising</a> ·
+      <a href="#">Ad choices</a> ·
+      <a href="#">Cookies</a> ·
+      <a href="#">More</a> ·
+      <span>Meta © 2025</span> -->
+    <!-- </div> -->
+  </div>

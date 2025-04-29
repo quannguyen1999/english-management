@@ -1,0 +1,12 @@
+.sidebar {
+    min-width: 18rem;
+    color: black;
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: background 0.2s;
+      &:hover {
+        background: #242526;
+      }
+    }
+  }

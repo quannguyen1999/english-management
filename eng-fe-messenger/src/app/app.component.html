@@ -1,1 +1,22 @@
-<router-outlet></router-outlet>
+<app-header 
+*ngIf="headerService.showHeader$ | async"
+[currentUser]="currentUser"
+class="app-header">
+</app-header>
+
+<!-- In your main layout or app.component.html -->
+<div class="grid grid-cols-10 h-screen">
+    <app-sidebar 
+      *ngIf="headerService.showHeader$ | async" 
+      class="col-span-2 md:col-span-2 sm:col-span-2 xs:col-span-2 hidden md:block">
+    </app-sidebar>
+    <main 
+      [ngClass]="{
+        'col-span-10 md:col-span-10 sm:col-span-10 xs:col-span-10': canShowSideBar,
+        'col-span-10 md:col-span-8 sm:col-span-10 xs:col-span-10': !canShowSideBar
+      }"
+      [class.pt-16]="headerService.showHeader$ | async"
+      [class.pt-0]="!(headerService.showHeader$ | async)">
+      <router-outlet></router-outlet>
+    </main>
+</div>

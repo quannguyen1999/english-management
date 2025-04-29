@@ -17,8 +17,6 @@ import { Router } from '@angular/router';
     RouterModule,
     MatIconModule,
     MatButtonModule,
-    SunburstBoxDirective,
-    RoughBoxDirective,
     TranslateModule
   ],
   templateUrl: './social.component.html',

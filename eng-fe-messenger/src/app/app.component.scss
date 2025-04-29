@@ -1,0 +1,20 @@
+:host {
+    display: block;
+    min-height: 100vh;
+  }
+  main {
+    min-height: 100vh;
+    background-color: rgb(249, 250, 251);
+  }
+  .app-header {
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }

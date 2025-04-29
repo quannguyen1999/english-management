@@ -23,7 +23,6 @@ import { RoughBoxDirective } from '../../directives/rough-box.directive';
     TranslateModule,
     FormsModule,
     ReactiveFormsModule,
-    RoughBoxDirective,
     SunburstBoxDirective
   ],
   templateUrl: './header.component.html'
