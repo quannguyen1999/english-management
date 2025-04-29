@@ -8,10 +8,14 @@ import { filter } from 'rxjs/operators';
 import { ProfileComponent } from "./components/social/profile/profile.component";
 import { UserService } from './services/user.service';
 import { User, UserProfile } from './models/user.model';
+import { ContactsComponent } from "./components/contacts/contacts.component";
+import { SunburstBoxDirective } from './directives/sunburst-box.directive';
+import { AngerBoxDirective } from './directives/anger-box.directive';
+import { FooterComponent } from './components/footer/footer.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, SidebarComponent],
+  imports: [CommonModule, RouterModule, HeaderComponent, SidebarComponent, ContactsComponent, ContactsComponent, AngerBoxDirective, FooterComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
@@ -23,9 +27,13 @@ export class AppComponent {
     private router: Router,
     private userService: UserService
   ) {
-    this.userService.getUserProfile().subscribe((user) => {
-      this.currentUser = user;
-    });
+    console.log(localStorage.getItem('user') != null);
+    if(localStorage.getItem('token') && localStorage.getItem('user') == null){
+      this.userService.getUserProfile().subscribe((user) => {
+        this.currentUser = user;
+        localStorage.setItem('user', JSON.stringify(user));
+      });
+    }
     // Subscribe to router events to detect route changes
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)

@@ -38,6 +38,29 @@ export class FriendService {
       );
   }
 
+  loadFriend(username: string): Observable<ChatUser[]> {
+    return this.http
+      .get<FriendSearchResponse>(`${this.BASE_URL_CONVERSATIONS}/load-friend?page=0&size=20&username=${username}`)
+      .pipe(
+        map(response => response.data.map(user => ({
+          id: user.userId.toString(),
+          name: user.username,
+          avatar: 'assets/avatars/default-avatar.png',
+          isOnline: false,
+          friendStatus: user.friendStatus,
+          conversationId: user.conversationId ? user.conversationId.toString() : '',
+          requestSentByMe: user.requestSentByMe
+        }))),
+        catchError((error) => {
+          if (error.status === 401) {
+            localStorage.clear();
+            sessionStorage.clear();
+          }
+          return of([]);
+        })
+      );
+  }
+
   getPendingFriendRequests(): Observable<PendingFriend[]> {
     return this.http.get<PendingFriend[]>(`${this.BASE_URL_FRIEND}/pending`);
   }

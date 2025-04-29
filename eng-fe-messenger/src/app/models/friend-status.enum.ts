@@ -1,0 +1,6 @@
+export enum FriendStatus {
+  NONE = 'NONE',
+  PENDING_SENT = 'PENDING_SENT',
+  PENDING_RECEIVED = 'PENDING_RECEIVED',
+  ACCEPTED = 'ACCEPTED'
+} 

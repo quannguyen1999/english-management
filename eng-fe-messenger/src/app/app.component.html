@@ -13,12 +13,14 @@ class="app-header z-10">
     <main 
       [ngClass]="{
         'col-span-10 md:col-span-10 sm:col-span-10 xs:col-span-10 -z-1': canShowSideBar,
-        'col-span-10 md:col-span-8 sm:col-span-10 xs:col-span-10 -z-1': !canShowSideBar
+        'col-span-10 md:col-span-6 sm:col-span-10 xs:col-span-10 -z-1': !canShowSideBar
       }"
       [class.pt-16]="headerService.showHeader$ | async"
       [class.pt-0]="!(headerService.showHeader$ | async)">
       <router-outlet></router-outlet>
+      <app-footer></app-footer>
     </main>
-   
-  
+    <div *ngIf="!canShowSideBar" class="col-span-2" angerBox>
+      <app-contacts></app-contacts>
+    </div>
 </div>
