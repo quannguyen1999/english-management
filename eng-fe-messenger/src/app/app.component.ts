@@ -6,6 +6,8 @@ import { HeaderService } from './services/header.service';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { filter } from 'rxjs/operators';
 import { ProfileComponent } from "./components/social/profile/profile.component";
+import { UserService } from './services/user.service';
+import { User, UserProfile } from './models/user.model';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -15,14 +17,15 @@ import { ProfileComponent } from "./components/social/profile/profile.component"
 })
 export class AppComponent {
   canShowSideBar: boolean = false;
-  currentUser = {
-    name: 'John Doe',
-    avatar: 'assets/avatars/user1.jpg'
-  };
+  currentUser: UserProfile | null = null;
 
   constructor(public headerService: HeaderService,
-    private router: Router
+    private router: Router,
+    private userService: UserService
   ) {
+    this.userService.getUserProfile().subscribe((user) => {
+      this.currentUser = user;
+    });
     // Subscribe to router events to detect route changes
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)

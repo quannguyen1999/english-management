@@ -1,30 +1,30 @@
 export interface User {
-  id: string;
-  userId: string;
-  username: string;
-  email: string;
-  fullName: string;
+  id?: string;
+  userId?: string;
+  username?: string;
+  email?: string;
+  fullName?: string;
   avatar?: string;
-  role: string;
-  isOnline: boolean;
+  role?: string;
+  isOnline?: boolean;
   lastSeen?: Date;
-  requestSentByMe: boolean;
-  friendStatus: string;
-  conversationId: string;
+  requestSentByMe?: boolean;
+  friendStatus?: string;
+  conversationId?: string;
 }
 
 export interface UserProfile {
-  id: string;
-  username: string;
-  email: string;
-  fullName: string;
-  avatar: string;
+  id?: string;
+  username?: string;
+  email?: string;
+  fullName?: string;
+  avatar?: string;
   bio?: string;
   location?: string;
   website?: string;
-  createdAt: Date;
-  lastSeen: Date;
-  isOnline: boolean;
+  createdAt?: Date;
+  lastSeen?: Date;
+  isOnline?: boolean;
 }
 
 export interface UserUpdateRequest {

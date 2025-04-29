@@ -32,10 +32,10 @@ export interface FriendResponse {
 export interface PendingFriend {
   id?: string;
   requestId?: string;
-  senderId: number;
+  senderId: string;
   senderUsername: string;
   senderAvatar?: string;
-  receiverId: number;
+  receiverId: string;
   status: string;
   createdAt: string;
 } 

@@ -42,19 +42,26 @@ export class FriendService {
     return this.http.get<PendingFriend[]>(`${this.BASE_URL_FRIEND}/pending`);
   }
 
-  acceptFriendRequest(userId: number): Observable<FriendResponse> {
+  acceptFriendRequest(userId: string): Observable<FriendResponse> {
     return this.http.get<FriendResponse>(`${this.BASE_URL_FRIEND}/accept?requestId=${userId}`);
   }
 
-  rejectFriendRequest(userId: number): Observable<void> {
-    return this.http.post<void>(`${this.BASE_URL_FRIEND}/reject/${userId}`, {});
+  rejectFriendRequest(userId: string): Observable<void> {
+    return this.http.get<void>(`${this.BASE_URL_FRIEND}/reject?requestId=${userId}`, {});
   }
 
-  sendFriendRequest(userId: number): Observable<FriendResponse> {
-    return this.http.post<FriendResponse>(`${this.BASE_URL_FRIEND}/send/${userId}`, {});
+  sendFriendRequest(userId: string): Observable<FriendResponse> {
+    return this.http.get<FriendResponse>(`${this.BASE_URL_FRIEND}/send?receiverId=${userId}`, {});
   }
 
-  cancelFriendRequest(userId: number): Observable<void> {
-    return this.http.post<void>(`${this.BASE_URL_FRIEND}/cancel/${userId}`, {});
+  cancelFriendRequest(userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.BASE_URL_FRIEND}?friendId=${userId}`, {});
   }
+
+  uuidToNumber(uuid: string): bigint {
+    const hex = uuid.replace(/-/g, '');
+    return BigInt('0x' + hex);
+  }
+  
+  
 } 

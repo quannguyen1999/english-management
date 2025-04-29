@@ -75,15 +75,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.filteredUsers = response.data.map(user => ({
-          id: user.userId,
-          name: user.username,
+          id: user.userId || '',
+          name: user.username || '',
           avatar: 'assets/avatars/user1.jpg',
           isOnline: false,
-          friendStatus: this.mapFriendStatus(user.friendStatus, user.requestSentByMe),
+          friendStatus: this.mapFriendStatus(user.friendStatus || 'NONE', user.requestSentByMe || false),
           lastMessage: '',
           lastMessageTime: '',
-          conversationId: user.conversationId,
-          requestSentByMe: user.requestSentByMe
+          conversationId: user.conversationId || '',
+          requestSentByMe: user.requestSentByMe || false
         }));
         this.isLoading = false;
       },
@@ -142,22 +142,26 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   sendFriendRequest(user: User): void {
-    this.friendService.sendFriendRequest(parseInt(user.id)).subscribe(() => {
-      this.loadUsers();
-    });
+    if (user.id) {
+      this.friendService.sendFriendRequest(user.id).subscribe(() => {
+        this.loadUsers();
+      });
+    }
   }
 
   addFriend(chat: ChatUser): void {
-    this.friendService.sendFriendRequest(parseInt(chat.id)).subscribe(() => {
+    this.friendService.sendFriendRequest(chat.id).subscribe(() => {
       this.loadUsers();
     });
   }
 
   acceptFriendRequest(user: ChatUser | User): void {
     const userId = typeof user === 'object' && 'userId' in user ? user.userId : user.id;
-    this.friendService.acceptFriendRequest(parseInt(userId)).subscribe(() => {
-      this.loadUsers();
-    });
+    if (userId) {
+      this.friendService.acceptFriendRequest(userId).subscribe(() => {
+        this.loadUsers();
+      });
+    }
   }
 
   viewProfile(user: User): void {

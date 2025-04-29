@@ -11,6 +11,7 @@ import { Observable, Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { RoughBoxDirective } from '../../directives/rough-box.directive';
+import { User, UserProfile } from '../../models/user.model';
 
 @Component({
   selector: 'app-header',
@@ -28,7 +29,7 @@ import { RoughBoxDirective } from '../../directives/rough-box.directive';
   templateUrl: './header.component.html'
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  @Input() currentUser: { name: string; avatar: string } | null = null;
+  @Input() currentUser: UserProfile | null = null;
   searchForm = new FormGroup({
     searchTerm: new FormControl('')
   });
@@ -43,6 +44,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    console.log(this.currentUser);
     this.searchResults$ = this.searchForm.get('searchTerm')!.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -61,7 +63,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   onProfile(): void {
     if (this.currentUser) {
-      this.router.navigate(['/profile', this.currentUser.name]);
+      this.router.navigate(['/profile', this.currentUser.username]);
     }
   }
 

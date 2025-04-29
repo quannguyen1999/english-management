@@ -8,6 +8,7 @@ import { RoughBoxDirective } from '../../directives/rough-box.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChatUser, Post, SuggestedFriend, FriendStatus } from '../../models/chat.model';
 import { Router } from '@angular/router';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-social',
@@ -23,13 +24,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./social.component.scss']
 })
 export class SocialComponent implements OnInit, OnDestroy {
-  currentUser: ChatUser = {
-    id: '1',
-    name: 'John Doe',
-    avatar: 'assets/images/avatars/avatar-1.png',
-    isOnline: true,
-    friendStatus: FriendStatus.ACCEPTED
-  };
+  currentUser: User | null = null;
 
   posts: Post[] = [
     {
@@ -129,16 +124,16 @@ export class SocialComponent implements OnInit, OnDestroy {
   }
 
   createPost(): void {
-    const newPost: Post = {
-      id: Date.now().toString(),
-      content: 'New post content',
-      author: this.currentUser,
-      timestamp: new Date(),
-      likes: 0,
-      comments: 0,
-      shares: 0
-    };
-    this.posts.unshift(newPost);
+    // const newPost: Post = {
+    //   id: Date.now().toString(),
+    //   content: 'New post content',
+    //   author: null,
+    //   timestamp: new Date(),
+    //   likes: 0,
+    //   comments: 0,
+    //   shares: 0
+    // };
+    // this.posts.unshift(newPost);
   }
 
   commentPost(post: Post): void {

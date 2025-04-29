@@ -38,8 +38,7 @@ export class PendingFriendsComponent implements OnInit {
     });
   }
 
-  acceptRequest(userId: number): void {
-    console.log(userId);
+  acceptRequest(userId: string): void {
     this.friendService.acceptFriendRequest(userId).subscribe({
       next: () => {
         this.loadPendingRequests()
@@ -52,7 +51,7 @@ export class PendingFriendsComponent implements OnInit {
     });
   }
 
-  rejectRequest(userId: number): void {
+  rejectRequest(userId: string): void {
     this.friendService.rejectFriendRequest(userId).subscribe({
       next: () => this.loadPendingRequests(),
       error: (error) => this.error = error.message

@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User, UserProfile, UserUpdateRequest, UserError } from '../models/user.model';
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from '../models/profile.model';
 
 export interface UserSearchResponse {
   page: number;
@@ -20,12 +22,8 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.BASE_URL}/users/me`);
-  }
-
-  getUserProfile(username: string): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.BASE_URL}/users/${username}`);
+  getUserProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.BASE_URL}/users/current-profile`);
   }
 
   updateUserProfile(profileData: UserUpdateRequest): Observable<UserProfile> {
@@ -52,5 +50,18 @@ export class UserService {
       params,
       headers 
     });
+  }
+
+  getCurrentUsername(): string | null {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    try {
+      const decodedToken = jwtDecode<JwtPayload>(token);
+      return decodedToken.user;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
   }
 } 

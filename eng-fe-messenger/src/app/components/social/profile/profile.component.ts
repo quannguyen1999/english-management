@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserProfile, JwtPayload, PaginatedUserProfileResponse } from '../../../models/profile.model';
 import { FormsModule } from '@angular/forms';
+import { FriendService } from '../../../services/friend.service';
 
 
 
@@ -38,7 +39,8 @@ export class ProfileComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private friendService: FriendService
   ) {}
 
   ngOnInit() {
@@ -100,18 +102,17 @@ export class ProfileComponent implements OnInit {
 
   onAddFriend() {
     if (!this.userProfile) return;
-    
-    this.http.post(`${environment.port}/chat-service/conversations/friend-request`, {
-      userId: this.userProfile.userId
-    }).subscribe({
-      next: () => {
-        this.userProfile!.friendStatus = 'PENDING';
-        this.userProfile!.requestSentByMe = true;
-      },
-      error: () => {
-        this.error = this.translate.instant('PROFILE.ADD_FRIEND_ERROR');
-      }
+
+    this.friendService.sendFriendRequest(this.userProfile.userId).subscribe({
+        next: () => {
+          this.userProfile!.friendStatus = 'PENDING';
+          this.userProfile!.requestSentByMe = true;
+        },
+        error: () => {
+          this.error = this.translate.instant('PROFILE.ADD_FRIEND_ERROR');
+        }
     });
+   
   }
 
   onRemoveFriend() {

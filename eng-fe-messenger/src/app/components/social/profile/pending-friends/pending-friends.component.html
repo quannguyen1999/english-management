@@ -27,11 +27,11 @@
           </div>
         </div>
         <div class="flex space-x-2">
-          <button (click)="acceptRequest(request.receiverId)"
+          <button (click)="acceptRequest(request.senderId)"
                   class="px-3 py-1 text-sm text-white bg-green-500 rounded hover:bg-green-600">
             {{ 'PROFILE.ACCEPT' | translate }}
           </button>
-          <button (click)="rejectRequest(request.receiverId)"
+          <button (click)="rejectRequest(request.senderId)"
                   class="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600">
             {{ 'PROFILE.REJECT' | translate }}
           </button>
