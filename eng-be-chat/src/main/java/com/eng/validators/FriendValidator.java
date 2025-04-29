@@ -26,6 +26,8 @@ public class FriendValidator extends CommonValidator{
     }
 
     public FriendRequest validateFriendRequest(String requestId, UUID currentUserId) {
+        System.out.println(currentUserId);
+        System.out.println(requestId);
         FriendRequest requestLeft = friendRequestRepository.findPendingRequest(UUID.fromString(requestId), currentUserId);
         FriendRequest requestRight = friendRequestRepository.findPendingRequest(currentUserId, UUID.fromString(requestId));
         FriendRequest request = ObjectUtils.isEmpty(requestLeft) ? requestRight : requestLeft;

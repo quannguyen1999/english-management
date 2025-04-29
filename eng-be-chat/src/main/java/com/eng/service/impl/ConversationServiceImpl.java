@@ -106,7 +106,7 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public PageResponse<UserRelationshipResponse> getFriendConversation(Integer page, Integer size, String username) {
+    public PageResponse<UserRelationshipResponse> loadFriendConversation(Integer page, Integer size, String username) {
         UUID currentUserId = SecurityUtil.getIDUser();
         PageResponse<UserRelationshipResponse> response = new PageResponse<>();
 

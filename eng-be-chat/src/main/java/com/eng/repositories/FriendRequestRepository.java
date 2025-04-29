@@ -13,8 +13,8 @@ import java.util.UUID;
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, UUID> {
     
     @Query("SELECT fr FROM FriendRequest fr WHERE " +
-           "(fr.senderId = :userId OR fr.receiverId = :userId) " +
-           "AND fr.status = 'PENDING'")
+            "(fr.receiverId = :userId) " +
+            "AND fr.status = 'PENDING'")
     List<FriendRequest> findPendingRequests(@Param("userId") UUID userId);
 
     @Query("SELECT fr FROM FriendRequest fr WHERE " +

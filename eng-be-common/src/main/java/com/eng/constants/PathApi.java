@@ -42,6 +42,8 @@ public interface PathApi {
      */
     String USER_FIND_NAME = "/findUserByName";
 
+    String USER_CURRENT_PROFILE = "/current-profile";
+
     // Conversation Management Endpoints
     /**
      * Base path for all conversation-related operations
@@ -50,7 +52,7 @@ public interface PathApi {
 
     String CONVERSATION_PRIVATE = "/private";
 
-    String CONVERSATION_FRIEND = "/friend";
+    String CONVERSATION_LOAD_FRIEND = "/load-friend";
 
     String CONVERSATION_FRIEND_ALL = "/friend-all";
 

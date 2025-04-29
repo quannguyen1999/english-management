@@ -20,4 +20,6 @@ public interface UserService {
 
     UserResponse findUserByUsername(String username);
 
+    UserResponse getCurrentProfile();
+
 }

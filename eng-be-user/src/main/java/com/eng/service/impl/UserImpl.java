@@ -137,7 +137,7 @@ public class UserImpl implements UserService {
      * Finds a user by username.
      * Results are cached using the username as the key.
      * This improves performance for frequent lookups of the same user.
-     * 
+     *
      * @param username The username to search for
      * @return The user response or null if not found
      */
@@ -146,5 +146,12 @@ public class UserImpl implements UserService {
     public UserResponse findUserByUsername(String username) {
         User user = userRepository.findUserByUsername(username);
         return ObjectUtils.isEmpty(user) ? null : userMapper.userToUserResponse(user);
+    }
+
+    @Override
+    public UserResponse getCurrentProfile() {
+        User user = userRepository.findUserByUsername(SecurityUtil.getUserName());
+        return ObjectUtils.isEmpty(user) ? null : userMapper.userToUserResponse(user);
+
     }
 }

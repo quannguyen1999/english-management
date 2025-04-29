@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface ConversationService {
     PageResponse<UserRelationshipResponse> getAllUserRelationConversations(Integer page, Integer size, String username);
 
-    PageResponse<UserRelationshipResponse> getFriendConversation(Integer page, Integer size, String username);
+    PageResponse<UserRelationshipResponse> loadFriendConversation(Integer page, Integer size, String username);
 
     PageResponse<UserRelationshipResponse> getCurrentProfile();
 

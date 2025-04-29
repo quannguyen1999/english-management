@@ -19,13 +19,13 @@ import java.util.UUID;
 public class ConversationController {
     private final ConversationService conversationService;
 
-    @GetMapping(PathApi.CONVERSATION_FRIEND)
-    public ResponseEntity<PageResponse<UserRelationshipResponse>> getFriendConversations(
+    @GetMapping(PathApi.CONVERSATION_LOAD_FRIEND)
+    public ResponseEntity<PageResponse<UserRelationshipResponse>> loadFriendConversation(
             @RequestParam Integer page,
             @RequestParam Integer size,
             String username
     ) {
-        return ResponseEntity.ok(conversationService.getFriendConversation(page, size, username));
+        return ResponseEntity.ok(conversationService.loadFriendConversation(page, size, username));
     }
 
     @GetMapping(PathApi.CONVERSATION_FRIEND_ALL)
