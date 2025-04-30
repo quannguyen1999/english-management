@@ -64,17 +64,13 @@ public interface PathApi {
     /**
      * Base path for all message-related operations
      */
-    String MESSAGE = "/messages/{conversationId}";
+    String MESSAGE = "/messages";
 
-    String MESSAGE_UPDATE = "/{messageId}";
+    String MESSAGE_DELIVERED = "/delivered";
 
-    String MESSAGE_DELETE = "/{messageId}";
+    String MESSAGE_READ = "/read";
 
-    String MESSAGE_DELIVERED = "/{messageId}/delivered";
-
-    String MESSAGE_READ = "/{messageId}/read";
-
-    String MESSAGE_REACTION = "/{messageId}/reaction";
+    String MESSAGE_REACTION = "/reaction";
 
     // Friend Management Endpoints
     /**

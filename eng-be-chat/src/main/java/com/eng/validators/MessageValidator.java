@@ -27,6 +27,12 @@ public class MessageValidator extends CommonValidator{
 
     private final ConversationRepository conversationRepository;
 
+    public void validateReplyToMessage(UUID replyTo) {
+        if (replyTo != null) {
+            Message replyMessage = messageRepository.findById(replyTo).orElse(null);
+            checkEmpty().accept(replyMessage, REPLY_MESSAGE_NOT_EXISTS);
+        }
+    }
 
     public Message validateMessageId(UUID messageId) {
         Message message = messageRepository.findById(messageId).orElse(null);

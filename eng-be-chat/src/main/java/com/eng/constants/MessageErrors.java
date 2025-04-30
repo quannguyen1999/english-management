@@ -15,6 +15,7 @@ public enum MessageErrors {
 
     FRIEND_NOT_FOUND,
 
-    FRIEND_NOT_PENDING
+    FRIEND_NOT_PENDING,
 
+    REPLY_MESSAGE_NOT_EXISTS
 }

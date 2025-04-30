@@ -9,6 +9,9 @@ import java.util.UUID;
 
 @Data
 public class MessageRequest {
+
+    private UUID conversationId;
+
     @NotBlank(message = "Message content is required")
     private String content;
 

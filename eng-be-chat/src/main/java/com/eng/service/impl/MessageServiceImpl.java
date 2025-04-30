@@ -7,6 +7,7 @@ import com.eng.entities.Message;
 import com.eng.entities.MessageStatus;
 import com.eng.mappers.MessageMapper;
 import com.eng.models.response.MessageResponse;
+import com.eng.models.response.PageResponse;
 import com.eng.repositories.MessageRepository;
 import com.eng.repositories.MessageStatusRepository;
 import com.eng.service.ConversationService;
@@ -24,6 +25,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,18 +39,28 @@ public class MessageServiceImpl implements MessageService {
     private final WebSocketService webSocketService;
 
     @Override
-    public Page<MessageResponse> getMessages(UUID conversationId, Pageable pageable) {
+    public PageResponse<MessageResponse> getMessages(UUID conversationId, Pageable pageable) {
+        PageResponse<MessageResponse> response = new PageResponse<>();
+
         messageValidator.validateConversationId(conversationId);
 
         Page<Message> messages = messageRepository.findByConversationId(conversationId, pageable);
 
-        return messages.map(messageMapper::toResponse);
+        messages.map(messageMapper::toResponse);
+
+        response.setData(messages.getContent().stream().map(messageMapper::toResponse).collect(Collectors.toList()));
+        response.setTotal(messages.getTotalElements());
+        response.setPage(pageable.getPageNumber());
+        response.setSize(pageable.getPageSize());
+
+        return response;
     }
 
     @Override
     @Transactional
     public MessageResponse sendMessage(UUID conversationId, String content, MessageType type, UUID replyTo) {
         messageValidator.validateConversationId(conversationId);
+//        messageValidator.validateReplyToMessage(replyTo);
 
         UUID currentUserId = SecurityUtil.getIDUser();
 
