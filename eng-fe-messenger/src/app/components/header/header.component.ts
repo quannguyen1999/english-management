@@ -44,7 +44,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    console.log(this.currentUser);
     this.searchResults$ = this.searchForm.get('searchTerm')!.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),

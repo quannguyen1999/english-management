@@ -6,7 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 @Component({
   selector: 'app-sidebar',
-  imports: [MatIcon, RoughBoxDirective, TranslateModule, SunburstBoxDirective],
+  imports: [MatIcon, RoughBoxDirective, TranslateModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss'
 })

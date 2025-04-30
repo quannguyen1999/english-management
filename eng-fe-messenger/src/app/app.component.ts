@@ -12,22 +12,35 @@ import { ContactsComponent } from "./components/contacts/contacts.component";
 import { SunburstBoxDirective } from './directives/sunburst-box.directive';
 import { AngerBoxDirective } from './directives/anger-box.directive';
 import { FooterComponent } from './components/footer/footer.component';
+import { LoginComponent } from "./components/auth/login/login.component";
+import { RoughBoxDirective } from './directives/rough-box.directive';
+import { ChatUser, Message } from './models/chat.model';
+import { MiniChatBoxComponent } from './components/mini-chat-box/mini-chat-box.component';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, SidebarComponent, ContactsComponent, ContactsComponent, AngerBoxDirective, FooterComponent],
+  imports: [CommonModule, RouterModule, HeaderComponent, SidebarComponent, ContactsComponent, ContactsComponent, RoughBoxDirective, MiniChatBoxComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  isLoggedIn: boolean = false;
   canShowSideBar: boolean = false;
   currentUser: UserProfile | null = null;
+
+  openMiniChats: { user: ChatUser, messages: Message[], isOpen: boolean }[] = [];
+
+  get openChats(): ChatUser[] {
+    return this.openMiniChats
+      .filter(chat => chat.isOpen)
+      .map(chat => chat.user);
+  }
 
   constructor(public headerService: HeaderService,
     private router: Router,
     private userService: UserService
   ) {
-    console.log(localStorage.getItem('user') != null);
     if(localStorage.getItem('token') && localStorage.getItem('user') == null){
       this.userService.getUserProfile().subscribe((user) => {
         this.currentUser = user;
@@ -45,5 +58,21 @@ export class AppComponent {
         this.canShowSideBar = false
       }
     });
+  }
+
+  onChatSelect(chat: ChatUser): void {
+    const existingChat = this.openMiniChats.find(c => c.user.id === chat.id);
+    if (existingChat) {
+      existingChat.isOpen = true;
+    } else {
+      this.openMiniChats.push({ user: chat, messages: [], isOpen: true });
+    }
+  }
+
+  closeMiniChat(userId: string): void {
+    const chatIndex = this.openMiniChats.findIndex(c => c.user.id === userId);
+    if (chatIndex !== -1) {
+      this.openMiniChats[chatIndex].isOpen = false;
+    }
   }
 }

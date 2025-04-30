@@ -16,12 +16,14 @@
   <div class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide" horizontalScroll>
     <div *ngFor="let user of onlineUsers" 
          class="flex flex-col items-center space-y-1 min-w-[4rem]">
-      <div class="relative rounded-full border-1 border-black p-1 cursor-pointer">
+      <div class="relative rounded-full border-1 border-black p-1 cursor-pointer" (click)="onChatSelect(user)">
         <img [src]="user.avatar" 
              [alt]="user.name"
              class="w-10 h-10 rounded-full object-cover">
         <span *ngIf="user.isOnline" 
               class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+        <span *ngIf="isChatOpen(user)" 
+              class="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></span>
       </div>
       <span class="text-xs text-gray-800 text-center sketch-text">{{user.name}}</span>
     </div>
@@ -32,6 +34,7 @@
 <div class="flex-1 overflow-y-auto">
   <div *ngFor="let chat of (searchQuery ? filteredUsers : recentChats)" 
        (click)="onChatSelect(chat)"
+       [ngClass]="{'bg-blue-50': isChatOpen(chat)}"
        class="px-4 py-2 flex items-center space-x-3 hover:bg-gray-50 cursor-pointer" sunburstBox>
     <div class="relative" sunburstBox>
       <img [src]="chat.avatar" 
@@ -39,6 +42,8 @@
            class="w-12 h-12 rounded-full object-cover">
       <span *ngIf="chat.isOnline" 
             class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+      <span *ngIf="isChatOpen(chat)" 
+            class="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></span>
     </div>
     <div class="flex-1 min-w-0" >
       <div class="">

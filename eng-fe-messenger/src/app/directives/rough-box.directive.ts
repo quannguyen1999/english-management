@@ -45,8 +45,8 @@ export class RoughBoxDirective implements AfterViewInit, OnDestroy {
     const roughRect = rc.rectangle(2, 2, rect.width - 4, rect.height - 4, {
       stroke: '#2d3748',
       strokeWidth: 3,
-      roughness: 2.5,
-      bowing: 2,
+      roughness: 2,
+      bowing: 1,
       fill: 'transparent'
     });
 
@@ -58,6 +58,7 @@ export class RoughBoxDirective implements AfterViewInit, OnDestroy {
     this.svg.style.left = '0';
     this.svg.style.pointerEvents = 'none';
     this.svg.style.zIndex = '1';
+    // this.svg.style.backgroundColor = 'white';
     
     // Ensure parent element has position relative
     if (getComputedStyle(this.el.nativeElement).position === 'static') {

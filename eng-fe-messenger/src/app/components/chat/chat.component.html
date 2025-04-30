@@ -1,6 +1,8 @@
-<div class="flex h-screen bg-white">
+<div class="flex h-screen bg-white relative">
+
+
   <!-- Left Sidebar - Chat List -->
-  <div class="w-[360px] flex flex-col">
+  <div class="w-[360px] flex flex-col relative z-10">
     <!-- Header -->
     <div class="p-4 flex justify-between items-center" roughBox>
       <h1 class="text-2xl text-gray-800 sketch-text">{{ 'CHAT.TITLE' | translate }}</h1>
@@ -22,7 +24,7 @@
   </div>
 
   <!-- Right Side - Chat Detail -->
-  <div class="flex-1 border-r border-gray-200 border-2">
+  <div class="flex-1 border-r border-gray-200 border-2 relative z-10">
     <ng-container *ngIf="selectedChat; else welcomeMessage">
       <app-chat-detail 
         [chatUser]="selectedChat"
@@ -43,4 +45,5 @@
       </div>
     </ng-template>
   </div>
+
 </div> 

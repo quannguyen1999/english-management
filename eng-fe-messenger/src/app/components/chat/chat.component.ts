@@ -15,6 +15,7 @@ import { ChatUser, Message } from '../../models/chat.model';
 import { MatButtonModule } from '@angular/material/button';
 import { SunburstBoxDirective } from '../../directives/sunburst-box.directive';
 import { ContactsComponent } from '../contacts/contacts.component';
+import { MiniChatBoxComponent } from '../mini-chat-box/mini-chat-box.component';
 
 @Component({
   selector: 'app-chat',
@@ -28,7 +29,6 @@ import { ContactsComponent } from '../contacts/contacts.component';
     ChatDetailComponent,
     RouterModule,
     TranslateModule,
-
     ContactsComponent
   ],
   templateUrl: './chat.component.html',

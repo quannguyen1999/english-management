@@ -5,6 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ChatUser } from '../models/chat.model';
 import { FriendSearchResponse, FriendRequest, FriendResponse, PendingFriend } from '../models/friend.model';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class FriendService {
   private readonly BASE_URL_FRIEND = `${environment.port}/chat-service/friends`;
   private readonly BASE_URL_CONVERSATIONS = `${environment.port}/chat-service/conversations`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   searchFriends(term: string): Observable<ChatUser[]> {
     return this.http
@@ -55,6 +56,7 @@ export class FriendService {
           if (error.status === 401) {
             localStorage.clear();
             sessionStorage.clear();
+            this.router.navigate(['/login']);
           }
           return of([]);
         })

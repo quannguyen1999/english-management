@@ -1,26 +1,41 @@
-<app-header 
-*ngIf="headerService.showHeader$ | async"
-[currentUser]="currentUser"
-class="app-header z-10">
-</app-header>
+<div>
+  <app-header 
+  *ngIf="headerService.showHeader$ | async"
+  [currentUser]="currentUser"
+  class="app-header z-10">
+  </app-header>
 
-<!-- In your main layout or app.component.html -->
-<div class="grid grid-cols-10 h-screen">
-    <app-sidebar 
-      *ngIf="headerService.showHeader$ | async" 
-      class="col-span-2 md:col-span-2 sm:col-span-2 xs:col-span-2 hidden md:block">
-    </app-sidebar> 
-    <main 
-      [ngClass]="{
-        'col-span-10 md:col-span-10 sm:col-span-10 xs:col-span-10 -z-1': canShowSideBar,
-        'col-span-10 md:col-span-6 sm:col-span-10 xs:col-span-10 -z-1': !canShowSideBar
-      }"
-      [class.pt-16]="headerService.showHeader$ | async"
-      [class.pt-0]="!(headerService.showHeader$ | async)">
-      <router-outlet></router-outlet>
-      <app-footer></app-footer>
-    </main>
-    <div *ngIf="!canShowSideBar" class="col-span-2" angerBox>
-      <app-contacts></app-contacts>
-    </div>
+  <!-- In your main layout or app.component.html -->
+  <div class="grid grid-cols-10 h-screen">
+      <app-sidebar 
+        *ngIf="headerService.showHeader$ | async" 
+        class="col-span-2 md:col-span-2 sm:col-span-2 xs:col-span-2 hidden md:block">
+      </app-sidebar> 
+      <main 
+        [ngClass]="{
+          'col-span-10 md:col-span-10 sm:col-span-10 xs:col-span-10 -z-1': canShowSideBar,
+          'col-span-10 md:col-span-6 sm:col-span-10 xs:col-span-10 -z-1': !canShowSideBar
+        }"
+        [class.pt-16]="headerService.showHeader$ | async"
+        [class.pt-0]="!(headerService.showHeader$ | async)">
+        <router-outlet></router-outlet>
+        <!-- <app-footer></app-footer> -->
+      </main>
+      <div *ngIf="!canShowSideBar" class="col-span-2" roughBox>
+        <app-contacts 
+          [openChats]="openChats" 
+          (userSelected)="onChatSelect($event)">
+        </app-contacts>
+        <div class="fixed bottom-4 right-4 flex flex-row-reverse gap-4 z-50">
+          <ng-container *ngFor="let mini of openMiniChats">
+            <app-mini-chat-box
+              [user]="mini.user"
+              [messages]="mini.messages"
+              [isOpen]="mini.isOpen"
+              (close)="closeMiniChat(mini.user.id)">
+            </app-mini-chat-box>
+          </ng-container>
+        </div>
+      </div>
+  </div>
 </div>

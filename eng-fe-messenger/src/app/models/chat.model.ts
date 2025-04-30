@@ -30,6 +30,7 @@ export interface Message {
   status: 'SENT' | 'DELIVERED' | 'READ';
   replyTo?: string;
   reactions?: string[];
+  isMine: boolean;
 }
 
 export interface Conversation {

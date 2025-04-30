@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -26,6 +26,7 @@ export class ContactsComponent implements OnInit {
   private searchSubject = new Subject<string>();
   FriendStatus = FriendStatus;
 
+  @Input() openChats: ChatUser[] = [];
   @Output() userSelected = new EventEmitter<ChatUser>();
 
   constructor(
@@ -45,7 +46,7 @@ export class ContactsComponent implements OnInit {
         this.filteredUsers = response.data.map(user => ({
           id: user.userId || '',
           name: user.username || '',
-          avatar: 'assets/avatars/user1.jpg',
+          avatar: 'assets/avatars/default-avatar.png',
           isOnline: false,
           friendStatus: this.mapFriendStatus(user.friendStatus || 'NONE', user.requestSentByMe || false),
           lastMessage: '',
@@ -64,14 +65,10 @@ export class ContactsComponent implements OnInit {
 
   onChatSelect(chat: ChatUser): void {
     this.userSelected.emit(chat);
-    this.selectedChat = { ...chat };
-    
-    // If this is a friend from search results, clear search and return to friends list
-    if (this.searchQuery && chat.friendStatus === FriendStatus.ACCEPTED) {
-      this.searchQuery = '';
-      this.filteredUsers = [];
-      this.loadUsers(); // Refresh the friends list
-    }
+  }
+
+  isChatOpen(chat: ChatUser): boolean {
+    return this.openChats.some(openChat => openChat.id === chat.id);
   }
 
   ngOnInit(): void {
@@ -90,10 +87,12 @@ export class ContactsComponent implements OnInit {
   }
 
   loadUsers(): void {
-    this.friendService.loadFriend('').subscribe(chatUsers => {
-      this.onlineUsers = chatUsers.map(chatUser => this.convertToUser(chatUser));
-      this.recentChats = this.onlineUsers;
-    });
+    if(localStorage.getItem('token')){
+      this.friendService.loadFriend('').subscribe(chatUsers => {
+        this.onlineUsers = chatUsers.map(chatUser => this.convertToUser(chatUser));
+        this.recentChats = this.onlineUsers;
+      });
+    }
   }
 
   private convertToUser(chatUser: ChatUser): ChatUser {
