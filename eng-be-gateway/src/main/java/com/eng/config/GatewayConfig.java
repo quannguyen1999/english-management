@@ -8,8 +8,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "gateway")
 public class GatewayConfig {
+
     private ServiceConfig userService;
+
     private ServiceConfig chatService;
+
     private RetryConfig retry;
 
     @Data

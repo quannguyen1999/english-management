@@ -22,10 +22,7 @@ public class RouteConfig {
                 .route(p -> p
                         .path(getFullPath(gatewayConfig.getUserService().getPath()))
                         .filters(f -> f
-                                .rewritePath(
-                                        getSegment(gatewayConfig.getUserService().getPath()),
-                                        REWRITE_REPLACEMENT
-                                )
+                                .rewritePath(getSegment(gatewayConfig.getUserService().getPath()), REWRITE_REPLACEMENT)
                                 .addResponseHeader("X-Response-Time", LocalDateTime.now().toString())
                                 .retry(gatewayConfig.getRetry().getMaxAttempts())
                         )
@@ -33,10 +30,7 @@ public class RouteConfig {
                 .route(p -> p
                         .path(getFullPath(gatewayConfig.getChatService().getPath()))
                         .filters(f -> f
-                                .rewritePath(
-                                        getSegment(gatewayConfig.getChatService().getPath()),
-                                        REWRITE_REPLACEMENT
-                                )
+                                .rewritePath(getSegment(gatewayConfig.getChatService().getPath()), REWRITE_REPLACEMENT)
                                 .addResponseHeader("X-Response-Time", LocalDateTime.now().toString())
                                 .retry(gatewayConfig.getRetry().getMaxAttempts())
                         )
