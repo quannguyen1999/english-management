@@ -22,7 +22,7 @@ export class FriendService {
       .pipe(
         map(response => response.data.map(user => ({
           id: user.userId.toString(),
-          name: user.username,
+          username: user.username,
           avatar: 'assets/avatars/default-avatar.png',
           isOnline: false,
           friendStatus: user.friendStatus,
@@ -45,7 +45,7 @@ export class FriendService {
       .pipe(
         map(response => response.data.map(user => ({
           id: user.userId.toString(),
-          name: user.username,
+          username: user.username,
           avatar: 'assets/avatars/default-avatar.png',
           isOnline: false,
           friendStatus: user.friendStatus,

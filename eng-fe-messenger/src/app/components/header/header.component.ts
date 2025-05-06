@@ -57,7 +57,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   viewProfile(user: ChatUser): void {
-    this.router.navigate(['/profile', user.name]);
+    this.router.navigate(['/profile', user.username]);
   }
 
   onProfile(): void {

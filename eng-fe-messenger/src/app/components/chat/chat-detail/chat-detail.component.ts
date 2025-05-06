@@ -46,7 +46,6 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     private userService: UserService,
     private route: ActivatedRoute
   ) {
-
   }
 
   ngOnInit(): void {
@@ -65,23 +64,19 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     });
     this.wsService.subscribeToTyping(this.conversationId || '');
 
-    this.wsService.typing$.subscribe(data => {
-      console.log("typing event received");
-      console.log(data);    
-      
+    this.wsService.typing$.subscribe(data => {  
       try {
-        console.log("typing event received");
-              // Ignore own typing events
-              if (data.userId === this.userService.getIdOfUser()) return;
-              this.isOtherUserTyping = !!data.typing;
-              this.typingUserName = data.username || null;
-              if (this.isOtherUserTyping) {
-                if (this.typingTimeout) clearTimeout(this.typingTimeout);
+        // Ignore own typing events
+        if (data.userId === this.userService.getIdOfUser()) return;
+        this.isOtherUserTyping = !!data.typing;
+        this.typingUserName = data.username || null;
+        if (this.isOtherUserTyping) {
+            if (this.typingTimeout) clearTimeout(this.typingTimeout);
                 this.typingTimeout = setTimeout(() => {
                   this.isOtherUserTyping = false;
                   this.typingUserName = null;
-                }, 3000);
-              }
+            }, 3000);
+        }
       } catch (e) {}
     });
   }
@@ -179,29 +174,6 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
   formatTimestamp(timestamp: string): string {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
-
-  // Subscribe to typing events
-  // private subscribeToTyping() {
-  //   if (!this.wsService.stompClient?.connected) return;
-  //   const topic = `/topic/conversations/${this.conversationId}/queue/typing`;
-  //   this.typingSubscription = this.wsService.stompClient.subscribe(topic, (msg: any) => {
-  //     try {
-  //       console.log("typing event received");
-  //       const data = JSON.parse(msg.body);
-  //       // Ignore own typing events
-  //       if (data.userId === this.userService.getIdOfUser()) return;
-  //       this.isOtherUserTyping = !!data.typing;
-  //       this.typingUserName = data.username || null;
-  //       if (this.isOtherUserTyping) {
-  //         if (this.typingTimeout) clearTimeout(this.typingTimeout);
-  //         this.typingTimeout = setTimeout(() => {
-  //           this.isOtherUserTyping = false;
-  //           this.typingUserName = null;
-  //         }, 3000);
-  //       }
-  //     } catch (e) {}
-  //   });
-  // }
 
   // Send typing event
   onTyping() {

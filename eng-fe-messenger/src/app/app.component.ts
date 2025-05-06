@@ -53,9 +53,9 @@ export class AppComponent {
     ).subscribe((event: any) => {
       // Check if current route is login page
       if(event.url.includes('/login') || event.url.includes('/register') || event.url.includes('/chat')){
-        this.canShowSideBar = true
+        this.canShowSideBar = false;
       } else{
-        this.canShowSideBar = false
+        this.canShowSideBar = true;
       }
     });
   }

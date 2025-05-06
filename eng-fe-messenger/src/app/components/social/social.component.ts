@@ -32,7 +32,7 @@ export class SocialComponent implements OnInit, OnDestroy {
       content: 'Just finished my first marathon! 🏃‍♂️',
       author: {
         id: '2',
-        name: 'Jane Smith',
+        username: 'Jane Smith',
         avatar: 'assets/images/avatars/avatar-2.png',
         isOnline: true,
         friendStatus: FriendStatus.ACCEPTED
@@ -48,7 +48,7 @@ export class SocialComponent implements OnInit, OnDestroy {
       content: 'Beautiful sunset at the beach 🌅',
       author: {
         id: '3',
-        name: 'Mike Johnson',
+        username: 'Mike Johnson',
         avatar: 'assets/images/avatars/avatar-3.png',
         isOnline: false,
         friendStatus: FriendStatus.ACCEPTED

@@ -8,7 +8,7 @@ export enum FriendStatus {
 
 export interface ChatUser {
   id: string;
-  name: string;
+  username: string;
   avatar: string;
   isOnline: boolean;
   friendStatus: FriendStatus;

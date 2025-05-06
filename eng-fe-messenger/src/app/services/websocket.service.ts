@@ -38,28 +38,27 @@ export class WebSocketService {
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },
-      debug: function (str) {
-        console.log('STOMP: ' + str);
-      },
+      // debug: function (str) {
+      //   console.log('STOMP: ' + str);
+      // },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       connectionTimeout: 10000,
   
       onConnect: (frame) => {
-        console.log('STOMP connected:', frame);
+        console.log('STOMP connected:');
         this.isConnected = true;
       },
   
       onStompError: (frame) => {
-        console.error('STOMP error:', frame);
+        console.error('STOMP error:');
         this.isConnected = false;
         this.handleConnectionError();
       }
     });
   
     this.stompClient.onWebSocketClose = (event) => {
-      console.log('WebSocket closed:', event);
       this.isConnected = false;
       this.handleConnectionError();
     };

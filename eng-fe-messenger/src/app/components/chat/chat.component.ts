@@ -61,6 +61,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.route.params.subscribe(params => {
       if(params['idConversation']) {
+
         this.friendService.getChatUserByConversationId(params['idConversation']).subscribe(chatUser => {
           this.selectedChat = chatUser[0];
         });

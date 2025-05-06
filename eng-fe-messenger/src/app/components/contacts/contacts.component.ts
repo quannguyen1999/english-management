@@ -45,7 +45,7 @@ export class ContactsComponent implements OnInit {
       next: (response) => {
         this.filteredUsers = response.data.map(user => ({
           id: user.userId || '',
-          name: user.username || '',
+          username: user.username || '',
           avatar: 'assets/avatars/default-avatar.png',
           isOnline: false,
           friendStatus: this.mapFriendStatus(user.friendStatus || 'NONE', user.requestSentByMe || false),
@@ -98,7 +98,7 @@ export class ContactsComponent implements OnInit {
   private convertToUser(chatUser: ChatUser): ChatUser {
     return {
       id: chatUser.id,
-      name: chatUser.name,
+      username: chatUser.username,
       avatar: chatUser.avatar || 'assets/avatars/default-avatar.png',
       isOnline: chatUser.isOnline || false,
       friendStatus: chatUser.friendStatus || FriendStatus.NONE,
