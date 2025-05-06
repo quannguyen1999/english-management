@@ -172,6 +172,33 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
+    public List<UserRelationshipResponse> loadFriendConversationById(UUID conversationId) {
+        PageResponse<UserRelationshipResponse> response = new PageResponse<>();
+
+        // Get all conversations for current user
+        Conversation conversations = conversationRepository.findById(conversationId).orElse(null);
+
+        List<UUID> userId = conversations.getParticipants().stream()
+                .filter(t -> !t.getUserId().equals(SecurityUtil.getIDUser()))
+                .toList().stream().map(ConversationParticipant::getUserId).toList();
+
+        List<UserResponse> resultFetchUser = userServiceClient.getUsersByUUID(userId);
+
+        // Map to response, only including friends
+        return resultFetchUser.stream().map(user -> {
+            UserRelationshipResponse userResponse = new UserRelationshipResponse();
+            userResponse.setUserId(user.getId());
+            userResponse.setUsername(user.getUsername());
+            userResponse.setEmail(user.getEmail());
+            userResponse.setCreatedAt(user.getCreatedAt().toInstant());
+            userResponse.setFriendStatus(FriendRequest.FriendRequestStatus.ACCEPTED);
+            userResponse.setRequestSentByMe(false);
+            userResponse.setConversationId(conversationId);
+            return userResponse;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public ConversationResponse createPrivateConversation(UUID userId2) {
         UUID currentUserId = SecurityUtil.getIDUser();

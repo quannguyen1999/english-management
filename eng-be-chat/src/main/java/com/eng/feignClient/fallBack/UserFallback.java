@@ -43,13 +43,18 @@ public class UserFallback implements UserServiceClient {
         fallbackUser.setId(currentUserId);
         fallbackUser.setUsername(currentUsername);
         fallbackUser.setEmail("unknown@example.com");
-        
+
         response.setData(List.of(fallbackUser));
         response.setTotal(1L);
         response.setPage(page);
         response.setSize(size);
-        
+
         log.error("Returning fallback response: {}", response);
         return response;
+    }
+
+    @Override
+    public List<UserResponse> getUsersByUUID(List<UUID> userIds) {
+        return null;
     }
 }

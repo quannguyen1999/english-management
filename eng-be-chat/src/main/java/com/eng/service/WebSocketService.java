@@ -1,8 +1,7 @@
 package com.eng.service;
 
-import com.eng.constants.MessageType;
 import com.eng.models.response.MessageResponse;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.eng.models.response.MessageTypingResponse;
 
 import java.util.UUID;
 
@@ -14,8 +13,8 @@ public interface WebSocketService {
     void notifyMessageRead(UUID conversationId, UUID messageId, UUID userId);
     
     void notifyMessageReaction(UUID conversationId, UUID messageId, UUID userId, String reaction);
-    
-    void notifyUserTyping(UUID conversationId, UUID userId);
+
+    void notifyUserTyping(UUID conversationId, MessageTypingResponse messageTypingResponse);
     
     void notifyUserOnline(UUID userId);
     

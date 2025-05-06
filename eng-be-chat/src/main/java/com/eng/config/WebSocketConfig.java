@@ -173,6 +173,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                 Authentication auth = new JwtAuthenticationToken(jwt);
                                 SecurityContextHolder.getContext().setAuthentication(auth);
                                 log.info("Authentication set successfully for user: {}", jwt.getSubject());
+                                accessor.setUser(auth);
                             } catch (Exception e) {
                                 log.error("Error validating JWT token: {}", e.getMessage(), e);
                                 return null;

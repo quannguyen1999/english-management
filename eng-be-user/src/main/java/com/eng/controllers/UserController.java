@@ -45,8 +45,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.listUser(page, size, username));
     }
 
+    @PostMapping(value = USER_BY_UUID)
+    public ResponseEntity<List<UserResponse>> getListUserByUUID(@RequestBody List<UUID> uuids) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getListUserByUUID(uuids));
+    }
+
     /**
      * Updates a user.
+     *
      * @param userRequest The user details to update.
      * @return A response entity containing the updated user details.
      */

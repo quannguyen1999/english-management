@@ -38,4 +38,9 @@ public interface UserServiceClient {
             @RequestParam(required = false) String username
     );
 
+    @PostMapping(value = PathApi.USER + PathApi.USER_BY_UUID)
+    List<UserResponse> getUsersByUUID(
+            @RequestBody List<UUID> userIds
+    );
+
 }

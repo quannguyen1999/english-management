@@ -13,6 +13,8 @@ public interface ConversationService {
 
     PageResponse<UserRelationshipResponse> loadFriendConversation(Integer page, Integer size, String username);
 
+    List<UserRelationshipResponse> loadFriendConversationById(UUID conversationId);
+
     PageResponse<UserRelationshipResponse> getCurrentProfile();
 
     ConversationResponse createPrivateConversation(UUID userId);

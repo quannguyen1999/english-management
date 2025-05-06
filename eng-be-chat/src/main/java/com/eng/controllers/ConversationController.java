@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,6 +27,13 @@ public class ConversationController {
             String username
     ) {
         return ResponseEntity.ok(conversationService.loadFriendConversation(page, size, username));
+    }
+
+    @GetMapping(PathApi.CONVERSATION_LOAD_ID)
+    public ResponseEntity<List<UserRelationshipResponse>> loadFriendConversation(
+            @RequestParam UUID conversationId
+    ) {
+        return ResponseEntity.ok(conversationService.loadFriendConversationById(conversationId));
     }
 
     @GetMapping(PathApi.CONVERSATION_FRIEND_ALL)

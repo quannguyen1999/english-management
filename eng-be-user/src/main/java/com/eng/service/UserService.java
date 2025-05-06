@@ -14,6 +14,8 @@ public interface UserService {
 
     CommonPageInfo<UserResponse> listUser(Integer page, Integer size, String username);
 
+    List<UserResponse> getListUserByUUID(List<UUID> uuids);
+
     UserResponse updateUser(UserRequest userRequest);
 
     Map<UUID, String> getListUserNames(List<UUID> uuids);

@@ -72,7 +72,6 @@ export class ContactsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log("ngOnInit");
     this.loadUsers();
   }
 

@@ -33,6 +33,12 @@ export interface Message {
   isMine?: boolean;
 }
 
+export interface MessageTypingResponse {
+  userId?: string;
+  username?: string;
+  typing?: boolean;
+}
+
 export interface MessageResponse {
   id: string;
   senderId: string;

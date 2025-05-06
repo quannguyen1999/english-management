@@ -63,6 +63,10 @@ export class FriendService {
       );
   }
 
+  getChatUserByConversationId(conversationId: string): Observable<ChatUser[]> {
+    return this.http.get<ChatUser[]>(`${this.BASE_URL_CONVERSATIONS}/load-id-conversation?conversationId=${conversationId}`);
+  }
+
   getPendingFriendRequests(): Observable<PendingFriend[]> {
     return this.http.get<PendingFriend[]>(`${this.BASE_URL_FRIEND}/pending`);
   }

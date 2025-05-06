@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -16,6 +16,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { SunburstBoxDirective } from '../../directives/sunburst-box.directive';
 import { ContactsComponent } from '../contacts/contacts.component';
 import { MiniChatBoxComponent } from '../mini-chat-box/mini-chat-box.component';
+import { FriendService } from '../../services/friend.service';
 
 @Component({
   selector: 'app-chat',
@@ -43,7 +44,9 @@ export class ChatComponent implements OnInit, OnDestroy {
     private router: Router,
     private wsService: WebSocketService,
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private route: ActivatedRoute,
+    private friendService: FriendService
   ) {
     // Register the custom icon set
     this.matIconRegistry.setDefaultFontSetClass('material-icons');
@@ -55,6 +58,16 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.messages.push(message);
       }
     });
+
+    this.route.params.subscribe(params => {
+      if(params['idConversation']) {
+        this.friendService.getChatUserByConversationId(params['idConversation']).subscribe(chatUser => {
+          this.selectedChat = chatUser[0];
+        });
+      }
+    });
+
+
   }
 
   onNewChat(): void {

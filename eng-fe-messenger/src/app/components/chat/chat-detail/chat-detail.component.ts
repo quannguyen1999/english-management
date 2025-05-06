@@ -34,6 +34,12 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
   allMessagesLoaded = false;
   isFetching = false;
 
+  // Typing indicator state
+  isOtherUserTyping = false;
+  typingUserName: string | null = null;
+  private typingSubscription: Subscription | any;
+  private typingTimeout: any;
+
   constructor(
     private wsService: WebSocketService, 
     private messageService: MessageService,
@@ -49,12 +55,34 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.conversationId = params['idConversation'];
         this.loadMessages();
         this.wsService.subscribeToConversation(this.conversationId || '');
+        
         return this.wsService.messages$;
       }),
       filter(message => message && message.conversationId === this.conversationId)
     ).subscribe(message => {
       this.messages.push(message);
       this.shouldScroll = true;
+    });
+    this.wsService.subscribeToTyping(this.conversationId || '');
+
+    this.wsService.typing$.subscribe(data => {
+      console.log("typing event received");
+      console.log(data);    
+      
+      try {
+        console.log("typing event received");
+              // Ignore own typing events
+              if (data.userId === this.userService.getIdOfUser()) return;
+              this.isOtherUserTyping = !!data.typing;
+              this.typingUserName = data.username || null;
+              if (this.isOtherUserTyping) {
+                if (this.typingTimeout) clearTimeout(this.typingTimeout);
+                this.typingTimeout = setTimeout(() => {
+                  this.isOtherUserTyping = false;
+                  this.typingUserName = null;
+                }, 3000);
+              }
+      } catch (e) {}
     });
   }
   
@@ -69,6 +97,12 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
     }
   }
 
@@ -144,5 +178,45 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
 
   formatTimestamp(timestamp: string): string {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Subscribe to typing events
+  // private subscribeToTyping() {
+  //   if (!this.wsService.stompClient?.connected) return;
+  //   const topic = `/topic/conversations/${this.conversationId}/queue/typing`;
+  //   this.typingSubscription = this.wsService.stompClient.subscribe(topic, (msg: any) => {
+  //     try {
+  //       console.log("typing event received");
+  //       const data = JSON.parse(msg.body);
+  //       // Ignore own typing events
+  //       if (data.userId === this.userService.getIdOfUser()) return;
+  //       this.isOtherUserTyping = !!data.typing;
+  //       this.typingUserName = data.username || null;
+  //       if (this.isOtherUserTyping) {
+  //         if (this.typingTimeout) clearTimeout(this.typingTimeout);
+  //         this.typingTimeout = setTimeout(() => {
+  //           this.isOtherUserTyping = false;
+  //           this.typingUserName = null;
+  //         }, 3000);
+  //       }
+  //     } catch (e) {}
+  //   });
+  // }
+
+  // Send typing event
+  onTyping() {
+    if (!this.conversationId) return;
+    const payload = {
+      userId: this.userService.getIdOfUser(),
+      username: this.userService.getCurrentUsername(),
+      typing: true
+    };
+    this.wsService.stompClient?.publish({
+      destination: `/app/conversations/${this.conversationId}/typing`,
+      body: JSON.stringify(payload),
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
   }
 } 

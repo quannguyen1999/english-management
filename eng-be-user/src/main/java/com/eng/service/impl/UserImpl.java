@@ -87,12 +87,18 @@ public class UserImpl implements UserService {
                 .build();
     }
 
+    @Override
+    @Cacheable(value = UserCacheConfig.USER_UUID_CACHE, key = "#uuids.hashCode()")
+    public List<UserResponse> getListUserByUUID(List<UUID> uuids) {
+        return userRepository.findAllById(uuids).stream().map(userMapper::userToUserResponse).collect(Collectors.toList());
+    }
+
     /**
      * Updates an existing user and invalidates both caches.
      * Cache eviction ensures that:
      * 1. Updated user details are immediately available
      * 2. Pagination results reflect the changes
-     * 
+     *
      * @param userRequest The updated user details
      * @return The updated user response
      */

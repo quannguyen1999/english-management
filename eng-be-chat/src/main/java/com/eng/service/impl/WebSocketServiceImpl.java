@@ -1,6 +1,7 @@
 package com.eng.service.impl;
 
 import com.eng.models.response.MessageResponse;
+import com.eng.models.response.MessageTypingResponse;
 import com.eng.service.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +18,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     private final SimpMessagingTemplate messagingTemplate;
     private static final String CONVERSATION_TOPIC = "/topic/conversations/";
     private static final String USER_TOPIC = "/topic/user/";
-    private static final String TYPING_DESTINATION = "/queue/typing";
-    private static final String STATUS_DESTINATION = "/queue/status";
+    private static final String TYPING_DESTINATION = "/typing";
+    private static final String STATUS_DESTINATION = "/status";
 
     @Override
     public void sendMessage(UUID conversationId, MessageResponse message) {
@@ -55,11 +56,9 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     @Override
-    public void notifyUserTyping(UUID conversationId, UUID userId) {
+    public void notifyUserTyping(UUID conversationId, MessageTypingResponse messageTypingResponse) {
         String destination = CONVERSATION_TOPIC + conversationId + TYPING_DESTINATION;
-        String payload = String.format("{\"userId\":\"%s\",\"typing\":true}", userId);
-        log.info("Notifying user typing: {}", payload);
-        messagingTemplate.convertAndSend(destination, payload);
+        messagingTemplate.convertAndSend(destination, messageTypingResponse);
     }
 
     @Override

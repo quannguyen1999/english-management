@@ -25,6 +25,11 @@ public class UserCacheConfig extends CachingConfigurerSupport {
     public static final String USER_CACHE = "users";
 
     /**
+     * Cache name for storing paginated user lists by UUID.
+     */
+    public static final String USER_UUID_CACHE = "usersId";
+
+    /**
      * Cache name for storing individual user details and user name lookups.
      * Used by:
      * - findUserByUsername in UserImpl

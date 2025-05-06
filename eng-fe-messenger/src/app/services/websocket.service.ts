@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Message } from '../models/chat.model';
+import { Message, MessageTypingResponse } from '../models/chat.model';
 import { Client } from '@stomp/stompjs';
 
 interface WebSocketMessage {
@@ -16,10 +16,13 @@ interface WebSocketMessage {
 export class WebSocketService {
   private isConnected = false;
   private readonly BASE_URL = `${environment.port}/chat-service`;
-  private stompClient: Client | null = null;
+  public stompClient: Client | null = null;
   private subscriptions: any[] = [];
   private messageSubject = new Subject<Message>();
   public messages$ = this.messageSubject.asObservable();
+
+  private typingSubject = new Subject<MessageTypingResponse>();
+  public typing$ = this.typingSubject.asObservable();
   private connectionAttempts = 0;
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
 
@@ -102,19 +105,8 @@ export class WebSocketService {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions = [];
 
-    const subscribeWithRetry = (destination: string, callback: (message: any) => void) => {
-      try {
-        const subscription = this.stompClient?.subscribe(destination, callback);
-        if (subscription) {
-          this.subscriptions.push(subscription);
-        }
-      } catch (error) {
-        console.error(`Failed to subscribe to ${destination}:`, error);
-      }
-    };
-
     // Subscribe to conversation messages
-    subscribeWithRetry(
+    this.subscribeWithRetry(
       `/topic/conversations/${conversationId}`,
       (message) => {
         try {
@@ -126,6 +118,40 @@ export class WebSocketService {
       }
     );
   }
+
+  private subscribeWithRetry(destination: string, callback: (message: any) => void){
+    try {
+      const subscription = this.stompClient?.subscribe(destination, callback, {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      });
+      if (subscription) {
+        this.subscriptions.push(subscription);
+      }
+    } catch (error) {
+      console.error(`Failed to subscribe to ${destination}:`, error);
+    }
+  }
+
+  public subscribeToTyping(conversationId: string) {
+    if (!this.stompClient?.connected) {
+      console.error('Cannot subscribe: WebSocket is not connected');
+      return;
+    }
+
+     // Subscribe to conversation messages
+     return this.subscribeWithRetry(
+      `/topic/conversations/${conversationId}/typing`,
+      (data) => {
+        try {
+          const convert = JSON.parse(data.body);
+          this.typingSubject.next(convert);
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      }
+    );
+  }
+
 
   public sendMessage(message: Partial<Message>): void {
     if (!this.stompClient?.connected) {

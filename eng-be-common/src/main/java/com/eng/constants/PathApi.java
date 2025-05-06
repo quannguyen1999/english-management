@@ -37,6 +37,8 @@ public interface PathApi {
      * Path for retrieving a list of user names
      */
     String USER_LIST_NAME = "/getListUserNames";
+
+    String USER_BY_UUID = "/uuid";
     /**
      * Path for finding a user by their name
      */
@@ -54,11 +56,15 @@ public interface PathApi {
 
     String CONVERSATION_LOAD_FRIEND = "/load-friend";
 
+    String CONVERSATION_LOAD_ID = "/load-id-conversation";
+
     String CONVERSATION_FRIEND_ALL = "/friend-all";
 
     String CONVERSATION_CURRENT_PROFILE = "/current-profile";
 
     String CONVERSATION_GROUP = "/group";
+
+    String CONVERSATION_SOCKET_TYPING = "/{conversationId}/typing";
 
     // Message Management Endpoints
     /**
