@@ -15,7 +15,7 @@ import java.util.UUID;
 public class WebSocketServiceImpl implements WebSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private static final String CONVERSATION_TOPIC = "/topic/conversation/";
+    private static final String CONVERSATION_TOPIC = "/topic/conversations/";
     private static final String USER_TOPIC = "/topic/user/";
     private static final String TYPING_DESTINATION = "/queue/typing";
     private static final String STATUS_DESTINATION = "/queue/status";

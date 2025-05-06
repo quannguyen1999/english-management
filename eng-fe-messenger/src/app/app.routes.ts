@@ -25,6 +25,12 @@ export const routes: Routes = [
     canActivate: [() => inject(AuthGuard).canActivate()]
   },
   {
+    path: 'chat/:idConversation',
+    loadComponent: () => import('./components/chat/chat.component')
+      .then(m => m.ChatComponent),
+    canActivate: [() => inject(AuthGuard).canActivate()]
+  },
+  {
     path: 'social',
     loadComponent: () => import('./components/social/social.component')
       .then(m => m.SocialComponent),

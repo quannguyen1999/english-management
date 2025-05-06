@@ -1,11 +1,15 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { RoughBoxDirective } from '../../../directives/rough-box.directive';
 import { WebSocketService } from '../../../services/websocket.service';
-import { Subscription } from 'rxjs';
+import { filter, Subscription, switchMap } from 'rxjs';
 import { ChatUser, Message, FriendStatus } from '../../../models/chat.model';
+import { MessageService } from '../../../services/message.service';
+import { UserService } from '../../../services/user.service';
+import { ActivatedRoute } from '@angular/router';
+import { Route } from '@angular/router';
 
 @Component({
   selector: 'app-chat-detail',
@@ -14,25 +18,51 @@ import { ChatUser, Message, FriendStatus } from '../../../models/chat.model';
   templateUrl: './chat-detail.component.html',
   styleUrls: ['./chat-detail.component.scss']
 })
-export class ChatDetailComponent implements OnInit, OnDestroy {
-  @Input() chatUser: ChatUser | null = null;
-  @Input() currentUserId: string = '';
-  
+export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
+  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   messages: Message[] = [];
   newMessage: string = '';
+  conversationId : string = '';
   isLoading: boolean = false;
   private subscription: Subscription | null = null;
+  private shouldScroll = false;
+  @Input() chatUser: ChatUser | null = null;
 
-  constructor(private wsService: WebSocketService) {}
+  // Infinite scroll state
+  currentPage = 0;
+  pageSize = 20;
+  allMessagesLoaded = false;
+  isFetching = false;
+
+  constructor(
+    private wsService: WebSocketService, 
+    private messageService: MessageService,
+    private userService: UserService,
+    private route: ActivatedRoute
+  ) {
+
+  }
 
   ngOnInit(): void {
-    if (this.chatUser) {
-      this.loadMessages();
-      this.subscription = this.wsService.messages$.subscribe(message => {
-        if (message && message.conversationId === this.chatUser?.conversationId) {
-          this.messages.push(message);
-        }
-      });
+    this.route.params.pipe(
+      switchMap(params => {
+        this.conversationId = params['idConversation'];
+        this.loadMessages();
+        this.wsService.subscribeToConversation(this.conversationId || '');
+        return this.wsService.messages$;
+      }),
+      filter(message => message && message.conversationId === this.conversationId)
+    ).subscribe(message => {
+      this.messages.push(message);
+      this.shouldScroll = true;
+    });
+  }
+  
+
+  ngAfterViewChecked() {
+    if (this.shouldScroll) {
+      this.scrollToBottom();
+      this.shouldScroll = false;
     }
   }
 
@@ -42,33 +72,74 @@ export class ChatDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  private scrollToBottom(): void {
+    try {
+      const element = this.messagesContainer.nativeElement;
+      element.scrollTop = element.scrollHeight;
+    } catch (err) {
+      console.error('Error scrolling to bottom:', err);
+    }
+  }
+
   private loadMessages(): void {
-    if (!this.chatUser?.conversationId) return;
-    
     this.isLoading = true;
-    // TODO: Implement message loading from API
-    this.isLoading = false;
+    this.messageService.loadMessage(this.conversationId || '', 0, this.pageSize).subscribe(data => {
+      this.messages = data.data;
+      this.isLoading = false;
+      this.shouldScroll = true;
+      this.currentPage = 0;
+      this.allMessagesLoaded = data.data.length < this.pageSize;
+    });
+  }
+
+  onScroll() {
+    const element = this.messagesContainer.nativeElement;
+    if (element.scrollTop === 0 && !this.isFetching && !this.allMessagesLoaded) {
+      this.fetchOlderMessages();
+    }
+  }
+
+  fetchOlderMessages() {
+    if (!this.conversationId) return;
+    this.isFetching = true;
+    const nextPage = this.currentPage + 1;
+    const prevScrollHeight = this.messagesContainer.nativeElement.scrollHeight;
+    this.messageService.loadMessage(this.conversationId, nextPage * this.pageSize, this.pageSize)
+      .subscribe(data => {
+        const newMessages = data.data;
+        if (newMessages.length === 0) {
+          this.allMessagesLoaded = true;
+        } else {
+          this.messages = [...newMessages, ...this.messages];
+          this.currentPage = nextPage;
+          // Restore scroll position after prepending
+          setTimeout(() => {
+            const element = this.messagesContainer.nativeElement;
+            element.scrollTop = element.scrollHeight - prevScrollHeight;
+          });
+        }
+        this.isFetching = false;
+      }, () => {
+        this.isFetching = false;
+      });
   }
 
   sendMessage(): void {
-    if (!this.newMessage.trim() || !this.chatUser) return;
+    if (!this.newMessage.trim() || !this.conversationId) return;
 
-    const message: Partial<Message> = {
+    const message: Message = {
       content: this.newMessage,
       type: 'TEXT',
-      senderId: this.currentUserId,
-      receiverId: this.chatUser.id,
-      conversationId: this.chatUser.conversationId || '',
-      timestamp: new Date().toISOString(),
-      status: 'SENT'
+      conversationId: this.conversationId || ''
     };
-
-    this.wsService.sendMessage(message);
+    this.messageService.sendMessage(message).subscribe(message => {
+      this.shouldScroll = true;
+    });
     this.newMessage = '';
   }
 
   isMessageFromMe(message: Message): boolean {
-    return message.senderId === this.currentUserId;
+    return message.senderId === this.userService.getIdOfUser();
   }
 
   formatTimestamp(timestamp: string): string {

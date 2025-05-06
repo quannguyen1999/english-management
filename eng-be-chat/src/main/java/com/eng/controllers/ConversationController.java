@@ -39,7 +39,6 @@ public class ConversationController {
 
     @GetMapping(PathApi.CONVERSATION_CURRENT_PROFILE)
     public ResponseEntity<PageResponse<UserRelationshipResponse>> getCurrentProfile() {
-        System.out.println("fuck fuck ");
         return ResponseEntity.ok(conversationService.getCurrentProfile());
     }
 

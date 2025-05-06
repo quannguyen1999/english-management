@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Message } from '../models/chat.model';
+import { Client } from '@stomp/stompjs';
 
 interface WebSocketMessage {
   type: string;
@@ -13,84 +14,189 @@ interface WebSocketMessage {
   providedIn: 'root'
 })
 export class WebSocketService {
-  private socket$: WebSocketSubject<WebSocketMessage> | null = null;
-  private messageSubject = new BehaviorSubject<Message | null>(null);
+  private isConnected = false;
+  private readonly BASE_URL = `${environment.port}/chat-service`;
+  private stompClient: Client | null = null;
+  private subscriptions: any[] = [];
+  private messageSubject = new Subject<Message>();
   public messages$ = this.messageSubject.asObservable();
+  private connectionAttempts = 0;
+  private readonly MAX_RECONNECT_ATTEMPTS = 5;
 
   constructor() {
     this.connect();
   }
 
   private connect(): void {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      console.error('No access token found');
+    const token = localStorage.getItem('token');
+    
+    this.stompClient = new Client({
+      brokerURL: `${this.BASE_URL}/ws`,
+      connectHeaders: {
+        Authorization: `Bearer ${token}`
+      },
+      debug: function (str) {
+        console.log('STOMP: ' + str);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+      connectionTimeout: 10000,
+  
+      onConnect: (frame) => {
+        console.log('STOMP connected:', frame);
+        this.isConnected = true;
+      },
+  
+      onStompError: (frame) => {
+        console.error('STOMP error:', frame);
+        this.isConnected = false;
+        this.handleConnectionError();
+      }
+    });
+  
+    this.stompClient.onWebSocketClose = (event) => {
+      console.log('WebSocket closed:', event);
+      this.isConnected = false;
+      this.handleConnectionError();
+    };
+  
+    this.stompClient.onWebSocketError = (event) => {
+      console.error('WebSocket error:', event);
+      this.isConnected = false;
+      this.handleConnectionError();
+    };
+  
+    this.stompClient.onDisconnect = (frame) => {
+      console.log('STOMP disconnected:', frame);
+      this.isConnected = false;
+      this.handleConnectionError();
+    };
+  
+    this.stompClient.activate();
+  }
+
+  private handleConnectionError() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions = [];
+
+    this.connectionAttempts++;
+
+    if (this.connectionAttempts <= this.MAX_RECONNECT_ATTEMPTS) {
+      console.log(`Attempting to reconnect (attempt ${this.connectionAttempts}/${this.MAX_RECONNECT_ATTEMPTS})...`);
+      setTimeout(() => {
+        this.connect();
+      }, 5000);
+    } else {
+      console.error('Max reconnection attempts reached. Please refresh the page to try again.');
+    }
+  }
+
+  public subscribeToConversation(conversationId: string) {
+    if (!this.stompClient?.connected) {
+      console.error('Cannot subscribe: WebSocket is not connected');
       return;
     }
 
-    this.socket$ = webSocket<WebSocketMessage>({
-      url: `${environment.port}/chat-service/ws`,
-      protocol: ['access_token', token]
-    });
+    // Unsubscribe from existing subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions = [];
 
-    this.socket$.subscribe({
-      next: (message) => {
-        console.log('Received message:', message);
-        this.messageSubject.next(message.payload);
-      },
-      error: (err) => {
-        console.error('WebSocket error:', err);
-        // Attempt to reconnect after 5 seconds
-        setTimeout(() => this.connect(), 5000);
-      },
-      complete: () => {
-        console.log('WebSocket connection closed');
-        // Attempt to reconnect after 5 seconds
-        setTimeout(() => this.connect(), 5000);
+    const subscribeWithRetry = (destination: string, callback: (message: any) => void) => {
+      try {
+        const subscription = this.stompClient?.subscribe(destination, callback);
+        if (subscription) {
+          this.subscriptions.push(subscription);
+        }
+      } catch (error) {
+        console.error(`Failed to subscribe to ${destination}:`, error);
       }
-    });
+    };
+
+    // Subscribe to conversation messages
+    subscribeWithRetry(
+      `/topic/conversations/${conversationId}`,
+      (message) => {
+        try {
+          const messageData = JSON.parse(message.body);
+          this.messageSubject.next(messageData);
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      }
+    );
   }
 
   public sendMessage(message: Partial<Message>): void {
-    if (this.socket$) {
-      this.socket$.next({
-        type: 'SEND_MESSAGE',
-        payload: message
+    if (!this.stompClient?.connected) {
+      console.error('Cannot send message: WebSocket is not connected');
+      return;
+    }
+
+    try {
+      this.stompClient.publish({
+        destination: `/app/conversations/${message.conversationId}/send`,
+        body: JSON.stringify(message)
       });
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
   }
 
   public markAsRead(messageId: string, conversationId: string): void {
-    if (this.socket$) {
-      this.socket$.next({
-        type: 'MARK_AS_READ',
-        payload: { messageId, conversationId }
+    if (!this.stompClient?.connected) {
+      console.error('Cannot mark as read: WebSocket is not connected');
+      return;
+    }
+
+    try {
+      this.stompClient.publish({
+        destination: `/app/conversations/${conversationId}/messages/${messageId}/read`,
+        body: JSON.stringify({ messageId, conversationId })
       });
+    } catch (error) {
+      console.error('Error marking message as read:', error);
     }
   }
 
   public markAsDelivered(messageId: string, conversationId: string): void {
-    if (this.socket$) {
-      this.socket$.next({
-        type: 'MARK_AS_DELIVERED',
-        payload: { messageId, conversationId }
+    if (!this.stompClient?.connected) {
+      console.error('Cannot mark as delivered: WebSocket is not connected');
+      return;
+    }
+
+    try {
+      this.stompClient.publish({
+        destination: `/app/conversations/${conversationId}/messages/${messageId}/delivered`,
+        body: JSON.stringify({ messageId, conversationId })
       });
+    } catch (error) {
+      console.error('Error marking message as delivered:', error);
     }
   }
 
   public addReaction(messageId: string, conversationId: string, reaction: string): void {
-    if (this.socket$) {
-      this.socket$.next({
-        type: 'ADD_REACTION',
-        payload: { messageId, conversationId, reaction }
+    if (!this.stompClient?.connected) {
+      console.error('Cannot add reaction: WebSocket is not connected');
+      return;
+    }
+
+    try {
+      this.stompClient.publish({
+        destination: `/app/conversations/${conversationId}/messages/${messageId}/reaction`,
+        body: JSON.stringify({ messageId, conversationId, reaction })
       });
+    } catch (error) {
+      console.error('Error adding reaction:', error);
     }
   }
 
   public disconnect(): void {
-    if (this.socket$) {
-      this.socket$.complete();
-      this.socket$ = null;
+    if (this.stompClient) {
+      this.subscriptions.forEach(sub => sub.unsubscribe());
+      this.subscriptions = [];
+      this.stompClient.deactivate();
+      this.stompClient = null;
     }
   }
 } 

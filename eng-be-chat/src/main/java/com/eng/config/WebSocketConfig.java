@@ -26,20 +26,20 @@ import java.util.Map;
 
 /**
  * Configuration class for WebSocket and STOMP messaging in the application.
- * 
+ *
  * This class configures:
  * - WebSocket endpoints and message brokers
  * - STOMP protocol support
  * - Message size limits and timeouts
  * - Authentication and authorization for WebSocket connections
  * - CORS and origin policies
- * 
+ *
  * The configuration enables real-time communication between clients and the server
  * using WebSocket and STOMP protocols, with proper security measures in place.
- * 
+ *
  * @see org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
  * @see org.springframework.messaging.simp.config.MessageBrokerRegistry
- * 
+ *
  * @author Prime Team
  * @version 1.0
  */
@@ -59,12 +59,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * Configures the message broker for STOMP messaging.
-     * 
+     *
      * This method:
      * - Enables a simple in-memory message broker
      * - Sets up destination prefixes for message routing
      * - Configures application destination prefixes
-     * 
+     *
      * @param config The MessageBrokerRegistry to configure
      */
     @Override
@@ -76,13 +76,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * Registers STOMP endpoints and configures handshake handling.
-     * 
+     *
      * This method:
      * - Registers the WebSocket endpoint
      * - Configures allowed origins and patterns
      * - Sets up handshake interceptors
      * - Configures custom handshake handler
-     * 
+     *
      * @param registry The StompEndpointRegistry to configure
      */
     @Override
@@ -120,12 +120,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * Configures WebSocket transport settings.
-     * 
+     *
      * This method:
      * - Sets message size limits
      * - Configures send buffer size
      * - Sets send time limits
-     * 
+     *
      * @param registration The WebSocketTransportRegistration to configure
      */
     @Override
@@ -138,12 +138,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * Configures the client inbound channel with authentication.
-     * 
+     *
      * This method:
      * - Adds authentication interceptor
      * - Processes JWT tokens
      * - Sets up security context
-     * 
+     *
      * @param registration The ChannelRegistration to configure
      */
     @Override

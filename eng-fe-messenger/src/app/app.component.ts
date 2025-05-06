@@ -26,7 +26,7 @@ import { MiniChatBoxComponent } from './components/mini-chat-box/mini-chat-box.c
 })
 export class AppComponent {
   isLoggedIn: boolean = false;
-  canShowSideBar: boolean = false;
+  canShowSideBar: boolean = true;
   currentUser: UserProfile | null = null;
 
   openMiniChats: { user: ChatUser, messages: Message[], isOpen: boolean }[] = [];

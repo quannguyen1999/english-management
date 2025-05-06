@@ -37,7 +37,6 @@ export class UserService {
   }
 
   searchUsers(username: string, page: number = 0, size: number = 5): Observable<UserSearchResponse> {
-    console.log("search");
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const params = {
@@ -59,6 +58,19 @@ export class UserService {
     try {
       const decodedToken = jwtDecode<JwtPayload>(token);
       return decodedToken.user;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  }
+
+  getIdOfUser(): string | null {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    try {
+      const decodedToken = jwtDecode<JwtPayload>(token);
+      return decodedToken.id;
     } catch (error) {
       console.error('Error decoding token:', error);
       return null;

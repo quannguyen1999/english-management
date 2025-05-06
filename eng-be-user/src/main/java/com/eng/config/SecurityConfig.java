@@ -81,7 +81,7 @@ public class SecurityConfig {
             "/oauth2/token",    // OAuth2 Token Generation
             "/registration",    // User Registration Endpoint
             "/authenticator",   // Custom Authentication
-            "/actuator/**"      // Actuator endpoints,
+            "/actuator/**"      // Actuator endpoints
     );
 
     @Value("${custom-security.issuer}")

@@ -63,6 +63,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   onChatSelect(chat: ChatUser): void {
     this.selectedChat = { ...chat };
+    this.router.navigate(['/chat', this.selectedChat?.conversationId]);
   }
 
   onLogout(): void {
