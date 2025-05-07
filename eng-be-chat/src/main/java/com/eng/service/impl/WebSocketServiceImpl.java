@@ -1,7 +1,9 @@
 package com.eng.service.impl;
 
 import com.eng.models.response.MessageResponse;
+import com.eng.models.response.MessageStatusResponse;
 import com.eng.models.response.MessageTypingResponse;
+import com.eng.service.UserStatusService;
 import com.eng.service.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,8 @@ import java.util.UUID;
 public class WebSocketServiceImpl implements WebSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final UserStatusService userStatusService;
     private static final String CONVERSATION_TOPIC = "/topic/conversations/";
     private static final String USER_TOPIC = "/topic/user/";
     private static final String TYPING_DESTINATION = "/typing";
@@ -64,16 +68,14 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void notifyUserOnline(UUID userId) {
         String destination = USER_TOPIC + userId + STATUS_DESTINATION;
-        String payload = "{\"status\":\"ONLINE\"}";
-        log.info("Notifying user online: {}", userId);
-        messagingTemplate.convertAndSend(destination, payload);
+        userStatusService.userConnected(userId);
+        messagingTemplate.convertAndSend(destination, MessageStatusResponse.builder().online(true).userId(userId).build());
     }
 
     @Override
     public void notifyUserOffline(UUID userId) {
         String destination = USER_TOPIC + userId + STATUS_DESTINATION;
-        String payload = "{\"status\":\"OFFLINE\"}";
-        log.info("Notifying user offline: {}", userId);
-        messagingTemplate.convertAndSend(destination, payload);
+        userStatusService.userDisconnected(userId);
+        messagingTemplate.convertAndSend(destination, MessageStatusResponse.builder().online(false).userId(userId).build());
     }
 } 

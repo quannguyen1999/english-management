@@ -14,7 +14,7 @@
       <main 
         [ngClass]="{
           'col-span-10 md:col-span-10 sm:col-span-10 xs:col-span-10 -z-1': !canShowSideBar,
-          'col-span-10 md:col-span-6 sm:col-span-10 xs:col-span-6 -z-1': canShowSideBar
+          'col-span-8 md:col-span-6 sm:col-span-10 xs:col-span-6 -z-1': canShowSideBar
         }"
         [class.pt-16]="headerService.showHeader$ | async"
         [class.pt-0]="!(headerService.showHeader$ | async)">

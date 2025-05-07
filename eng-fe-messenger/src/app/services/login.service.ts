@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../environments/environment';
 import { LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
+import { WebSocketService } from './websocket.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +18,9 @@ export class LoginService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private websocketService: WebSocketService,
+    private userService: UserService
   ) {
     // Check if token exists in localStorage
     const token = localStorage.getItem('token');
@@ -50,9 +54,11 @@ export class LoginService {
   }
 
   logout(): void {
+    this.websocketService.publishStatusUser(this.userService.getIdOfUser() || '', false);
     localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
     this.isAuthenticated.next(false);
+    this.websocketService.disconnect();
     this.router.navigate(['/login']);
   }
 

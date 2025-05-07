@@ -15,6 +15,7 @@ import com.eng.repositories.ConversationRepository;
 import com.eng.repositories.FriendRequestRepository;
 import com.eng.repositories.MessageRepository;
 import com.eng.service.ConversationService;
+import com.eng.service.UserStatusService;
 import com.eng.utils.SecurityUtil;
 import com.eng.validators.ConversationValidator;
 import jakarta.persistence.EntityManager;
@@ -38,6 +39,8 @@ public class ConversationServiceImpl implements ConversationService {
     private final EntityManager entityManager;
     private final ConversationParticipantRepository conversationParticipantRepository;
     private final FriendRequestRepository friendRequestRepository;
+
+    private final UserStatusService userStatusService;
 
     @Override
     public PageResponse<UserRelationshipResponse> getAllUserRelationConversations(Integer page, Integer size, String username) {
@@ -159,6 +162,7 @@ public class ConversationServiceImpl implements ConversationService {
                     userResponse.setRequestSentByMe(friendRequests.stream()
                             .anyMatch(request -> request.getSenderId().equals(currentUserId) && request.getReceiverId().equals(user.getId())));
                     userResponse.setConversationId(conversationMap.get(user.getId()));
+                    userResponse.setOnline(userStatusService.isUserOnline(user.getId()));
                     return userResponse;
                 })
                 .collect(Collectors.toList());
@@ -194,6 +198,7 @@ public class ConversationServiceImpl implements ConversationService {
             userResponse.setFriendStatus(FriendRequest.FriendRequestStatus.ACCEPTED);
             userResponse.setRequestSentByMe(false);
             userResponse.setConversationId(conversationId);
+            userResponse.setOnline(userStatusService.isUserOnline(user.getId()));
             return userResponse;
         }).collect(Collectors.toList());
     }

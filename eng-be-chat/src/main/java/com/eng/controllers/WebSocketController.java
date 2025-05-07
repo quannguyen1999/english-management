@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 
-import static com.eng.constants.PathApi.CONVERSATION;
-import static com.eng.constants.PathApi.CONVERSATION_SOCKET_TYPING;
+import static com.eng.constants.PathApi.*;
 
 @Slf4j
 @Controller
@@ -24,5 +23,17 @@ public class WebSocketController {
     public void handleTyping(@DestinationVariable UUID conversationId, @RequestBody MessageTypingResponse messageTypingResponse) {
         log.info("User {} is typing in conversation {}", messageTypingResponse.getUserId(), conversationId);
         webSocketService.notifyUserTyping(conversationId, messageTypingResponse);
+    }
+
+    @MessageMapping(CONVERSATION + CONVERSATION_SOCKET_STATUS_ONLINE)
+    public void handleStatusOnline(@DestinationVariable UUID userId) {
+        log.info("User {} is status online", userId);
+        webSocketService.notifyUserOnline(userId);
+    }
+
+    @MessageMapping(CONVERSATION + CONVERSATION_SOCKET_STATUS_OFFLINE)
+    public void handleStatusOffline(@DestinationVariable UUID userId) {
+        log.info("User {} is status offline", userId);
+        webSocketService.notifyUserOffline(userId);
     }
 } 

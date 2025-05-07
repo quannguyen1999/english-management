@@ -66,6 +66,10 @@ public interface PathApi {
 
     String CONVERSATION_SOCKET_TYPING = "/{conversationId}/typing";
 
+    String CONVERSATION_SOCKET_STATUS_ONLINE = "/{userId}/status/online";
+
+    String CONVERSATION_SOCKET_STATUS_OFFLINE = "/{userId}/status/offline";
+
     // Message Management Endpoints
     /**
      * Base path for all message-related operations

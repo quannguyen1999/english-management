@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RoughBoxDirective } from '../../../directives/rough-box.directive';
 import { WebSocketService } from '../../../services/websocket.service';
 import { filter, Subscription, switchMap } from 'rxjs';
-import { ChatUser, Message, FriendStatus } from '../../../models/chat.model';
+import { ChatUser, Message, FriendStatus, MessageTypingResponse } from '../../../models/chat.model';
 import { MessageService } from '../../../services/message.service';
 import { UserService } from '../../../services/user.service';
 import { ActivatedRoute } from '@angular/router';
@@ -183,12 +183,6 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
       username: this.userService.getCurrentUsername(),
       typing: true
     };
-    this.wsService.stompClient?.publish({
-      destination: `/app/conversations/${this.conversationId}/typing`,
-      body: JSON.stringify(payload),
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    });
+    this.wsService.publishTyping(this.conversationId, payload);
   }
 } 

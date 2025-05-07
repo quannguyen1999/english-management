@@ -20,7 +20,7 @@
         <img [src]="user.avatar" 
              [alt]="user.username"
              class="w-10 h-10 rounded-full object-cover">
-        <span *ngIf="user.isOnline" 
+        <span *ngIf="user.online" 
               class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
         <span *ngIf="isChatOpen(user)" 
               class="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></span>
@@ -40,8 +40,10 @@
       <img [src]="chat.avatar" 
            [alt]="chat.username"
            class="w-12 h-12 rounded-full object-cover">
-      <span *ngIf="chat.isOnline" 
+      <span *ngIf="chat.online" 
             class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+      <span *ngIf="!chat.online" 
+            class="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 rounded-full border-2 border-white"></span>
       <span *ngIf="isChatOpen(chat)" 
             class="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></span>
     </div>

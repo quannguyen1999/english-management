@@ -24,4 +24,6 @@ public class UserRelationshipResponse {
     private FriendRequest.FriendRequestStatus friendStatus;
 
     private boolean isRequestSentByMe;
+    
+    private boolean isOnline;
 } 

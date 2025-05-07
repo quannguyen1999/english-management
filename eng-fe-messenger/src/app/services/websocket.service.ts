@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Message, MessageTypingResponse } from '../models/chat.model';
+import { Message, MessageStatusUserResponse, MessageTypingResponse } from '../models/chat.model';
 import { Client } from '@stomp/stompjs';
 
 interface WebSocketMessage {
@@ -23,6 +23,10 @@ export class WebSocketService {
 
   private typingSubject = new Subject<MessageTypingResponse>();
   public typing$ = this.typingSubject.asObservable();
+
+  private statusUserSubject = new Subject<MessageStatusUserResponse>();
+  public statusUser$ = this.statusUserSubject.asObservable();
+
   private connectionAttempts = 0;
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
 
@@ -149,6 +153,63 @@ export class WebSocketService {
         }
       }
     );
+  }
+
+  public subscribeStatusUserOnline(userId: string) {
+    if (!this.stompClient?.connected) {
+      console.error('Cannot subscribe: WebSocket is not connected');
+      return;
+    }
+
+    // console.log('subscribeStatusUserOnline: ', userId);
+     // Subscribe to conversation messages
+     return this.subscribeWithRetry(
+      `/topic/user/${userId}/status`,
+      (data) => {
+        try {
+          const convert = JSON.parse(data.body);
+          this.statusUserSubject.next(convert);
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      }
+    );
+  }
+
+  public publishStatusUser(userId: string, online: boolean) {
+    if (!this.stompClient?.connected) {
+      console.error('Cannot publish: WebSocket is not connected');
+      return;
+    }
+    if(online){
+      this.stompClient?.publish({
+        destination: `/app/conversations/${userId}/status/online`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    }else{
+      this.stompClient?.publish({
+        destination: `/app/conversations/${userId}/status/offline`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    }
+  }
+
+  public publishTyping(conversationId: string, payload: Object) {
+    if (!this.stompClient?.connected) {
+      console.error('Cannot publish: WebSocket is not connected');
+      return;
+    }
+    this.stompClient?.publish({
+      destination: `/app/conversations/${conversationId}/typing`,
+      body: JSON.stringify(payload),
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
   }
 
 

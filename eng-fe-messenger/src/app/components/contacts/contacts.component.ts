@@ -8,6 +8,7 @@ import { FriendService } from '../../services/friend.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { User } from '../../models/user.model';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-contacts',
@@ -31,7 +32,8 @@ export class ContactsComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private friendService: FriendService
+    private friendService: FriendService,
+    private websocketService: WebSocketService
   ) {
     // Setup search with debounce
     this.searchSubject.pipe(
@@ -47,7 +49,7 @@ export class ContactsComponent implements OnInit {
           id: user.userId || '',
           username: user.username || '',
           avatar: 'assets/avatars/default-avatar.png',
-          isOnline: false,
+          online: false,
           friendStatus: this.mapFriendStatus(user.friendStatus || 'NONE', user.requestSentByMe || false),
           lastMessage: '',
           lastMessageTime: '',
@@ -64,7 +66,7 @@ export class ContactsComponent implements OnInit {
   }
 
   onChatSelect(chat: ChatUser): void {
-    this.userSelected.emit(chat);
+    this.userSelected.emit(chat);    
   }
 
   isChatOpen(chat: ChatUser): boolean {
@@ -88,9 +90,27 @@ export class ContactsComponent implements OnInit {
 
   loadUsers(): void {
     if(localStorage.getItem('token')){
+      console.log("working")
       this.friendService.loadFriend('').subscribe(chatUsers => {
-        this.onlineUsers = chatUsers.map(chatUser => this.convertToUser(chatUser));
+        chatUsers.forEach(user => {
+          this.websocketService.subscribeStatusUserOnline(user.userId || '');
+        });
+        this.onlineUsers = chatUsers.map(chatUser => {
+          return this.convertToUser(chatUser);
+        });
         this.recentChats = this.onlineUsers;
+      });
+
+      this.websocketService.statusUser$.subscribe(statusUser => {
+        // console.log('statusUser: ', statusUser);
+        const onlineUserIndex = this.onlineUsers.findIndex(u => u.id === statusUser.userId);
+        // console.log('onlineUserIndex: ', onlineUserIndex);
+        if (onlineUserIndex !== -1) {
+          console.log('statusUser: ', statusUser);
+
+          this.onlineUsers[onlineUserIndex].online = statusUser.online || false;
+          console.log('this.onlineUsers[onlineUserIndex].isOnline: ', this.onlineUsers[onlineUserIndex].online);
+        }
       });
     }
   }
@@ -100,7 +120,7 @@ export class ContactsComponent implements OnInit {
       id: chatUser.id,
       username: chatUser.username,
       avatar: chatUser.avatar || 'assets/avatars/default-avatar.png',
-      isOnline: chatUser.isOnline || false,
+      online: chatUser.online || false,
       friendStatus: chatUser.friendStatus || FriendStatus.NONE,
       lastMessage: chatUser.lastMessage || '',
       lastMessageTime: chatUser.lastMessageTime || '',

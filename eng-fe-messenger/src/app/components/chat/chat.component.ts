@@ -17,6 +17,8 @@ import { SunburstBoxDirective } from '../../directives/sunburst-box.directive';
 import { ContactsComponent } from '../contacts/contacts.component';
 import { MiniChatBoxComponent } from '../mini-chat-box/mini-chat-box.component';
 import { FriendService } from '../../services/friend.service';
+import { UserService } from '../../services/user.service';
+import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-chat',
@@ -44,9 +46,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     private router: Router,
     private wsService: WebSocketService,
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer,
+    private loginService: LoginService,
     private route: ActivatedRoute,
-    private friendService: FriendService
+    private friendService: FriendService,
+    private userService: UserService
   ) {
     // Register the custom icon set
     this.matIconRegistry.setDefaultFontSetClass('material-icons');
@@ -61,14 +64,26 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.route.params.subscribe(params => {
       if(params['idConversation']) {
-
         this.friendService.getChatUserByConversationId(params['idConversation']).subscribe(chatUser => {
           this.selectedChat = chatUser[0];
         });
       }
     });
 
+    const userId = this.userService.getIdOfUser();
+    if (userId) {
+      this.waitForWebSocketAndPublishStatus(userId);
+    }
+    window.addEventListener('beforeunload', this.handleWindowClose);
+  }
 
+  waitForWebSocketAndPublishStatus(userId: string) {
+    const interval = setInterval(() => {
+      if (this.wsService.stompClient?.connected) {
+        this.wsService.publishStatusUser(userId, true);
+        clearInterval(interval);
+      }
+    }, 200);
   }
 
   onNewChat(): void {
@@ -81,12 +96,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   onLogout(): void {
-    // Clear all storage
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Navigate to login page
-    this.router.navigate(['/login']);
+   this.loginService.logout();
   }
 
   sendMessage(content: string): void {
@@ -113,6 +123,18 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+    const userId = this.userService.getIdOfUser();
+    if (userId) {
+      this.wsService.publishStatusUser(userId, false);
+    }
+    window.removeEventListener('beforeunload', this.handleWindowClose);
+  }
+
+  handleWindowClose = () => {
+    const userId = this.userService.getIdOfUser();
+    if (userId) {
+      this.wsService.publishStatusUser(userId, false);
     }
   }
 } 

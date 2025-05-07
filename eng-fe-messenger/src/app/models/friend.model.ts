@@ -10,6 +10,7 @@ export interface FriendSearchData {
   username: string;
   friendStatus: FriendStatus;
   conversationId: number;
+  online: boolean;
   requestSentByMe: boolean;
 }
 

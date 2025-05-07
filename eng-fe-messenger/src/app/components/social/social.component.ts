@@ -31,10 +31,11 @@ export class SocialComponent implements OnInit, OnDestroy {
       id: '1',
       content: 'Just finished my first marathon! 🏃‍♂️',
       author: {
+        userId: '2',
         id: '2',
         username: 'Jane Smith',
         avatar: 'assets/images/avatars/avatar-2.png',
-        isOnline: true,
+        online: true,
         friendStatus: FriendStatus.ACCEPTED
       },
       timestamp: new Date(),
@@ -47,10 +48,11 @@ export class SocialComponent implements OnInit, OnDestroy {
       id: '2',
       content: 'Beautiful sunset at the beach 🌅',
       author: {
+        userId: '3',
         id: '3',
         username: 'Mike Johnson',
         avatar: 'assets/images/avatars/avatar-3.png',
-        isOnline: false,
+        online: false,
         friendStatus: FriendStatus.ACCEPTED
       },
       timestamp: new Date(),

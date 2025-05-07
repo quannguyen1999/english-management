@@ -8,9 +8,10 @@ export enum FriendStatus {
 
 export interface ChatUser {
   id: string;
+  userId?: string;
   username: string;
   avatar: string;
-  isOnline: boolean;
+  online: boolean;
   friendStatus: FriendStatus;
   lastMessage?: string;
   lastMessageTime?: string;
@@ -33,10 +34,15 @@ export interface Message {
   isMine?: boolean;
 }
 
-export interface MessageTypingResponse {
+export interface  MessageTypingResponse {
   userId?: string;
   username?: string;
   typing?: boolean;
+}
+
+export interface MessageStatusUserResponse {
+  userId?: string;
+  online?: boolean;
 }
 
 export interface MessageResponse {
