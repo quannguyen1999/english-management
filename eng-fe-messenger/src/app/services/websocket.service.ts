@@ -31,7 +31,9 @@ export class WebSocketService {
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
 
   constructor() {
-    this.connect();
+    if(localStorage.getItem('token')){
+      this.connect();
+    }
   }
 
   private connect(): void {

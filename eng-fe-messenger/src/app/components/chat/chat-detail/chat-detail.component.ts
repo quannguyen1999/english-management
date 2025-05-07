@@ -10,11 +10,12 @@ import { MessageService } from '../../../services/message.service';
 import { UserService } from '../../../services/user.service';
 import { ActivatedRoute } from '@angular/router';
 import { Route } from '@angular/router';
+import { GifPickerComponent } from '../gif-picker/gif-picker.component';
 
 @Component({
   selector: 'app-chat-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, RoughBoxDirective],
+  imports: [CommonModule, FormsModule, MatIconModule, RoughBoxDirective, GifPickerComponent],
   templateUrl: './chat-detail.component.html',
   styleUrls: ['./chat-detail.component.scss']
 })
@@ -113,7 +114,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
   private loadMessages(): void {
     this.isLoading = true;
     this.messageService.loadMessage(this.conversationId || '', 0, this.pageSize).subscribe(data => {
-      this.messages = data.data;
+      this.messages = data.data.reverse();
       this.isLoading = false;
       this.shouldScroll = true;
       this.currentPage = 0;
@@ -133,9 +134,9 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.isFetching = true;
     const nextPage = this.currentPage + 1;
     const prevScrollHeight = this.messagesContainer.nativeElement.scrollHeight;
-    this.messageService.loadMessage(this.conversationId, nextPage * this.pageSize, this.pageSize)
+    this.messageService.loadMessage(this.conversationId, nextPage, this.pageSize)
       .subscribe(data => {
-        const newMessages = data.data;
+        const newMessages = data.data.reverse();
         if (newMessages.length === 0) {
           this.allMessagesLoaded = true;
         } else {
@@ -153,18 +154,11 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
       });
   }
 
-  sendMessage(): void {
-    if (!this.newMessage.trim() || !this.conversationId) return;
-
-    const message: Message = {
-      content: this.newMessage,
-      type: 'TEXT',
-      conversationId: this.conversationId || ''
-    };
+  sendMessage(message: Message): void {
+    if (!this.conversationId) return;
     this.messageService.sendMessage(message).subscribe(message => {
       this.shouldScroll = true;
     });
-    this.newMessage = '';
   }
 
   isMessageFromMe(message: Message): boolean {
@@ -184,5 +178,33 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
       typing: true
     };
     this.wsService.publishTyping(this.conversationId, payload);
+  }
+
+  onGifSelected(gifUrl: string) {
+    // Create a message with the GIF URL
+    const message: Message = {
+      content: gifUrl,
+      type: 'GIF',
+      conversationId: this.conversationId || '',
+      replyTo: this.chatUser?.id || ''
+    };
+    this.sendMessage(message);
+  }
+
+  onGifPickerClose() {
+    // Handle GIF picker close if needed
+  }
+
+  sendTextMessage(): void {
+    if (!this.newMessage.trim() || !this.conversationId) return;
+
+    const message: Message = {
+      conversationId: this.conversationId || '',
+      content: this.newMessage,
+      type: 'TEXT'
+    };
+
+    this.sendMessage(message);
+    this.newMessage = '';
   }
 } 

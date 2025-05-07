@@ -90,7 +90,6 @@ export class ContactsComponent implements OnInit {
 
   loadUsers(): void {
     if(localStorage.getItem('token')){
-      console.log("working")
       this.friendService.loadFriend('').subscribe(chatUsers => {
         chatUsers.forEach(user => {
           this.websocketService.subscribeStatusUserOnline(user.userId || '');
