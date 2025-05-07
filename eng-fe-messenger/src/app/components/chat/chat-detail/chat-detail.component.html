@@ -54,10 +54,12 @@
              (keyup.enter)="sendMessage()"
              (input)="onTyping()"
              placeholder="Type a message..."
-             class="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-      <button (click)="sendMessage()"
-              class="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        Send
+             class="bg-white flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            roughBox       
+      >
+      <button  (click)="sendMessage()"
+              class=" text-black rounded-lg px-1 py-1 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <mat-icon>send</mat-icon>
       </button>
     </div>
   </div>

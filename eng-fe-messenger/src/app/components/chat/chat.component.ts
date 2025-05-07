@@ -19,6 +19,8 @@ import { MiniChatBoxComponent } from '../mini-chat-box/mini-chat-box.component';
 import { FriendService } from '../../services/friend.service';
 import { UserService } from '../../services/user.service';
 import { LoginService } from '../../services/login.service';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { SidebarService } from '../../services/sidebar.service';
 
 @Component({
   selector: 'app-chat',
@@ -35,12 +37,41 @@ import { LoginService } from '../../services/login.service';
     ContactsComponent
   ],
   templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss']
+  styleUrls: ['./chat.component.scss'],
+  animations: [
+    trigger('sidebarAnimation', [
+      state('expanded', style({
+        width: '0%'
+      })),
+      state('collapsed', style({
+        width: '0%'
+      })),
+      transition('expanded <=> collapsed', [
+        animate('0.3s ease-in-out')
+      ])
+    ]),
+    trigger('contentAnimation', [
+      state('expanded', style({
+        opacity: 1,
+        display: 'block'
+      })),
+      state('collapsed', style({
+        opacity: 0,
+        display: 'none'
+      })),
+      transition('expanded <=> collapsed', [
+        animate('0.2s ease-in-out')
+      ])
+    ])
+  ],
 })
 export class ChatComponent implements OnInit, OnDestroy {
   selectedChat: ChatUser | null = null;
   messages: Message[] = [];
   private subscription: Subscription | null = null;
+  isExpandedSidebar = false;
+  users: ChatUser[] = [];
+  private usersSub: Subscription | null = null;
 
   constructor(
     private router: Router,
@@ -49,7 +80,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     private loginService: LoginService,
     private route: ActivatedRoute,
     private friendService: FriendService,
-    private userService: UserService
+    private userService: UserService,
+    private sidebarService: SidebarService
   ) {
     // Register the custom icon set
     this.matIconRegistry.setDefaultFontSetClass('material-icons');
@@ -74,6 +106,9 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (userId) {
       this.waitForWebSocketAndPublishStatus(userId);
     }
+    this.usersSub = this.friendService.loadFriend('').subscribe(users => {
+      this.users = users;
+    });
     window.addEventListener('beforeunload', this.handleWindowClose);
   }
 
@@ -124,6 +159,9 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+    if (this.usersSub) {
+      this.usersSub.unsubscribe();
+    }
     const userId = this.userService.getIdOfUser();
     if (userId) {
       this.wsService.publishStatusUser(userId, false);
@@ -137,4 +175,20 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.wsService.publishStatusUser(userId, false);
     }
   }
+
+  onHoverMenuEnter() {
+    // this.isExpandedSidebar = true;
+    // this.sidebarService.setExpanded(true);
+  }
+
+  onHoverMenuLeave() {
+    // this.isExpandedSidebar = false;
+    // this.sidebarService.setExpanded(false);
+  }
+
+  toggleContactsDrawer(){
+    this.isExpandedSidebar = !this.isExpandedSidebar;
+    this.sidebarService.setExpanded(this.isExpandedSidebar);
+  }
+
 } 

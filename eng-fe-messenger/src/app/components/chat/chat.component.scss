@@ -121,3 +121,16 @@ button {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 } 
+
+.collapsed-side-bar{
+  transition: width 0.3s;
+}
+
+.content-side-bar{
+  opacity: 1;
+  transition: opacity 0.1s ease-in-out;
+}
+
+.bg-sidebar{
+  background-image: url("/assets/images/header-background.jpg");
+}
