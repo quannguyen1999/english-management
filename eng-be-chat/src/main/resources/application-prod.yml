@@ -5,7 +5,7 @@ spring:
   #      scheme: http
   #      host: 127.0.0.1
   #      port: 8200
-  #      token: hvs.R569qScTjj2SGGGt8Hzog59U # import your token vault in here
+  #      token:  # import your token vault in here
   #  config:
   #    import: vault://
 
