@@ -23,7 +23,7 @@ export interface ChatUser {
 export interface Message {
   id?: string;
   content?: string;
-  type?: 'TEXT' | 'IMAGE' | 'GIF';
+  type?: 'TEXT' | 'IMAGE' | 'GIF' | 'AUDIO';
   senderId?: string;
   receiverId?: string;
   conversationId?: string;

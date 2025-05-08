@@ -12,7 +12,6 @@
         </div>
       </div>
       <div>
-
         <h3 class="font-medium text-gray-900">{{ chatUser?.username }}</h3>
         <p class="text-sm text-gray-500">
           {{ chatUser?.online ? 'Online' : 'Offline' }}
@@ -35,6 +34,7 @@
            [class.bg-gray-100]="!isMessageFromMe(message)">
         <ng-container [ngSwitch]="message.type">
           <img *ngSwitchCase="'GIF'" [src]="message.content" alt="GIF" class="rounded-lg max-w-full max-h-60" />
+          <audio *ngSwitchCase="'AUDIO'" [src]="message.content" controls class="max-w-xs"></audio>
           <p *ngSwitchDefault class="text-gray-900">{{ message.content }}</p>
         </ng-container>
         <p class="text-xs text-gray-500 mt-1">
@@ -61,10 +61,36 @@
              class="bg-white text-black flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             roughBox       
       >
-      <button  (click)="sendTextMessage()"
+      <button (click)="sendTextMessage()"
               class="text-black rounded-lg px-1 py-1 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
         <mat-icon>send</mat-icon>
       </button>
+      <!-- Audio Recording Button and Controls -->
+      <ng-container *ngIf="!isRecording && !audioPreviewUrl">
+        <button (click)="startRecording()" class="text-black rounded-lg px-1 py-1 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500" [disabled]="isRecording">
+          <mat-icon>mic</mat-icon>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="isRecording">
+        <div class="flex items-center space-x-2">
+          <span class="text-red-500 animate-pulse"><mat-icon>fiber_manual_record</mat-icon> Recording... {{ recordingTime | date:'mm:ss' : 'UTC' }}</span>
+          <button (click)="stopRecording()" class="text-black rounded-lg px-1 py-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+            <mat-icon>stop</mat-icon>
+          </button>
+          <button (click)="cancelRecording()" class="text-black rounded-lg px-1 py-1 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="audioPreviewUrl && !isRecording">
+        <audio [src]="audioPreviewUrl" controls class="max-w-xs"></audio>
+        <button (click)="sendAudioMessage()" class="text-black rounded-lg px-1 py-1 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <mat-icon>send</mat-icon>
+        </button>
+        <button (click)="cancelRecording()" class="text-black rounded-lg px-1 py-1 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+          <mat-icon>close</mat-icon>
+        </button>
+      </ng-container>
     </div>
   </div>
 </div>

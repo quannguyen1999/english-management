@@ -9,6 +9,10 @@ public enum MessageErrors {
 
     CONVERSATION_NOT_EXISTS,
 
+    MESSAGE_EMPTY,
+
+    MESSAGE_FILE_INVALID,
+
     MESSAGE_NOT_EXISTS,
 
     FRIEND_EXISTS,

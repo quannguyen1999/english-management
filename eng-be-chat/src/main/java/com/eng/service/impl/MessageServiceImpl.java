@@ -1,11 +1,11 @@
 package com.eng.service.impl;
 
 import com.eng.constants.MessageStatusType;
-import com.eng.constants.MessageType;
 import com.eng.entities.ConversationParticipant;
 import com.eng.entities.Message;
 import com.eng.entities.MessageStatus;
 import com.eng.mappers.MessageMapper;
+import com.eng.models.request.MessageRequest;
 import com.eng.models.response.MessageResponse;
 import com.eng.models.response.PageResponse;
 import com.eng.repositories.MessageRepository;
@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
@@ -58,22 +59,21 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public MessageResponse sendMessage(UUID conversationId, String content, MessageType type, UUID replyTo) {
-        messageValidator.validateConversationId(conversationId);
-//        messageValidator.validateReplyToMessage(replyTo);
+    public MessageResponse sendMessage(MessageRequest messageRequest, MultipartFile file) {
+        messageValidator.validateSendMessage(messageRequest, file);
 
         UUID currentUserId = SecurityUtil.getIDUser();
 
         Message message = Message.builder()
-                .conversation(conversationService.getConversation(conversationId))
+                .conversation(conversationService.getConversation(messageRequest.getConversationId()))
                 .senderId(currentUserId)
-                .content(content)
-                .type(type)
-                .replyTo(replyTo)
+                .content(messageRequest.getContent())
+                .type(messageRequest.getType())
+                .replyTo(messageRequest.getReplyTo())
                 .build();
 
         message = messageRepository.save(message);
-        conversationService.updateLastMessage(conversationId, message.getId());
+        conversationService.updateLastMessage(messageRequest.getConversationId(), message.getId());
 
         // Create message status for all participants
         List<UUID> participantIds = message.getConversation().getParticipants().stream()
@@ -92,7 +92,7 @@ public class MessageServiceImpl implements MessageService {
         MessageResponse response = messageMapper.toResponse(message);
 
         // Send real-time notification
-        webSocketService.sendMessage(conversationId, response);
+        webSocketService.sendMessage(messageRequest.getConversationId(), response);
 
         return response;
     }

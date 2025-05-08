@@ -41,6 +41,15 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
   private typingSubscription: Subscription | any;
   private typingTimeout: any;
 
+  // Audio recording state
+  isRecording = false;
+  audioPreviewUrl: string | null = null;
+  audioBlob: Blob | null = null;
+  recordingTime = 0;
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+  private recordingInterval: any;
+
   constructor(
     private wsService: WebSocketService, 
     private messageService: MessageService,
@@ -206,5 +215,74 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
 
     this.sendMessage(message);
     this.newMessage = '';
+  }
+
+  startRecording() {
+    this.isRecording = true;
+    this.audioPreviewUrl = null;
+    this.audioBlob = null;
+    this.recordingTime = 0;
+    this.audioChunks = [];
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        this.mediaRecorder = new MediaRecorder(stream);
+        this.mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            this.audioChunks.push(event.data);
+          }
+        };
+        this.mediaRecorder.onstop = () => {
+          this.audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+          this.audioPreviewUrl = URL.createObjectURL(this.audioBlob);
+        };
+        this.mediaRecorder.start();
+        this.recordingInterval = setInterval(() => {
+          this.recordingTime += 1000;
+        }, 1000);
+      })
+      .catch(() => {
+        this.isRecording = false;
+        alert('Microphone access denied.');
+      });
+  }
+
+  stopRecording() {
+    if (this.mediaRecorder && this.isRecording) {
+      this.mediaRecorder.stop();
+      this.isRecording = false;
+      clearInterval(this.recordingInterval);
+    }
+  }
+
+  cancelRecording() {
+    if (this.mediaRecorder && this.isRecording) {
+      this.mediaRecorder.stop();
+    }
+    this.isRecording = false;
+    this.audioPreviewUrl = null;
+    this.audioBlob = null;
+    this.audioChunks = [];
+    this.recordingTime = 0;
+    clearInterval(this.recordingInterval);
+  }
+
+  sendAudioMessage() {
+    if (!this.audioBlob || !this.conversationId) return;
+    // You may want to upload the audioBlob to your server and get a URL
+    // For demo, we'll use a local blob URL
+    const senderId = this.userService.getIdOfUser();
+    if (!senderId) return;
+    const message: Message = {
+      content: this.audioPreviewUrl || '', // Replace with uploaded URL in production
+      type: 'AUDIO',
+      senderId,
+      receiverId: this.chatUser?.id || '',
+      conversationId: this.conversationId || ''
+    };
+    this.sendMessage(message);
+    this.audioPreviewUrl = null;
+    this.audioBlob = null;
+    this.audioChunks = [];
+    this.recordingTime = 0;
   }
 } 

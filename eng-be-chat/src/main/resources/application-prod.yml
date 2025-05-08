@@ -1,13 +1,13 @@
 spring:
-#  # Vault
-  #  cloud:
-  #    vault:
-  #      scheme: http
-  #      host: 127.0.0.1
-  #      port: 8200
-  #      token:  # import your token vault in here
-  #  config:
-  #    import: vault://
+  # Vault
+  cloud:
+    vault:
+      scheme: http
+      host: 127.0.0.1
+      port: 8200
+      token:  # import your token vault in here
+  config:
+    import: vault://
 
   # Database Configuration
   datasource:
@@ -83,3 +83,16 @@ eureka:
     registerWithEureka: true  # Registers this service with Eureka
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/  # Eureka server URL
+
+#S3
+ServicePointManager:
+  DefaultConnectionLimit: 25
+cloud:
+  aws:
+    credentials:
+      accessKey: ${access-s3}
+      secretKey: ${secret-s3}
+    region:
+      static: us-east-1
+    s3:
+      bucket: shopeclone

@@ -5,6 +5,7 @@
     <packaging>pom</packaging>
     <modules>
 		<module>eng-be-common</module>
+		<module>eng-be-s3</module>
 		<module>eng-be-eureka</module>
 		<module>eng-be-gateway</module>
 		<module>eng-be-user</module>

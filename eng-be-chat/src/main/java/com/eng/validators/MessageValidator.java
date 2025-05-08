@@ -3,16 +3,14 @@ package com.eng.validators;
 import com.eng.constants.MessageType;
 import com.eng.entities.Message;
 import com.eng.feignClient.UserServiceClient;
-import com.eng.models.response.MessageResponse;
+import com.eng.models.request.MessageRequest;
 import com.eng.repositories.ConversationRepository;
 import com.eng.repositories.MessageRepository;
 import com.eng.utils.SecurityUtil;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
 import java.util.UUID;
 
 import static com.eng.constants.MessageErrors.*;
@@ -43,6 +41,12 @@ public class MessageValidator extends CommonValidator{
 
     public void validateConversationId(UUID conversationId) {
         checkEmpty().accept(conversationRepository.findById(conversationId), CONVERSATION_NOT_EXISTS);
+    }
+
+    public void validateSendMessage(MessageRequest request, MultipartFile file) {
+        checkEmpty().accept(request, MESSAGE_EMPTY);
+        validateConversationId(request.getConversationId());
+        checkCondition().accept(request.getType().name().equalsIgnoreCase(MessageType.AUDIO.name()) && file.isEmpty(), MESSAGE_FILE_INVALID);
     }
 
 }

@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: prod  # Specifies the active profile (e.g., dev, prod)
+    active: dev  # Specifies the active profile (e.g., dev, prod)
   application:
     name: eng-chat-service  # Sets the application name
 

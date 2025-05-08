@@ -1,5 +1,5 @@
 package com.eng.constants;
 
 public enum MessageType {
-    TEXT, IMAGE, VIDEO, FILE, GIF
+    TEXT, IMAGE, VIDEO, FILE, GIF, AUDIO
 }

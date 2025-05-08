@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -31,13 +32,9 @@ public class MessageController {
 
     @PostMapping
     public ResponseEntity<MessageResponse> sendMessage(
-            @Valid @RequestBody MessageRequest request) {
-        return ResponseEntity.ok(messageService.sendMessage(
-                request.getConversationId(),
-                request.getContent(),
-                request.getType(),
-                request.getReplyTo()
-        ));
+            @Valid @RequestBody MessageRequest request,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(messageService.sendMessage(request, file));
     }
 
     @PutMapping
