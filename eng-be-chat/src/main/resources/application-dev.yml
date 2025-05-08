@@ -1,4 +1,14 @@
 spring:
+  # Vault
+  cloud:
+    vault:
+      scheme: http
+      host: 127.0.0.1
+      port: 8200
+      token: hvs.R569qScTjj2SGGGt8Hzog59U # import your token vault in here
+  config:
+    import: vault://
+
   # Database Configuration
   datasource:
     port: 3306  # MySQL default port
@@ -7,8 +17,8 @@ spring:
       connectionTimeout: 20000  # Maximum wait time for a connection (in ms)
       maximum-pool-size: 5  # Max number of connections in the pool
     url: jdbc:mysql://localhost:${spring.datasource.port}/${spring.datasource.schema}  # JDBC URL
-    username: root  # Database username
-    password: mysql  # Database password
+    username: ${secret-mysql-username}  # Database username
+    password: ${secret-mysql-password}  # Database password
   jpa:
     show-sql: true
 
@@ -73,19 +83,3 @@ eureka:
     registerWithEureka: true  # Registers this service with Eureka
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/  # Eureka server URL
-
-logging:
-  level:
-    org.springframework.security: TRACE
-    org.springframework.security.web.FilterChainProxy: TRACE
-    org.springframework.web: DEBUG
-    org.springframework.web.client: DEBUG
-    org.springframework.web.servlet: DEBUG
-    feign: DEBUG
-
-feign:
-  client:
-    config:
-      default:
-        loggerLevel: FULL
-

@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: dev  # Specifies the active profile (e.g., dev, prod)
+    active: prod  # Specifies the active profile (e.g., dev, prod)
   application:
     name: eng-chat-service  # Sets the application name
 
@@ -14,3 +14,18 @@ springdoc:
     path: /swagger-ui.html  # Defines the URL path for Swagger UI
   api-docs:
     version: OPENAPI_3_0  # Uses OpenAPI 3.0 specification
+    
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.security.web.FilterChainProxy: TRACE
+    org.springframework.web: DEBUG
+    org.springframework.web.client: DEBUG
+    org.springframework.web.servlet: DEBUG
+    feign: DEBUG
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: FULL

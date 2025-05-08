@@ -1,4 +1,14 @@
 spring:
+#  # Vault
+  #  cloud:
+  #    vault:
+  #      scheme: http
+  #      host: 127.0.0.1
+  #      port: 8200
+  #      token: hvs.R569qScTjj2SGGGt8Hzog59U # import your token vault in here
+  #  config:
+  #    import: vault://
+
   # Database Configuration
   datasource:
     port: 3306  # MySQL default port
@@ -59,7 +69,7 @@ info:
 # Custom Configuration
 custom:
   user:
-    url: http://localhost:8080  # Custom user service URL
+    url: http://localhost:8070  # Custom user service URL
   security:
     clientId: admin  # OAuth2 client ID
     clientSecret: password  # OAuth2 client secret (consider using environment variables for security)

@@ -29,12 +29,12 @@ services:
     image: redis:7.2.3
     container_name: redis-prime
     ports:
-      - "6379:6379"  # Expose Redis port
+      - "6379:6379"
     volumes:
-      - redis_data:/data  # Persist Redis data
-    command: redis-server --appendonly yes  # Enable persistence
+      - redis_data:/data
+    command: redis-server --appendonly yes
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]  # Check if Redis is responsive
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,13 +42,37 @@ services:
       file: common-config.yml
       service: network-deploy-service
 
+  # Vault service (HashiCorp)
+  vault:
+    image: hashicorp/vault:1.16
+    container_name: vault
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+    command: vault server -config=/vault/config/vault.hcl
+    volumes:
+      - vault_data:/vault/file
+      - ./vault/config:/vault/config
+    healthcheck:
+      test: ["CMD", "vault", "status", "-format=json"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
 # Define network for inter-service communication
 networks:
   prime-network:
-    driver: "bridge"  # Use bridge network driver
+    driver: "bridge"
 
 # Define volumes for data persistence
 volumes:
-  mysql_data:  # MySQL data volume
-  redis_data:  # Redis data volume
-
+  mysql_data:
+  redis_data:
+  vault_data:
