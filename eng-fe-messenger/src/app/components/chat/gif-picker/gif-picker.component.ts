@@ -2,7 +2,12 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  catchError,
+} from 'rxjs/operators';
 import { Subject, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,13 +18,15 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, MatIconModule],
   templateUrl: './gif-picker.component.html',
-  styles: [`
-    .gif-picker {
-      width: 320px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-  `]
+  styles: [
+    `
+      .gif-picker {
+        width: 320px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+    `,
+  ],
 })
 export class GifPickerComponent {
   @Output() gifSelected = new EventEmitter<string>();
@@ -36,20 +43,22 @@ export class GifPickerComponent {
 
   constructor(private http: HttpClient) {
     // Setup search with debounce
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => this.searchGifs(query)),
-      catchError(error => {
-        this.error = 'Failed to load GIFs. Please try again.';
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => this.searchGifs(query)),
+        catchError((error) => {
+          this.error = 'Failed to load GIFs. Please try again.';
+          this.isLoading = false;
+          return of({ data: [] });
+        })
+      )
+      .subscribe((response) => {
+        this.gifs = response.data;
         this.isLoading = false;
-        return of({ data: [] });
-      })
-    ).subscribe(response => {
-      this.gifs = response.data;
-      this.isLoading = false;
-      this.error = null;
-    });
+        this.error = null;
+      });
   }
 
   toggleGifPicker() {
@@ -69,9 +78,9 @@ export class GifPickerComponent {
     const url = query
       ? `https://api.giphy.com/v1/gifs/search?api_key=${this.GIPHY_API_KEY}&q=${query}&limit=20&rating=g`
       : `https://api.giphy.com/v1/gifs/trending?api_key=${this.GIPHY_API_KEY}&limit=20&rating=g`;
-    
+
     return this.http.get<any>(url).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error = 'Failed to load GIFs. Please try again.';
         this.isLoading = false;
         return of({ data: [] });
@@ -82,7 +91,7 @@ export class GifPickerComponent {
   private loadTrendingGifs() {
     this.isLoading = true;
     this.error = null;
-    this.searchGifs('').subscribe(response => {
+    this.searchGifs('').subscribe((response) => {
       this.gifs = response.data;
       this.isLoading = false;
     });
@@ -98,4 +107,4 @@ export class GifPickerComponent {
     this.isVisible = false;
     this.close.emit();
   }
-} 
+}
