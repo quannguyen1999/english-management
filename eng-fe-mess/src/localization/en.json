@@ -22,5 +22,14 @@
     "createAccount": "Create Account",
     "creatingAccount": "Creating Account",
     "or": "Or"
+  },
+  "dashboard": {
+    "title": "List Friends",
+    "search": "Search",
+    "addFriend": "Add Friend",
+    "friendRequest": "Friend Request",
+    "friendRequestSent": "Friend Request Sent",
+    "friendRequestAccepted": "Friend Request Accepted",
+    "friendRequestRejected": "Friend Request Rejected"
   }
 }

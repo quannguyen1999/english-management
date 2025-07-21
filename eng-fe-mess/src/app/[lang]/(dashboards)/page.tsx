@@ -3,27 +3,23 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuSkeleton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { FriendsListHeader } from "@/modules/dashboards/friends-list-header";
+import { getDictionary } from "../dictionaries";
 
-export default function Home() {
+export default async function Home({ params }: { params: { lang: "en" } }) {
+  const { lang } = await params;
+  const dict = await getDictionary(lang);
   return (
     <div className="flex h-screen">
       <SidebarProvider>
         <Sidebar>
           <SidebarHeader>
-            <h2 className="text-lg font-semibold">Dashboard</h2>
+            <h2 className="text-lg font-semibold">{dict.dashboard.title}</h2>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarMenu>
-              <SidebarMenuButton>Home</SidebarMenuButton>
-              <SidebarMenuButton>Settings</SidebarMenuButton>
-              <SidebarMenuSkeleton showIcon />
-              <SidebarMenuSkeleton />
-            </SidebarMenu>
+            <FriendsListHeader />
           </SidebarContent>
         </Sidebar>
         <div className="flex-1 p-4">
