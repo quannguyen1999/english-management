@@ -20,6 +20,7 @@
     "confirmPassword": "Confirm Password",
     "passwordMismatch": "Password mismatch",
     "createAccount": "Create Account",
-    "creatingAccount": "Creating Account"
+    "creatingAccount": "Creating Account",
+    "or": "Or"
   }
 }
