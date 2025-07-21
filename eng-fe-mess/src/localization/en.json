@@ -1,0 +1,25 @@
+{
+  "login": {
+    "title": "Login",
+    "description": "Login to your account",
+    "email": "Email",
+    "password": "Password",
+    "button": "Login",
+    "createAccount": "Create Account",
+    "newToPlatform": "New to platform"
+  },
+  "register": {
+    "title": "Register",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign In",
+    "username": "Username",
+    "usernameRequired": "Username is required",
+    "email": "Email",
+    "invalidEmail": "Invalid email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "passwordMismatch": "Password mismatch",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating Account"
+  }
+}
