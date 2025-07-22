@@ -1,6 +1,7 @@
 "use client";
 
 import { GeneratedAvatar } from "@/components/ui/generated-avatar";
+import { splitWords } from "@/utils";
 import { ColumnDef } from "@tanstack/react-table";
 
 export const columns: ColumnDef<any>[] = [
@@ -22,7 +23,7 @@ export const columns: ColumnDef<any>[] = [
               {row.original.agent.name}
             </div>
             <div className="text-sm text-muted-foreground">
-              {row.original.message}
+              {splitWords(row.original.message, 3)}
             </div>
           </div>
         </div>
