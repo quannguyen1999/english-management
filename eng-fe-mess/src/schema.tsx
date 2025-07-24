@@ -14,5 +14,9 @@ export const signUpSchema = z.object({
     .min(1, { message: "Confirm password is required" }),
 });
 
+export const conversationInputSchema = z.object({
+  message: z.string().min(1, { message: "Message is required" }),
+});
+
 export type SignInSchema = z.infer<typeof signInSchema>;
 export type SignUpSchema = z.infer<typeof signUpSchema>;

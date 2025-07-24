@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { signUpSchema } from "@/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Facebook, Github, Loader2Icon, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -21,6 +22,7 @@ export default function SignUpView({
   params: { lang: "en" };
   dict: any;
 }) {
+  const router = useRouter();
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -32,8 +34,12 @@ export default function SignUpView({
   });
 
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
-    await new Promise((resolve) => setTimeout(resolve, 100_00)); // 100s
-    console.log(values);
+    const response = await fetch("/api/sign-up", {
+      method: "POST",
+      body: JSON.stringify(values),
+    });
+    const data = await response.json();
+    router.push("/");
   };
 
   return (

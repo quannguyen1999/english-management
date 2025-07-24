@@ -19,7 +19,7 @@ export default function SignInView({
   params,
   dict,
 }: {
-  params: { lang: "en" };
+  params: { lang: string };
   dict: any;
 }) {
   const router = useRouter();
@@ -31,8 +31,12 @@ export default function SignInView({
     },
   });
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 100s
-    console.log(values);
+    const response = await fetch("/api/sign-in", {
+      method: "POST",
+      body: JSON.stringify(values),
+    });
+    const data = await response.json();
+    console.log(data);
     router.push("/");
   };
   return (
