@@ -1,13 +1,28 @@
 "use client";
 
 import { useConversation } from "@/components/providers/conversation-provider";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import EmojiPicker from "emoji-picker-react";
 import { SmileIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
 export default function ConversationContentView() {
   const { messages } = useConversation();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const [activePickerId, setActivePickerId] = useState<string | null>(null);
+  const [selectedEmojis, setSelectedEmojis] = useState<Record<string, string>>(
+    {}
+  );
+
+  const handleEmojiClick = (emojiData: any, id: string) => {
+    setSelectedEmojis((prev) => ({ ...prev, [id]: emojiData.emoji }));
+    setActivePickerId(null);
+  };
 
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -28,19 +43,41 @@ export default function ConversationContentView() {
               {item.message}
             </p>
 
-            <Button
-              className={
-                item.sender === "John Doe"
-                  ? "absolute -bottom-4 -left-4 text-2xl"
-                  : "absolute -bottom-4 -right-4 text-2xl"
+            <DropdownMenu
+              open={activePickerId === item.id}
+              onOpenChange={(isOpen) =>
+                setActivePickerId(isOpen ? item.id : null)
               }
-              variant="icon"
             >
-              <SmileIcon />
-            </Button>
+              <DropdownMenuTrigger asChild>
+                <div
+                  className={
+                    item.sender === "John Doe"
+                      ? "absolute -bottom-3 -left-3 text-2xl"
+                      : "absolute -bottom-3 -right-3 text-2xl"
+                  }
+                >
+                  {selectedEmojis[item.id] ? (
+                    <span className="text-2xl cursor-pointer">
+                      {selectedEmojis[item.id]}
+                    </span>
+                  ) : (
+                    <SmileIcon className="size-6 cursor-pointer" />
+                  )}
+                </div>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent className="bg-transparent border-none">
+                <EmojiPicker
+                  onEmojiClick={(emoji) => handleEmojiClick(emoji, item.id)}
+                  reactionsDefaultOpen={true}
+                />
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       ))}
+
       <div ref={endOfMessagesRef} />
     </ScrollArea>
   );

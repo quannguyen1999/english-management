@@ -55,7 +55,11 @@ export default function ConversationInputView() {
             <SmileIcon />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <EmojiPicker onEmojiClick={handleEmojiClick} />
+            <EmojiPicker
+              onEmojiClick={handleEmojiClick}
+              allowExpandReactions
+              reactionsDefaultOpen={true}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
 
