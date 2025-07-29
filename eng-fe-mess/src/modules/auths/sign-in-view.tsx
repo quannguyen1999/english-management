@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Facebook, Github, Loader2Icon, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 export default function SignInView({
@@ -36,8 +37,12 @@ export default function SignInView({
       body: JSON.stringify(values),
     });
     const data = await response.json();
-    console.log(data);
-    router.push("/");
+    if (response.status === 200) {
+      toast.success(dict.login.success);
+      router.push("/");
+    } else {
+      toast.error(dict.login[data.error]);
+    }
   };
   return (
     <>
@@ -52,7 +57,7 @@ export default function SignInView({
               href="/sign-up"
               className="font-medium text-blue-600 hover:text-blue-500"
             >
-              {dict.login.createAccount}
+              {dict.login.create_account}
             </a>
           </p>
         </div>
@@ -73,8 +78,8 @@ export default function SignInView({
                           <FormLabel>{dict.login.username}</FormLabel>
                           <FormControl>
                             <Input
-                              type="email"
-                              placeholder="Email"
+                              type="text"
+                              placeholder="Username"
                               {...field}
                             />
                           </FormControl>
@@ -133,7 +138,7 @@ export default function SignInView({
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-gray-500">
-                    {dict.login.newToPlatform}
+                    {dict.login.new_on_platform}
                   </span>
                 </div>
               </div>

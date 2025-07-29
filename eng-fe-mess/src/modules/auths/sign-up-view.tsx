@@ -9,10 +9,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signUpSchema } from "@/schema";
+import { extractDetailBadRequest } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Facebook, Github, Loader2Icon, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 export default function SignUpView({
@@ -39,7 +41,12 @@ export default function SignUpView({
       body: JSON.stringify(values),
     });
     const data = await response.json();
-    router.push("/");
+    if (response.status === 201) {
+      toast.success(dict.register.success);
+      router.push("/");
+    } else {
+      toast.error(dict.register[extractDetailBadRequest(data)]);
+    }
   };
 
   return (
@@ -50,12 +57,12 @@ export default function SignUpView({
             {dict.register.title}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {dict.register.haveAccount}{" "}
+            {dict.register.have_account}{" "}
             <a
               href="/sign-in"
               className="font-medium text-blue-600 hover:text-blue-500"
             >
-              {dict.register.signIn}
+              {dict.register.sign_in}
             </a>
           </p>
         </div>
@@ -124,7 +131,7 @@ export default function SignUpView({
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{dict.register.confirmPassword}</FormLabel>
+                        <FormLabel>{dict.register.confirm_password}</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -149,7 +156,7 @@ export default function SignUpView({
                     ) : (
                       <span className="flex items-center">
                         {"  "}
-                        {dict.register.createAccount}
+                        {dict.register.create_account}
                       </span>
                     )}
                   </button>

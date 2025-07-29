@@ -2,7 +2,6 @@ package com.eng.validators;
 
 import com.eng.models.request.UserRequest;
 import com.eng.repositories.UserRepository;
-import com.eng.utils.SecurityUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -49,7 +48,7 @@ public class UserValidator extends  CommonValidator{
 
     private void validateCheckPassword(String password) {
         checkEmpty().accept(password, USER_PASSWORD_INVALID);
-        checkCondition().accept(!password.matches(PASSWORD_REGEX), USER_PASSWORD_INVALID);
+        checkCondition().accept(!password.matches(PASSWORD_REGEX), USER_PASSWORD_NOT_MATCH);
     }
 
 

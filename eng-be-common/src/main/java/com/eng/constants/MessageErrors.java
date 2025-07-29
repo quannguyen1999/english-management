@@ -43,6 +43,7 @@ public enum MessageErrors {
 
     /** Invalid password format or requirements not met */
     USER_PASSWORD_INVALID,
+    USER_PASSWORD_NOT_MATCH,
 
     /** Invalid email format */
     USER_EMAIL_INVALID,

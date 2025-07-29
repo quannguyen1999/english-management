@@ -5,31 +5,37 @@
     "email": "Email",
     "password": "Password",
     "button": "Login",
-    "createAccount": "Create Account",
-    "newToPlatform": "New to platform"
+    "create_account": "Create Account",
+    "new_on_platform": "New to platform",
+    "success": "Login successful",
+    "access_denied": "Access denied"
   },
   "register": {
     "title": "Register",
-    "haveAccount": "Already have an account?",
-    "signIn": "Sign In",
+    "have_account": "Already have an account?",
+    "sign_in": "Sign In",
     "username": "Username",
-    "usernameRequired": "Username is required",
+    "username_required": "Username is required",
     "email": "Email",
-    "invalidEmail": "Invalid email",
+    "invalid_email": "Invalid email",
     "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "passwordMismatch": "Password mismatch",
-    "createAccount": "Create Account",
-    "creatingAccount": "Creating Account",
-    "or": "Or"
+    "confirm_password": "Confirm Password",
+    "password_mismatch": "Password mismatch",
+    "create_account": "Create Account",
+    "creating_account": "Creating Account",
+    "or": "Or",
+    "user_password_not_match": "Password regex not match",
+    "user_name_exists": "Username already exists",
+    "user_email_exists": "Email already exists",
+    "success": "Register successful"
   },
   "dashboard": {
     "title": "List Friends",
     "search": "Search",
-    "addFriend": "Add Friend",
-    "friendRequest": "Friend Request",
-    "friendRequestSent": "Friend Request Sent",
-    "friendRequestAccepted": "Friend Request Accepted",
-    "friendRequestRejected": "Friend Request Rejected"
+    "add_friend": "Add Friend",
+    "friend_request": "Friend Request",
+    "friend_request_sent": "Friend Request Sent",
+    "friend_request_accepted": "Friend Request Accepted",
+    "friend_request_rejected": "Friend Request Rejected"
   }
 }

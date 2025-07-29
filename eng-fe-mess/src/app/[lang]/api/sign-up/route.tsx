@@ -1,14 +1,16 @@
 // src/app/api/sign-in/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { commonResponse } from "@/app/[lang]/api/common-response";
+import { USER_API } from "@/config";
+import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
-  // const body = await  req.json();
-  const fakeData = {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    token: "1234567890",
-  };
-  await new Promise((resolve) => setTimeout(resolve, 1000)); // 100s
-  return NextResponse.json(fakeData, { status: 200 });
+  const body = await req.json();
+  const response = await fetch(`${USER_API}/users`, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return commonResponse(response);
 }
