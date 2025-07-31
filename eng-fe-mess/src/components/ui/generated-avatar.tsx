@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/service/utils";
 import { botttsNeutral, initials } from "@dicebear/collection";
 import { createAvatar } from "@dicebear/core";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";

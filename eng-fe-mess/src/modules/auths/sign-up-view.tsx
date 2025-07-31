@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signUp } from "@/service/api-auth";
 import { signUpSchema } from "@/schema";
 import { extractDetailBadRequest } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,16 +37,12 @@ export default function SignUpView({
   });
 
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
-    const response = await fetch("/api/sign-up", {
-      method: "POST",
-      body: JSON.stringify(values),
-    });
-    const data = await response.json();
-    if (response.status === 201) {
-      toast.success(dict.register.success);
-      router.push("/");
+    const response: any = await signUp(values);
+    if (response.status === 400) {
+      toast.error(dict.register[extractDetailBadRequest(response.data)]);
     } else {
-      toast.error(dict.register[extractDetailBadRequest(data)]);
+      toast.success(dict.register.success);
+      router.push("/sign-in");
     }
   };
 

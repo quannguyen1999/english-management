@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signIn } from "@/service/api-auth";
 import { signInSchema } from "@/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Facebook, Github, Loader2Icon, Mail } from "lucide-react";
@@ -32,17 +33,14 @@ export default function SignInView({
     },
   });
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
-    const response = await fetch("/api/sign-in", {
-      method: "POST",
-      body: JSON.stringify(values),
-    });
-    const data = await response.json();
-    if (response.status === 200) {
-      toast.success(dict.login.success);
-      router.push("/");
-    } else {
-      toast.error(dict.login[data.error]);
-    }
+    signIn(values)
+      .then(() => {
+        toast.success(dict.login.success);
+        router.push("/");
+      })
+      .catch((error: any) => {
+        toast.error(dict.login[error.message]);
+      });
   };
   return (
     <>
