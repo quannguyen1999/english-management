@@ -43,7 +43,7 @@ public class UserDetailConfigService implements UserDetailsService {
         if (ObjectUtils.isEmpty(user)) {
             throw new UsernameNotFoundException("Access Denied " + username);
         }
-        return new CustomUserDetails(new User(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getRole()));
+        return new CustomUserDetails(new User(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getRole(), user.getGoogleId(), user.getFirstName(), user.getLastName(), user.getFullName(), user.getPicture(), user.getIsEmailVerified(), user.getIsActive()));
     }
 
 }

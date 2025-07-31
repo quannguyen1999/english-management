@@ -1,4 +1,5 @@
-import { getAllRoutes, routeExists } from "./api-routes";
+import { getAllRoutes, routeExists, getRouteConfig } from "./api-routes";
+import { getAuthHeader, refreshAccessToken, clearTokens } from "@/utils/auth";
 
 export class ApiClient {
   private baseUrl: string;
@@ -19,14 +20,54 @@ export class ApiClient {
       );
     }
 
+    const routeConfig = getRouteConfig(path);
     const url = `${this.baseUrl}/${path}`;
+
+    // Prepare headers
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    // Add authentication header if required
+    if (routeConfig?.requiresAuth) {
+      const authHeader = getAuthHeader();
+      if (authHeader) {
+        headers.Authorization = authHeader;
+      }
+    }
+
     const response = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      headers,
       ...options,
     });
+
+    // Handle 401 Unauthorized - try to refresh token
+    if (response.status === 401 && routeConfig?.requiresAuth) {
+      const refreshSuccess = await refreshAccessToken();
+      if (refreshSuccess) {
+        // Retry the request with new token
+        const newAuthHeader = getAuthHeader();
+        if (newAuthHeader) {
+          headers.Authorization = newAuthHeader;
+        }
+
+        const retryResponse = await fetch(url, {
+          headers,
+          ...options,
+        });
+
+        return {
+          data: await retryResponse.json(),
+          status: retryResponse.status,
+        };
+      } else {
+        // Refresh failed, clear tokens and redirect to login
+        clearTokens();
+        window.location.href = "/sign-in";
+        throw new Error("Authentication failed");
+      }
+    }
 
     return {
       data: await response.json(),
@@ -50,6 +91,12 @@ export class ApiClient {
     return this.request("auth/sign-up", {
       method: "POST",
       body: JSON.stringify(userData),
+    });
+  }
+
+  async logout() {
+    return this.request("auth/logout", {
+      method: "POST",
     });
   }
 
@@ -118,6 +165,7 @@ export const apiClient = new ApiClient();
 // Export individual methods for convenience (bound to the instance)
 export const signIn = apiClient.signIn.bind(apiClient);
 export const signUp = apiClient.signUp.bind(apiClient);
+export const logout = apiClient.logout.bind(apiClient);
 export const getUserProfile = apiClient.getUserProfile.bind(apiClient);
 export const updateUser = apiClient.updateUser.bind(apiClient);
 export const searchUsers = apiClient.searchUsers.bind(apiClient);

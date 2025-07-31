@@ -88,6 +88,18 @@
             <version>1.0.1</version>
         </dependency>
 
+        <!-- OAuth2 Client for Google Authentication -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
+        <!-- Thymeleaf for template rendering -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
         <!--  Feign Client   -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

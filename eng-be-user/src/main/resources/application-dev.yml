@@ -1,25 +1,66 @@
 spring:
   # MySQL Database Configuration
   datasource:
-    port: 3306  # MySQL database port
-    schema: eng_dev  # Database schema name
+    port: 3306 # MySQL database port
+    schema: eng_dev # Database schema name
     hikari:
-      connectionTimeout: 20000  # Connection timeout in milliseconds
-      maximum-pool-size: 5  # Maximum number of connections in the pool
-    url: jdbc:mysql://localhost:${spring.datasource.port}/${spring.datasource.schema}  # Database connection URL
-    username: root  # Database username
-    password: mysql  # Database password
+      connectionTimeout: 20000 # Connection timeout in milliseconds
+      maximum-pool-size: 5 # Maximum number of connections in the pool
+    url: jdbc:mysql://localhost:${spring.datasource.port}/${spring.datasource.schema} # Database connection URL
+    username: root # Database username
+    password: mysql # Database password
 
   # Flyway Database Migration Tool Configuration
   flyway:
-    url: jdbc:mysql://localhost:${spring.datasource.port}/  # Flyway connection URL
-    schemas: ${spring.datasource.schema}  # Schema for migrations
-    user: ${spring.datasource.username}  # Flyway migration user
-    password: ${spring.datasource.password}  # Flyway migration password
-    enabled: true  # Disable Flyway migrations
-    validate-migration-naming: true  # Enforce naming validation for migrations
+    url: jdbc:mysql://localhost:${spring.datasource.port}/ # Flyway connection URL
+    schemas: ${spring.datasource.schema} # Schema for migrations
+    user: ${spring.datasource.username} # Flyway migration user
+    password: ${spring.datasource.password} # Flyway migration password
+    enabled: true # Disable Flyway migrations
+    validate-migration-naming: true # Enforce naming validation for migrations
     clean-on-validation-error: false # Automatic remove file flyway error - only enable in dev
     repair: true # Automatic remove file flyway error - only enable in dev
+
+  # Redis Configuration
+  redis:
+    host: localhost # Redis server hostname or IP address
+    port: 6379 # Redis server port (default is 6379)
+    database: 0 # Redis database index (default is 0, but you can configure it for multiple databases)
+    timeout: 5000 # Connection timeout in milliseconds (5 seconds here)
+    lettuce: # Lettuce is the Redis client used for communication
+      pool: # Connection pool settings for managing Redis connections
+        max-active: 8 # Maximum number of active Redis connections in the pool
+        max-idle: 8 # Maximum number of idle connections in the pool (unused connections)
+        min-idle: 0 # Minimum number of idle connections in the pool (connections that are ready to use)
+        max-wait: -1 # Maximum time to wait (in milliseconds) for an available connection. -1 means unlimited wait time
+
+  # Cache Configuration
+  cache:
+    type: redis # Specifies that Redis will be used as the cache provider
+    redis:
+      time-to-live: 1800000 # Time-to-live for cache entries in milliseconds (30 minutes here)
+      cache-null-values: false # Whether to store `null` values in the cache (false means `null` values will not be cached)
+      use-key-prefix: true # Whether to use a key prefix for cache entries to avoid key collisions
+      key-prefix: "eng:" # The prefix to be used for cache keys (e.g., `eng:user:123`)
+
+  # OAuth2 Configuration
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 444995572825-uuf77jbtuv6vf327bbiqarr4qh14na06.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+            redirect-uri: "http://localhost:9000/user-service/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
 
 #Config Actuator
 management:
@@ -40,34 +81,35 @@ management:
 # Application Information
 info:
   app:
-    name: "Eng Project"  # Application name
-    description: "Eng be user dev"  # Application description
-    version: "1.0.0"  # Application version
+    name: "Eng Project" # Application name
+    description: "Eng be user dev" # Application description
+    version: "1.0.0" # Application version
 
 # Security Configuration
 custom-security:
-  issuer: http://localhost:8070  # OAuth2 token issuer URL
+  issuer: http://localhost:8070 # OAuth2 token issuer URL
+  frontend: http://localhost:3000 # Frontend URL
 
 # Custom Token Expiration Settings (Durations in hours or days)
 security:
   duration:
-    authorization: 2  # Authorization validity in days
-    token: 1  # Access token validity in hours
-    refreshToken: 6  # Refresh token validity in hours
+    authorization: 2 # Authorization validity in days
+    token: 1 # Access token validity in hours
+    refreshToken: 6 # Refresh token validity in hours
 
 # OAuth2 JWT Secret Key
 jwt:
   secret:
-    key: yVMO9QNJ5i2IBZLZCuJPGg==  # Secret key for signing JWT tokens
+    key: yVMO9QNJ5i2IBZLZCuJPGg== # Secret key for signing JWT tokens
 
 # Eureka Client Configuration
 eureka:
-  preferIdAddress: true  # Prefer IP address over hostname for Eureka registration
+  preferIdAddress: true # Prefer IP address over hostname for Eureka registration
   client:
-    fetchRegistry: true  # Enable fetching of registered services from Eureka
-    registerWithEureka: true  # Enable registration of this service with Eureka
+    fetchRegistry: true # Enable fetching of registered services from Eureka
+    registerWithEureka: true # Enable registration of this service with Eureka
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/  # Eureka server URL
+      defaultZone: http://localhost:8761/eureka/ # Eureka server URL
 
 # Logging Configuration
 #logging:

@@ -3,7 +3,7 @@ import { USER_API, BACKEND_API } from "@/config";
 export interface ApiRouteConfig {
   baseUrl: string;
   endpoint: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   requiresAuth?: boolean;
   transformRequest?: (body: any) => any;
   transformResponse?: (response: any) => any;
@@ -12,79 +12,92 @@ export interface ApiRouteConfig {
 
 export const API_ROUTES: Record<string, ApiRouteConfig> = {
   // Authentication routes
-  'auth/sign-in': {
+  "auth/sign-in": {
     baseUrl: USER_API,
-    endpoint: '/oauth2/token',
-    method: 'POST',
+    endpoint: "/oauth2/token",
+    method: "POST",
     requiresAuth: false,
-    isOAuth2: true
+    isOAuth2: true,
   },
-  'auth/sign-up': {
+  "auth/sign-up": {
     baseUrl: USER_API,
-    endpoint: '/users',
-    method: 'POST',
-    requiresAuth: false
+    endpoint: "/users",
+    method: "POST",
+    requiresAuth: false,
   },
-  
+  "auth/refresh": {
+    baseUrl: USER_API,
+    endpoint: "/oauth2/token",
+    method: "POST",
+    requiresAuth: false,
+    isOAuth2: true,
+  },
+  "auth/logout": {
+    baseUrl: USER_API,
+    endpoint: "/auth/logout",
+    method: "POST",
+    requiresAuth: true,
+  },
+
   // User routes
-  'users/profile': {
+  "users/profile": {
     baseUrl: USER_API,
-    endpoint: '/users/current-profile',
-    method: 'GET',
-    requiresAuth: true
+    endpoint: "/users/current-profile",
+    method: "GET",
+    requiresAuth: true,
   },
-  'users/update': {
+  "users/update": {
     baseUrl: USER_API,
-    endpoint: '/users',
-    method: 'PUT',
-    requiresAuth: true
+    endpoint: "/users",
+    method: "PUT",
+    requiresAuth: true,
   },
-  'users/search': {
+  "users/search": {
     baseUrl: USER_API,
-    endpoint: '/users/findUserByName',
-    method: 'GET',
-    requiresAuth: true
+    endpoint: "/users/findUserByName",
+    method: "GET",
+    requiresAuth: true,
   },
-  
+
   // Conversation routes
-  'conversations': {
+  conversations: {
     baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: '/conversations',
-    method: 'GET',
-    requiresAuth: true
+    endpoint: "/conversations",
+    method: "GET",
+    requiresAuth: true,
   },
-  'conversations/private': {
+  "conversations/private": {
     baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: '/conversations/private',
-    method: 'POST',
-    requiresAuth: true
+    endpoint: "/conversations/private",
+    method: "POST",
+    requiresAuth: true,
   },
-  'conversations/group': {
+  "conversations/group": {
     baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: '/conversations/group',
-    method: 'POST',
-    requiresAuth: true
+    endpoint: "/conversations/group",
+    method: "POST",
+    requiresAuth: true,
   },
-  'conversations/friend-all': {
+  "conversations/friend-all": {
     baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: '/conversations/friend-all',
-    method: 'GET',
-    requiresAuth: true
+    endpoint: "/conversations/friend-all",
+    method: "GET",
+    requiresAuth: true,
   },
-  
+
   // Friend routes
-  'friends/search': {
+  "friends/search": {
     baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: '/conversations/load-friend',
-    method: 'GET',
-    requiresAuth: true
+    endpoint: "/conversations/load-friend",
+    method: "GET",
+    requiresAuth: true,
   },
-  'friends/load-id': {
+  "friends/load-id": {
     baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: '/conversations/load-id-conversation',
-    method: 'GET',
-    requiresAuth: true
-  }
+    endpoint: "/conversations/load-id-conversation",
+    method: "GET",
+    requiresAuth: true,
+  },
 };
 
 // Helper function to get route config
@@ -100,4 +113,4 @@ export function routeExists(path: string): boolean {
 // Helper function to get all available routes
 export function getAllRoutes(): string[] {
   return Object.keys(API_ROUTES);
-} 
+}

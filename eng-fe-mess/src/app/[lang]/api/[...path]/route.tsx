@@ -1,7 +1,7 @@
 import { commonResponse } from "@/app/[lang]/api/common-response";
 import { getRouteConfig } from "@/service/api-routes";
 import { CLIENT_ID, CLIENT_SECRET, GRANT_TYPE } from "@/config";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
@@ -60,8 +60,37 @@ export async function POST(
         method: routeConfig.method,
       }
     );
-    return commonResponse(response);
+
+    const responseData = await response.json();
+    const responseStatus = response.status;
+
+    // If authentication is successful, set cookies for tokens
+    if (responseStatus === 200 && responseData.access_token) {
+      const nextResponse = NextResponse.json(responseData, {
+        status: responseStatus,
+      });
+
+      // Set cookies for the tokens
+      nextResponse.cookies.set("access_token", responseData.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: responseData.expires_in,
+      });
+
+      nextResponse.cookies.set("refresh_token", responseData.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+      });
+
+      return nextResponse;
+    }
+
+    return NextResponse.json(responseData, { status: responseStatus });
   }
+
   // Handle regular requests
   const response = await fetch(
     `${routeConfig.baseUrl}${routeConfig.endpoint}`,

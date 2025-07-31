@@ -1,40 +1,23 @@
 # Server Configuration
 server:
-  port: 8070  # The application will run on port 8070
+  port: 8070 # The application will run on port 8070
 
 # Spring Framework Configuration
 spring:
   profiles:
-    active: dev  # Sets the active profile to 'dev' (development environment)
+    active: dev # Sets the active profile to 'dev' (development environment)
   application:
-    name: eng-user-service  # Name of the Spring Boot application
-  # Redis Configuration
-  redis:
-    host: localhost  # Redis server hostname or IP address
-    port: 6379       # Redis server port (default is 6379)
-    database: 0      # Redis database index (default is 0, but you can configure it for multiple databases)
-    timeout: 5000    # Connection timeout in milliseconds (5 seconds here)
-    lettuce: # Lettuce is the Redis client used for communication
-      pool: # Connection pool settings for managing Redis connections
-        max-active: 8  # Maximum number of active Redis connections in the pool
-        max-idle: 8    # Maximum number of idle connections in the pool (unused connections)
-        min-idle: 0    # Minimum number of idle connections in the pool (connections that are ready to use)
-        max-wait: -1   # Maximum time to wait (in milliseconds) for an available connection. -1 means unlimited wait time
-
-  # Cache Configuration
-  cache:
-    type: redis  # Specifies that Redis will be used as the cache provider
-    redis:
-      time-to-live: 1800000  # Time-to-live for cache entries in milliseconds (30 minutes here)
-      cache-null-values: false  # Whether to store `null` values in the cache (false means `null` values will not be cached)
-      use-key-prefix: true     # Whether to use a key prefix for cache entries to avoid key collisions
-      key-prefix: "eng:"     # The prefix to be used for cache keys (e.g., `eng:user:123`)
-
+    name: eng-user-service # Name of the Spring Boot application
 
 # API Documentation (Swagger & OpenAPI)
 springdoc:
   swagger-ui:
-    enabled: true  # Enables Swagger UI for API documentation
-    path: /swagger-ui.html  # Access Swagger UI at this URL
+    enabled: true # Enables Swagger UI for API documentation
+    path: /swagger-ui.html # Access Swagger UI at this URL
   api-docs:
-    version: OPENAPI_3_0  # Defines OpenAPI specification version (3.0)
+    version: OPENAPI_3_0 # Defines OpenAPI specification version (3.0)
+
+# JWT Configuration
+jwt:
+  secret:
+    key: your-256-bit-secret-key-here-make-it-long-enough-for-security

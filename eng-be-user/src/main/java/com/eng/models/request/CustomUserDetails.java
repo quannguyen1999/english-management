@@ -59,7 +59,7 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public User getUser() {
-        return new User(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getRole());
+        return new User(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getRole(), user.getGoogleId(), user.getFirstName(), user.getLastName(), user.getFullName(), user.getPicture(), user.getIsEmailVerified(), user.getIsActive());
     }
 
 

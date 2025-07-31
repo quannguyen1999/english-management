@@ -8,7 +8,9 @@
     "create_account": "Create Account",
     "new_on_platform": "New to platform",
     "success": "Login successful",
-    "access_denied": "Access denied"
+    "access_denied": "Access denied",
+    "error": "Server error",
+    "logout_success": "Logout successful"
   },
   "register": {
     "title": "Register",

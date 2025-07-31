@@ -29,6 +29,13 @@ public interface UserMapper {
     @Mapping(target = "username", source = "username")
     @Mapping(target = "email", source = "email")
     @Mapping(target = "role", source = "role")
+    @Mapping(target = "googleId", source = "googleId")
+    @Mapping(target = "firstName", source = "firstName")
+    @Mapping(target = "lastName", source = "lastName")
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "picture", source = "picture")
+    @Mapping(target = "isEmailVerified", source = "isEmailVerified")
+    @Mapping(target = "isActive", source = "isActive")
     UserResponse userToUserResponse(User user);
 
     /**

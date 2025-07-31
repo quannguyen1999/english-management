@@ -30,4 +30,19 @@ public class User extends CommonBaseEntities {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+    
+    // Google OAuth2 fields
+    private String googleId;
+
+    private String firstName;
+    
+    private String lastName;
+    
+    private String fullName;
+    
+    private String picture;
+    
+    private Boolean isEmailVerified = false;
+    
+    private Boolean isActive = true;
 }

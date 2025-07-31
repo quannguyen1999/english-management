@@ -81,7 +81,12 @@ public class SecurityConfig {
             "/oauth2/token",    // OAuth2 Token Generation
             "/registration",    // User Registration Endpoint
             "/authenticator",   // Custom Authentication
-            "/actuator/**"      // Actuator endpoints
+            "/actuator/**",     // Actuator endpoints
+            "/oauth2/authorization/google", // Google OAuth2 authorization
+            "/login/oauth2/code/google",    // Google OAuth2 callback
+            "/api/auth/**",     // Auth API endpoints
+            "/login.html",      // Login page
+            "/"                 // Root path
     );
 
     @Value("${custom-security.issuer}")
@@ -134,7 +139,7 @@ public class SecurityConfig {
      */
     @Order(2)
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder, GoogleOAuth2SuccessHandler googleOAuth2SuccessHandler) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
@@ -147,6 +152,10 @@ public class SecurityConfig {
                                 .decoder(jwtDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(googleOAuth2SuccessHandler)
+                        .failureUrl("/login?error=true")
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
@@ -187,6 +196,11 @@ public class SecurityConfig {
         RSAKey rsaKey = generateRsa();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    }
+
+    @Bean
+    public RSAKey rsaKey() {
+        return generateRsa();
     }
 
     /**
