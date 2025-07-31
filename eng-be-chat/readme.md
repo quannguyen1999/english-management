@@ -2,6 +2,7 @@
 
 1. Step 0 Run docker compose first
 
+
 2. Step 1 access
    docker exec -it vault sh
 
