@@ -12,10 +12,10 @@ export function saveTokens(tokens: AuthTokens): void {
   if (typeof window !== "undefined") {
     localStorage.setItem("access_token", tokens.access_token);
     localStorage.setItem("refresh_token", tokens.refresh_token);
-    // localStorage.setItem("token_type", tokens.token_type);
-    // localStorage.setItem("expires_in", tokens.expires_in.toString());
-    // localStorage.setItem("scope", tokens.scope);
-    // localStorage.setItem("token_created_at", Date.now().toString());
+    localStorage.setItem("token_type", tokens.token_type);
+    localStorage.setItem("expires_in", tokens.expires_in.toString());
+    localStorage.setItem("scope", tokens.scope);
+    localStorage.setItem("token_created_at", Date.now().toString());
   }
 }
 

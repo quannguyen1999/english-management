@@ -1,4 +1,4 @@
-import { USER_API, BACKEND_API } from "@/config";
+import { CHAT_API, USER_API } from "@/config";
 
 export interface ApiRouteConfig {
   baseUrl: string;
@@ -7,96 +7,105 @@ export interface ApiRouteConfig {
   requiresAuth?: boolean;
   transformRequest?: (body: any) => any;
   transformResponse?: (response: any) => any;
-  isOAuth2?: boolean; // Special flag for OAuth2 authentication
 }
+
+export const AUTH_SIGN_IN = "auth/sign-in";
+export const AUTH_SIGN_UP = "auth/sign-up";
+export const AUTH_REFRESH = "auth/refresh";
+export const AUTH_LOGOUT = "auth/logout";
+export const USER_PROFILE = "users/profile";
+export const USER_UPDATE = "users/update";
+export const USER_SEARCH = "users/search";
+export const CONVERSATIONS = "conversations";
+export const CONVERSATIONS_PRIVATE = "conversations/private";
+export const CONVERSATIONS_GROUP = "conversations/group";
+export const CONVERSATIONS_FRIEND_ALL = "conversations/friend-all";
+export const FRIENDS_SEARCH = "friends/search";
+export const FRIENDS_LOAD_ID = "friends/load-id";
 
 export const API_ROUTES: Record<string, ApiRouteConfig> = {
   // Authentication routes
-  "auth/sign-in": {
+  [AUTH_SIGN_IN]: {
     baseUrl: USER_API,
-    endpoint: "/oauth2/token",
-    method: "POST",
-    requiresAuth: false,
-    isOAuth2: true,
-  },
-  "auth/sign-up": {
-    baseUrl: USER_API,
-    endpoint: "/users",
+    endpoint: "/api/auth/sign-in",
     method: "POST",
     requiresAuth: false,
   },
-  "auth/refresh": {
+  [AUTH_SIGN_UP]: {
     baseUrl: USER_API,
-    endpoint: "/oauth2/token",
+    endpoint: "/api/user",
     method: "POST",
     requiresAuth: false,
-    isOAuth2: true,
   },
-  "auth/logout": {
+  [AUTH_REFRESH]: {
     baseUrl: USER_API,
-    endpoint: "/auth/logout",
+    endpoint: "/api/auth/refresh",
+    method: "POST",
+    requiresAuth: false,
+  },
+  [AUTH_LOGOUT]: {
+    baseUrl: USER_API,
+    endpoint: "/api/auth/logout",
     method: "POST",
     requiresAuth: true,
   },
 
   // User routes
-  "users/profile": {
+  [USER_PROFILE]: {
     baseUrl: USER_API,
-    endpoint: "/users/current-profile",
+    endpoint: "/api/users/current-profile",
     method: "GET",
     requiresAuth: true,
   },
-  "users/update": {
+  [USER_UPDATE]: {
     baseUrl: USER_API,
-    endpoint: "/users",
+    endpoint: "/api/users",
     method: "PUT",
     requiresAuth: true,
   },
-  "users/search": {
+  [USER_SEARCH]: {
     baseUrl: USER_API,
-    endpoint: "/users/findUserByName",
+    endpoint: "/api/users/findUserByName",
     method: "GET",
     requiresAuth: true,
   },
 
   // Conversation routes
-  conversations: {
-    baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: "/conversations",
+  [CONVERSATIONS]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/conversations",
     method: "GET",
     requiresAuth: true,
   },
-  "conversations/private": {
-    baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: "/conversations/private",
+  [CONVERSATIONS_PRIVATE]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/conversations/private",
     method: "POST",
     requiresAuth: true,
   },
-  "conversations/group": {
-    baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: "/conversations/group",
+  [CONVERSATIONS_GROUP]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/conversations/group",
     method: "POST",
     requiresAuth: true,
   },
-  "conversations/friend-all": {
-    baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: "/conversations/friend-all",
+  [CONVERSATIONS_FRIEND_ALL]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/conversations/friend-all",
     method: "GET",
     requiresAuth: true,
   },
-
   // Friend routes
-  "friends/search": {
-    baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: "/conversations/load-friend",
+  [FRIENDS_SEARCH]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/conversations/load-friend",
     method: "GET",
     requiresAuth: true,
   },
-  "friends/load-id": {
-    baseUrl: `${BACKEND_API}/chat-service`,
-    endpoint: "/conversations/load-id-conversation",
+  [FRIENDS_LOAD_ID]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/conversations/load-id-conversation",
     method: "GET",
-    requiresAuth: true,
   },
 };
 

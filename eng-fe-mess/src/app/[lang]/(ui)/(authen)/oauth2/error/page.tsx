@@ -1,16 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
-export default function OAuth2ErrorPage({
-  params,
-  dict,
-}: {
-  params: { lang: string };
-  dict: any;
-}) {
+export default function OAuth2ErrorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -21,11 +15,11 @@ export default function OAuth2ErrorPage({
     toast.error(message);
 
     // Redirect to login page after a short delay
-    // const timer = setTimeout(() => {
-    //   router.push("/sign-in");
-    // }, 2000);
+    const timer = setTimeout(() => {
+      router.push("/sign-in");
+    }, 2000);
 
-    // return () => clearTimeout(timer);
+    return () => clearTimeout(timer);
   }, [searchParams, router]);
 
   return (

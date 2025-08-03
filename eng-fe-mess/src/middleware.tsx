@@ -17,6 +17,7 @@ function requiresAuth(pathname: string): boolean {
     "/api/auth/sign-in",
     "/api/auth/sign-up",
     "/api/auth/refresh",
+    "/api/auth/set-cookies",
   ];
 
   return !publicPaths.some((path) => pathname.includes(path));
@@ -26,7 +27,6 @@ function requiresAuth(pathname: string): boolean {
 function isAuthenticated(request: NextRequest): boolean {
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
-
   return !!(accessToken && refreshToken);
 }
 

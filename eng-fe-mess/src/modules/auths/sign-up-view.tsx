@@ -8,15 +8,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signUp } from "@/service/api-auth";
 import { signUpSchema } from "@/schema";
+import { signUp } from "@/service/api-auth";
 import { extractDetailBadRequest } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Facebook, Github, Loader2Icon, Mail } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import GoogleInView from "./google-in-view";
 
 export default function SignUpView({
   params,
@@ -38,11 +39,11 @@ export default function SignUpView({
 
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     const response: any = await signUp(values);
-    if (response.status === 400) {
-      toast.error(dict.register[extractDetailBadRequest(response.data)]);
-    } else {
+    if (response.status === 200 || response.status === 201) {
       toast.success(dict.register.success);
       router.push("/sign-in");
+    } else {
+      toast.error(dict.register[extractDetailBadRequest(response.data)]);
     }
   };
 
@@ -171,17 +172,7 @@ export default function SignUpView({
                 </span>
               </div>
             </div>
-            <div className="flex justify-center gap-2">
-              <div className="border border-gray-300 rounded-md p-2 cursor-pointer">
-                <Facebook className="size-6" />
-              </div>
-              <div className="border border-gray-300 rounded-md p-2 cursor-pointer">
-                <Github className="size-6" />
-              </div>
-              <div className="border border-gray-300 rounded-md p-2 cursor-pointer">
-                <Mail className="size-6" />
-              </div>
-            </div>
+            <GoogleInView />
           </div>
         </div>
       </div>

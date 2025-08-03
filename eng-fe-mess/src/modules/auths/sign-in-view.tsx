@@ -8,17 +8,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signIn } from "@/service/api-auth";
 import { signInSchema } from "@/schema";
+import { signIn } from "@/service/api-auth";
+import { saveTokens } from "@/utils/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Facebook, Github, Loader2Icon, Mail, Chrome } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { extractDetailBadRequest } from "@/utils";
-import { saveTokens } from "@/utils/auth";
-import { USER_API } from "@/config";
+import GoogleInView from "./google-in-view";
 
 export default function SignInView({
   params,
@@ -50,10 +49,6 @@ export default function SignInView({
       router.push("/sign-in");
       toast.error(dict.login.error);
     }
-  };
-
-  const handleGoogleLogin = () => {
-    window.location.href = USER_API + "/oauth2/authorization/google";
   };
 
   return (
@@ -154,21 +149,7 @@ export default function SignInView({
                   </span>
                 </div>
               </div>
-              <div className="flex justify-center gap-2">
-                <div
-                  className="border border-gray-300 rounded-md p-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={handleGoogleLogin}
-                  title="Login with Google"
-                >
-                  <Mail className="size-6" />
-                </div>
-                <div className="border border-gray-300 rounded-md p-2 cursor-pointer">
-                  <Facebook className="size-6" />
-                </div>
-                <div className="border border-gray-300 rounded-md p-2 cursor-pointer">
-                  <Github className="size-6" />
-                </div>
-              </div>
+              <GoogleInView />
             </div>
           </div>
         </div>

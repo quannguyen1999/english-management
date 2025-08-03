@@ -1,181 +1,95 @@
-import { getAllRoutes, routeExists, getRouteConfig } from "./api-routes";
-import { getAuthHeader, refreshAccessToken, clearTokens } from "@/utils/auth";
+import request from "./api-config";
+import {
+  AUTH_LOGOUT,
+  AUTH_SIGN_IN,
+  AUTH_SIGN_UP,
+  CONVERSATIONS,
+  CONVERSATIONS_FRIEND_ALL,
+  CONVERSATIONS_GROUP,
+  CONVERSATIONS_PRIVATE,
+  FRIENDS_LOAD_ID,
+  FRIENDS_SEARCH,
+  USER_PROFILE,
+  USER_SEARCH,
+  USER_UPDATE,
+} from "./api-routes";
 
-export class ApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = "/api") {
-    this.baseUrl = baseUrl;
-  }
-
-  private async request<T>(
-    path: string,
-    options: RequestInit = {}
-  ): Promise<{ data: T; status: number }> {
-    if (!routeExists(path)) {
-      throw new Error(
-        `API route '${path}' not found. Available routes: ${getAllRoutes().join(
-          ", "
-        )}`
-      );
-    }
-
-    const routeConfig = getRouteConfig(path);
-    const url = `${this.baseUrl}/${path}`;
-
-    // Prepare headers
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-
-    // Add authentication header if required
-    if (routeConfig?.requiresAuth) {
-      const authHeader = getAuthHeader();
-      if (authHeader) {
-        headers.Authorization = authHeader;
-      }
-    }
-
-    const response = await fetch(url, {
-      headers,
-      ...options,
-    });
-
-    // Handle 401 Unauthorized - try to refresh token
-    if (response.status === 401 && routeConfig?.requiresAuth) {
-      const refreshSuccess = await refreshAccessToken();
-      if (refreshSuccess) {
-        // Retry the request with new token
-        const newAuthHeader = getAuthHeader();
-        if (newAuthHeader) {
-          headers.Authorization = newAuthHeader;
-        }
-
-        const retryResponse = await fetch(url, {
-          headers,
-          ...options,
-        });
-
-        return {
-          data: await retryResponse.json(),
-          status: retryResponse.status,
-        };
-      } else {
-        // Refresh failed, clear tokens and redirect to login
-        clearTokens();
-        window.location.href = "/sign-in";
-        throw new Error("Authentication failed");
-      }
-    }
-
-    return {
-      data: await response.json(),
-      status: response.status,
-    };
-  }
-
-  // Authentication methods
-  async signIn(credentials: { username: string; password: string }) {
-    return this.request("auth/sign-in", {
-      method: "POST",
-      body: JSON.stringify(credentials),
-    });
-  }
-
-  async signUp(userData: {
-    username: string;
-    email: string;
-    password: string;
-  }) {
-    return this.request("auth/sign-up", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    });
-  }
-
-  async logout() {
-    return this.request("auth/logout", {
-      method: "POST",
-    });
-  }
-
-  // User methods
-  async getUserProfile() {
-    return this.request("users/profile");
-  }
-
-  async updateUser(userData: any) {
-    return this.request("users/update", {
-      method: "PUT",
-      body: JSON.stringify(userData),
-    });
-  }
-
-  async searchUsers(query: string) {
-    return this.request(`users/search?name=${encodeURIComponent(query)}`);
-  }
-
-  // Conversation methods
-  async getConversations() {
-    return this.request("conversations");
-  }
-
-  async createPrivateConversation(data: any) {
-    return this.request("conversations/private", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async createGroupConversation(data: any) {
-    return this.request("conversations/group", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async getFriendConversations() {
-    return this.request("conversations/friend-all");
-  }
-
-  // Friend methods
-  async searchFriends(query: string) {
-    return this.request(`friends/search?name=${encodeURIComponent(query)}`);
-  }
-
-  async getConversationId(data: any) {
-    return this.request(
-      `friends/load-id?${new URLSearchParams(data).toString()}`
-    );
-  }
-
-  // Generic method for any route
-  async call<T>(
-    path: string,
-    options: RequestInit = {}
-  ): Promise<{ data: T; status: number }> {
-    return this.request<T>(path, options);
-  }
+export interface SignInProps {
+  username: string;
+  password: string;
 }
 
-// Create a default instance
-export const apiClient = new ApiClient();
+export interface SignUpProps {
+  username: string;
+  email: string;
+  password: string;
+}
 
-// Export individual methods for convenience (bound to the instance)
-export const signIn = apiClient.signIn.bind(apiClient);
-export const signUp = apiClient.signUp.bind(apiClient);
-export const logout = apiClient.logout.bind(apiClient);
-export const getUserProfile = apiClient.getUserProfile.bind(apiClient);
-export const updateUser = apiClient.updateUser.bind(apiClient);
-export const searchUsers = apiClient.searchUsers.bind(apiClient);
-export const getConversations = apiClient.getConversations.bind(apiClient);
-export const createPrivateConversation =
-  apiClient.createPrivateConversation.bind(apiClient);
-export const createGroupConversation =
-  apiClient.createGroupConversation.bind(apiClient);
-export const getFriendConversations =
-  apiClient.getFriendConversations.bind(apiClient);
-export const searchFriends = apiClient.searchFriends.bind(apiClient);
-export const getConversationId = apiClient.getConversationId.bind(apiClient);
-export const call = apiClient.call.bind(apiClient);
+// Authentication methods
+export async function signIn(credentials: SignInProps) {
+  return request(AUTH_SIGN_IN, {
+    method: "POST",
+    body: JSON.stringify(credentials),
+  });
+}
+
+export async function signUp(userData: SignUpProps) {
+  return request(AUTH_SIGN_UP, {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+}
+
+export async function logout() {
+  return request(AUTH_LOGOUT, {
+    method: "POST",
+  });
+}
+
+// User methods
+export async function getUserProfile() {
+  return request(USER_PROFILE);
+}
+
+export async function updateUser(userData: any) {
+  return request(USER_UPDATE, {
+    method: "PUT",
+    body: JSON.stringify(userData),
+  });
+}
+
+export async function searchUsers(query: string) {
+  return request(`${USER_SEARCH}?name=${encodeURIComponent(query)}`);
+}
+
+// Conversation methods
+export async function getConversations() {
+  return request(CONVERSATIONS);
+}
+
+export async function createPrivateConversation(data: any) {
+  return request(CONVERSATIONS_PRIVATE, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function createGroupConversation(data: any) {
+  return request(CONVERSATIONS_GROUP, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getFriendConversations() {
+  return request(CONVERSATIONS_FRIEND_ALL);
+}
+
+// Friend methods
+export async function searchFriends(query: string) {
+  return request(`${FRIENDS_SEARCH}?name=${encodeURIComponent(query)}`);
+}
+
+export async function getConversationId(data: any) {
+  return request(`${FRIENDS_LOAD_ID}?${new URLSearchParams(data).toString()}`);
+}

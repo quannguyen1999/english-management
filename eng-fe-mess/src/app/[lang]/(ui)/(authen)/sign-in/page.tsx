@@ -1,5 +1,5 @@
+import { getDictionary } from "@/app/[lang]/dictionaries";
 import SignInView from "@/modules/auths/sign-in-view";
-import { getDictionary } from "../dictionaries";
 
 export default async function SignIn({ params }: { params: { lang: "en" } }) {
   const { lang } = await params;
