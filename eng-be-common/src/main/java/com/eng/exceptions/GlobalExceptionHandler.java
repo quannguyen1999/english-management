@@ -31,14 +31,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      *
      * @param e        The FeignException thrown by the client.
      * @param response The HTTP response.
-     * @return A string indicating a Feign error.
+     * @return A proper REST error response.
      */
     @ExceptionHandler(FeignException.class)
-    public String handleFeignStatusException(FeignException e, HttpServletResponse response) {
+    @ResponseBody
+    public ResponseEntity<Object> handleFeignStatusException(FeignException e, HttpServletResponse response) {
+        log.error("Feign client exception occurred: {}", e.getMessage(), e);
+        
         if (e.status() == HttpStatus.BAD_REQUEST.value()) {
             throw new UnauthorizedRequestException(MessageErrors.ACCOUNT_USERNAME_OR_PASS_INVALID);
         }
-        return "feignError";
+        
+        // Return a proper REST error response instead of a view name
+        return commonHandlerException("Service communication error", "Service Unavailable", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /**

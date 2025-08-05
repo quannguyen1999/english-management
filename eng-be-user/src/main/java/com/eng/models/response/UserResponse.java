@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -30,4 +31,8 @@ public class UserResponse {
     private String picture;
     private Boolean isEmailVerified;
     private Boolean isActive;
+    
+    // Timestamp fields
+    private Date createdAt;
+    private Date updatedAt;
 }

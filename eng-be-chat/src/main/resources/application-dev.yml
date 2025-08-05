@@ -1,24 +1,14 @@
 spring:
-  # Vault
-  cloud:
-    vault:
-      scheme: http
-      host: 127.0.0.1
-      port: 8200
-      token: hvs.R569qScTjj2SGGGt8Hzog59U # import your token vault in here
-  config:
-    import: vault://
-
   # Database Configuration
   datasource:
-    port: 3306  # MySQL default port
-    schema: eng_dev  # Database schema name
+    port: 3306 # MySQL database port
+    schema: eng_dev # Database schema name
     hikari:
-      connectionTimeout: 20000  # Maximum wait time for a connection (in ms)
-      maximum-pool-size: 5  # Max number of connections in the pool
+      connectionTimeout: 20000 # Connection timeout in milliseconds
+      maximum-pool-size: 5 # Maximum number of connections in the pool
     url: jdbc:mysql://localhost:${spring.datasource.port}/${spring.datasource.schema}  # JDBC URL
-    username: ${secret-mysql-username}  # Database username
-    password: ${secret-mysql-password}  # Database password
+    username: root # Database username
+    password: mysql # Database password
   jpa:
     show-sql: true
 

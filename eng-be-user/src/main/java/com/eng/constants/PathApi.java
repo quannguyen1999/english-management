@@ -10,8 +10,8 @@ public class PathApi {
     public static final String GOOGLE_CALLBACK_PATH = "/login/oauth2/code/google";
     public static final String LOGIN_PATH = "/login";
     public static final String LOGOUT_PATH = "/logout";
-    public static final String USER_PATH = "/api/user";
-    public static final String USER = "/api/user";
+    public static final String USER_PATH = "/users";
+    public static final String USER = "/users";
     public static final String AUTHORIZE_PATH = "/oauth2/authorize";
     
     // User Management Endpoints

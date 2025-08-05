@@ -36,6 +36,8 @@ public interface UserMapper {
     @Mapping(target = "picture", source = "picture")
     @Mapping(target = "isEmailVerified", source = "isEmailVerified")
     @Mapping(target = "isActive", source = "isActive")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
     UserResponse userToUserResponse(User user);
 
     /**

@@ -1,7 +1,7 @@
 package com.eng.feignClient.fallBack;
 
 import com.eng.feignClient.UserServiceClient;
-import com.eng.models.response.PageResponse;
+import com.eng.models.request.CommonPageInfo;
 import com.eng.models.response.UserResponse;
 import com.eng.utils.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +27,9 @@ public class UserFallback implements UserServiceClient {
     }
 
     @Override
-    public PageResponse<UserResponse> getUsers(int page, int size, String username) {
+    public CommonPageInfo<UserResponse> getUsers(int page, int size, String username) {
         log.error("Fallback triggered for getUsers with page={}, size={}, username={}", page, size, username);
         log.error("Stack trace:", new Exception("Fallback stack trace"));
-        
-        PageResponse<UserResponse> response = new PageResponse<>();
         
         // Create a fallback user response with current user's information
         UserResponse fallbackUser = new UserResponse();
@@ -44,10 +42,12 @@ public class UserFallback implements UserServiceClient {
         fallbackUser.setUsername(currentUsername);
         fallbackUser.setEmail("unknown@example.com");
 
-        response.setData(List.of(fallbackUser));
-        response.setTotal(1L);
-        response.setPage(page);
-        response.setSize(size);
+        CommonPageInfo<UserResponse> response = CommonPageInfo.<UserResponse>builder()
+                .data(List.of(fallbackUser))
+                .total(1L)
+                .page(page)
+                .size(size)
+                .build();
 
         log.error("Returning fallback response: {}", response);
         return response;

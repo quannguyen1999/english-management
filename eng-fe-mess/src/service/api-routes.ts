@@ -33,7 +33,7 @@ export const API_ROUTES: Record<string, ApiRouteConfig> = {
   },
   [AUTH_SIGN_UP]: {
     baseUrl: USER_API,
-    endpoint: "/api/user",
+    endpoint: "/api/users",
     method: "POST",
     requiresAuth: false,
   },

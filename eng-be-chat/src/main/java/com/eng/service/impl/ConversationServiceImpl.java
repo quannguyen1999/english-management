@@ -7,6 +7,7 @@ import com.eng.entities.Message;
 import com.eng.feignClient.UserServiceClient;
 import com.eng.mappers.ConversationMapper;
 import com.eng.models.response.ConversationResponse;
+import com.eng.models.request.CommonPageInfo;
 import com.eng.models.response.PageResponse;
 import com.eng.models.response.UserRelationshipResponse;
 import com.eng.models.response.UserResponse;
@@ -49,7 +50,7 @@ public class ConversationServiceImpl implements ConversationService {
 
         // Original logic for username search
         // Get paginated users from user service
-        PageResponse<UserResponse> userPage = userServiceClient.getUsers(
+        CommonPageInfo<UserResponse> userPage = userServiceClient.getUsers(
                 !ObjectUtils.isEmpty(page) ? page : 0,
                 !ObjectUtils.isEmpty(size) ? size : 20,
                 username
@@ -78,7 +79,7 @@ public class ConversationServiceImpl implements ConversationService {
                     userResponse.setUserId(user.getId());
                     userResponse.setUsername(user.getUsername());
                     userResponse.setEmail(user.getEmail());
-                    userResponse.setCreatedAt(user.getCreatedAt().toInstant());
+                    userResponse.setCreatedAt(user.getCreatedAt() != null ? user.getCreatedAt().toInstant() : null);
 
                     // Find friend request for this user
                     FriendRequest friendRequest = friendRequests.stream()
@@ -131,7 +132,7 @@ public class ConversationServiceImpl implements ConversationService {
         }
 
         // Get paginated users from user service
-        PageResponse<UserResponse> userPage = userServiceClient.getUsers(
+        CommonPageInfo<UserResponse> userPage = userServiceClient.getUsers(
                 !ObjectUtils.isEmpty(page) ? page : 0,
                 !ObjectUtils.isEmpty(size) ? size : 20,
                 username
@@ -157,7 +158,7 @@ public class ConversationServiceImpl implements ConversationService {
                     userResponse.setUserId(user.getId());
                     userResponse.setUsername(user.getUsername());
                     userResponse.setEmail(user.getEmail());
-                    userResponse.setCreatedAt(user.getCreatedAt().toInstant());
+                    userResponse.setCreatedAt(user.getCreatedAt() != null ? user.getCreatedAt().toInstant() : null);
                     userResponse.setFriendStatus(FriendRequest.FriendRequestStatus.ACCEPTED);
                     userResponse.setRequestSentByMe(friendRequests.stream()
                             .anyMatch(request -> request.getSenderId().equals(currentUserId) && request.getReceiverId().equals(user.getId())));
@@ -194,7 +195,7 @@ public class ConversationServiceImpl implements ConversationService {
             userResponse.setUserId(user.getId());
             userResponse.setUsername(user.getUsername());
             userResponse.setEmail(user.getEmail());
-            userResponse.setCreatedAt(user.getCreatedAt().toInstant());
+            userResponse.setCreatedAt(user.getCreatedAt() != null ? user.getCreatedAt().toInstant() : null);
             userResponse.setFriendStatus(FriendRequest.FriendRequestStatus.ACCEPTED);
             userResponse.setRequestSentByMe(false);
             userResponse.setConversationId(conversationId);
@@ -308,7 +309,7 @@ public class ConversationServiceImpl implements ConversationService {
         PageResponse<UserRelationshipResponse> response = new PageResponse<>();
 
         // Get current user's information
-        PageResponse<UserResponse> userPage = userServiceClient.getUsers(0, 1, SecurityUtil.getUserName());
+        CommonPageInfo<UserResponse> userPage = userServiceClient.getUsers(0, 1, SecurityUtil.getUserName());
         if (userPage.getData().isEmpty()) {
             return response;
         }
@@ -320,7 +321,7 @@ public class ConversationServiceImpl implements ConversationService {
         userResponse.setUserId(currentUser.getId());
         userResponse.setUsername(currentUser.getUsername());
         userResponse.setEmail(currentUser.getEmail());
-        userResponse.setCreatedAt(currentUser.getCreatedAt().toInstant());
+        userResponse.setCreatedAt(currentUser.getCreatedAt() != null ? currentUser.getCreatedAt().toInstant() : null);
         userResponse.setFriendStatus(FriendRequest.FriendRequestStatus.NONE);
         userResponse.setRequestSentByMe(false);
 

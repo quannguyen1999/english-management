@@ -15,14 +15,14 @@ springdoc:
   api-docs:
     version: OPENAPI_3_0  # Uses OpenAPI 3.0 specification
     
-logging:
-  level:
-    org.springframework.security: TRACE
-    org.springframework.security.web.FilterChainProxy: TRACE
-    org.springframework.web: DEBUG
-    org.springframework.web.client: DEBUG
-    org.springframework.web.servlet: DEBUG
-    feign: DEBUG
+#logging:
+#  level:
+#    org.springframework.security: TRACE
+#    org.springframework.security.web.FilterChainProxy: TRACE
+#    org.springframework.web: DEBUG
+#    org.springframework.web.client: DEBUG
+#    org.springframework.web.servlet: DEBUG
+#    feign: DEBUG
 
 feign:
   client:

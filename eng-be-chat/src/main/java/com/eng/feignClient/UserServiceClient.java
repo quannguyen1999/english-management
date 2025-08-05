@@ -3,7 +3,7 @@ package com.eng.feignClient;
 import com.eng.config.FeignClientConfig;
 import com.eng.constants.PathApi;
 import com.eng.feignClient.fallBack.UserFallback;
-import com.eng.models.response.PageResponse;
+import com.eng.models.request.CommonPageInfo;
 import com.eng.models.response.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ import java.util.UUID;
  * Use for call external service
  * 
 */
-@FeignClient(name = "ENG-USER-SERVICE", configuration = FeignClientConfig.class, fallback = UserFallback.class)
+@FeignClient(name = "eng-user-service", configuration = FeignClientConfig.class, fallback = UserFallback.class)
 public interface UserServiceClient {
 
     /**
@@ -32,7 +32,7 @@ public interface UserServiceClient {
     Map<UUID, String> getUsernameUsers(@RequestBody List<UUID> listUserId);
 
     @GetMapping(value = PathApi.USER)
-    PageResponse<UserResponse> getUsers(
+    CommonPageInfo<UserResponse> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String username
