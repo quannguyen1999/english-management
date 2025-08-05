@@ -1,166 +1,98 @@
 // src/app/api/sign-in/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const data = {
-  items: [
-    {
-      id: 1,
-      name: "English Conversation 101",
-      agent: { name: "Alice" },
-      message: "Hello, how are you?",
-      startedAt: new Date(),
-    },
-    {
-      id: 2,
-      name: "Business English Basics",
-      agent: { name: "Bob" },
-      message: "Let's talk about meetings.",
-      startedAt: new Date(),
-    },
-    {
-      id: 3,
-      name: "Travel English",
-      agent: { name: "Charlie" },
-      message: "Can you ask for directions?",
-      startedAt: new Date(),
-    },
-    {
-      id: 4,
-      name: "English for Beginners",
-      agent: { name: "Diana" },
-      message: "Welcome to your first lesson!",
-      startedAt: new Date(),
-    },
-    {
-      id: 5,
-      name: "Advanced Vocabulary",
-      agent: { name: "Ethan" },
-      message: "Let’s learn new words today.",
-      startedAt: new Date(),
-    },
-    {
-      id: 6,
-      name: "Pronunciation Practice",
-      agent: { name: "Fiona" },
-      message: "Focus on the 'th' sound.",
-      startedAt: new Date(),
-    },
-    {
-      id: 7,
-      name: "Daily English Practice",
-      agent: { name: "George" },
-      message: "Let’s start with a quick chat.",
-      startedAt: new Date(),
-    },
-    {
-      id: 8,
-      name: "English Slang & Idioms",
-      agent: { name: "Hannah" },
-      message: "Ever heard of 'hit the books'?",
-      startedAt: new Date(),
-    },
-    {
-      id: 9,
-      name: "TOEFL Prep Course",
-      agent: { name: "Ivan" },
-      message: "Practice your listening skills.",
-      startedAt: new Date(),
-    },
-    {
-      id: 10,
-      name: "Grammar Bootcamp",
-      agent: { name: "Julia" },
-      message: "Let's review past tense rules.",
-      startedAt: new Date(),
-    },
-    {
-      id: 11,
-      name: "IELTS Speaking Practice",
-      agent: { name: "Karen" },
-      message: "Describe your hometown.",
-      startedAt: new Date(),
-    },
-    {
-      id: 12,
-      name: "English for Work",
-      agent: { name: "Leo" },
-      message: "Let's write a professional email.",
-      startedAt: new Date(),
-    },
-    {
-      id: 13,
-      name: "Casual Conversations",
-      agent: { name: "Mona" },
-      message: "What did you do today?",
-      startedAt: new Date(),
-    },
-    {
-      id: 14,
-      name: "Listening Skills Lab",
-      agent: { name: "Nick" },
-      message: "Listen and answer the question.",
-      startedAt: new Date(),
-    },
-    {
-      id: 15,
-      name: "Interview Preparation",
-      agent: { name: "Olivia" },
-      message: "Tell me about yourself.",
-      startedAt: new Date(),
-    },
-    {
-      id: 16,
-      name: "Phrasal Verbs Mastery",
-      agent: { name: "Peter" },
-      message: "Let’s learn 'get over'.",
-      startedAt: new Date(),
-    },
-    {
-      id: 17,
-      name: "Writing Workshop",
-      agent: { name: "Quincy" },
-      message: "Let's write a short paragraph.",
-      startedAt: new Date(),
-    },
-    {
-      id: 18,
-      name: "Reading Comprehension",
-      agent: { name: "Rachel" },
-      message: "Read the passage and summarize.",
-      startedAt: new Date(),
-    },
-    {
-      id: 19,
-      name: "Idioms in Context",
-      agent: { name: "Steve" },
-      message: "Explain 'a blessing in disguise'.",
-      startedAt: new Date(),
-    },
-    {
-      id: 20,
-      name: "Accent Reduction",
-      agent: { name: "Tina" },
-      message: "Let’s practice neutral sounds.",
-      startedAt: new Date(),
-    },
-  ],
-  totalPages: 2,
-};
-
 interface SearchBody {
-  search: string;
+  search?: string;
+  page?: number;
+  size?: number;
+}
+
+interface FriendData {
+  userId: string;
+  username: string;
+  email: string;
+  createdAt: string | null;
+  hasConversation: boolean;
+  conversationId: string | null;
+  friendStatus: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED";
+  requestSentByMe: boolean;
+  online: boolean;
+}
+
+interface ApiResponse {
+  page: number;
+  size: number;
+  total: number;
+  data: FriendData[];
+  __typename: string | null;
 }
 
 export async function POST(req: NextRequest) {
-  const body: SearchBody = await req.json();
-  const filteredItems = body.search
-    ? data.items.filter((item) =>
-        item.agent.name.toLowerCase().includes(body.search.toLowerCase())
-      )
-    : data.items;
+  try {
+    const body: SearchBody = await req.json();
+    const { search = "", page = 0, size = 10 } = body;
 
-  return NextResponse.json(
-    { items: filteredItems, totalPages: 2 },
-    { status: 200 }
-  );
+    // Debug: Log incoming headers
+    console.log("Incoming headers:", Object.fromEntries(req.headers.entries()));
+
+    // Build query parameters for the backend API
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+
+    if (search) {
+      params.append("username", search);
+    }
+
+    // Call the backend API
+    const backendUrl = `http://localhost:9000/chat-service/conversations/friend-all?${params.toString()}`;
+
+    // Prepare headers for backend request
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    // Forward all incoming headers
+    for (const [key, value] of req.headers.entries()) {
+      headers[key] = value;
+    }
+
+    // If no Authorization header, try to get token from cookies
+    if (!headers.authorization && !headers.Authorization) {
+      const token = req.cookies.get("access_token")?.value;
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+        console.log("Added Authorization header from cookie");
+      } else {
+        console.log("No Authorization header or token found");
+      }
+    }
+
+    console.log("Backend request headers:", headers);
+    console.log("Backend URL:", backendUrl);
+
+    const response = await fetch(backendUrl, {
+      method: "GET",
+      headers,
+    });
+
+    console.log("Backend response status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Backend error response:", errorText);
+      throw new Error(`Backend API responded with status: ${response.status}`);
+    }
+
+    const data: ApiResponse = await response.json();
+
+    return NextResponse.json(data, { status: 200 });
+  } catch (error) {
+    console.error("Error in friend search API:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

@@ -14,7 +14,15 @@ export default async function request<T>(
   }
 
   const routeConfig = getRouteConfig(path);
-  const url = `${BASE_URL}${routeConfig?.endpoint}`;
+
+  // Extract query parameters from the path
+  const urlParts = path.split("?");
+  const basePath = urlParts[0];
+  const queryParams = urlParts[1] || "";
+
+  const url = `${BASE_URL}${routeConfig?.endpoint}${
+    queryParams ? `?${queryParams}` : ""
+  }`;
 
   // Prepare headers
   const headers: Record<string, string> = {

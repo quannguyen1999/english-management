@@ -1,9 +1,10 @@
 "use client";
-import { columns } from "@/components/ui/columns";
+import { friendColumns } from "@/components/ui/columns";
 import { DataPagination } from "@/components/ui/data-pagination";
 import { DataTable } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useMeetingsFilters } from "@/hooks/use-meetings-filters";
+import { getFriendConversations } from "@/service/api-conversation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -11,42 +12,53 @@ export const FriendSearchView = () => {
   const [filters, setFilters] = useMeetingsFilters();
   const router = useRouter();
   const [data, setData] = useState<any>({
-    items: [],
+    data: [],
+    total: 0,
+    page: 0,
+    size: 10,
   });
+
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("/api/friend/search", {
-        method: "POST",
-        body: JSON.stringify(filters),
-      });
-      const data = await response.json();
-      setData(data);
+      try {
+        const response = await getFriendConversations({
+          username: filters.username ?? "",
+          page: filters.page ?? 0,
+          size: 10,
+        });
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching friend data:", error);
+        setData({
+          data: [],
+          total: 0,
+          page: 0,
+          size: 10,
+        });
+      }
     };
     fetchData();
   }, [filters]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(data.total / data.size);
+
   return (
     <div className="flex-1">
       <DataTable
-        columns={columns}
-        data={data?.items.filter((item: any) => {
-          if (filters.search) {
-            return item.agent.name
-              .toLowerCase()
-              .includes(filters.search.toLowerCase());
-          }
-          return true;
-        })}
-        onRowClick={(row) => router.push(`/meetings/${row.id}`)}
+        columns={friendColumns}
+        data={data?.data || []}
+        onRowClick={(row: any) => router.push(`/friends/${row.userId}`)}
       />
       <DataPagination
-        page={filters.page}
-        totalPages={data?.totalPages ?? 1}
+        page={data?.page ?? 0}
+        totalPages={totalPages}
         onPageChange={(page) => setFilters({ page })}
       />
-      {data?.items.length === 0 && (
+      {(!data?.data || data.data.length === 0) && (
         <EmptyState
-          title="No meetings found"
-          description="You don't have any meetings yet. Create one to get started."
+          title="No friends found"
+          description="No friends match your search criteria."
         />
       )}
     </div>

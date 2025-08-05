@@ -3,7 +3,7 @@ import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 export const useMeetingsFilters = () => {
   return useQueryStates({
-    search: parseAsString.withDefault("").withOptions({
+    username: parseAsString.withDefault("").withOptions({
       clearOnDefault: true,
     }),
     page: parseAsInteger

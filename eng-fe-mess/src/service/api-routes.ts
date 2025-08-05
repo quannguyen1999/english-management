@@ -22,6 +22,7 @@ export const CONVERSATIONS_GROUP = "conversations/group";
 export const CONVERSATIONS_FRIEND_ALL = "conversations/friend-all";
 export const FRIENDS_SEARCH = "friends/search";
 export const FRIENDS_LOAD_ID = "friends/load-id";
+export const FRIENDS_SEARCH_ALL = "friends/search-all";
 
 export const API_ROUTES: Record<string, ApiRouteConfig> = {
   // Authentication routes
@@ -111,12 +112,16 @@ export const API_ROUTES: Record<string, ApiRouteConfig> = {
 
 // Helper function to get route config
 export function getRouteConfig(path: string): ApiRouteConfig | null {
-  return API_ROUTES[path] || null;
+  // Strip query parameters before checking
+  const basePath = path.split("?")[0];
+  return API_ROUTES[basePath] || null;
 }
 
 // Helper function to check if route exists
 export function routeExists(path: string): boolean {
-  return path in API_ROUTES;
+  // Strip query parameters before checking
+  const basePath = path.split("?")[0];
+  return basePath in API_ROUTES;
 }
 
 // Helper function to get all available routes
