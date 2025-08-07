@@ -7,11 +7,14 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { Message } from "@/types/message";
 
 interface ConversationContextProps {
-  messages: any[];
+  messages: Message[];
   refresh: () => Promise<void>;
   sendMessage: (message: string) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
 }
 
 const ConversationContext = createContext<ConversationContextProps | undefined>(
@@ -36,12 +39,29 @@ export function ConversationProvider({
   id,
   children,
 }: ConversationProviderProps) {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchMessages = useCallback(async () => {
-    const response = await fetch(`/api/conversation/${id}`);
-    const data = await response.json();
-    setMessages(data);
+    if (!id) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`/api/conversation/${id}?page=0&size=20`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.data.reverse()); // Reverse to show newest first
+      } else {
+        setError('Failed to load messages');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load messages');
+    } finally {
+      setIsLoading(false);
+    }
   }, [id]);
 
   useEffect(() => {
@@ -50,19 +70,33 @@ export function ConversationProvider({
 
   const sendMessage = useCallback(
     async (message: string) => {
-      const data = await fetch(`/api/conversation/send`, {
-        method: "POST",
-        body: JSON.stringify({ id, message }),
-      });
-      const newMessage = await data.json();
-      setMessages([...messages, newMessage]);
+      if (!id) return;
+      
+      try {
+        const response = await fetch('/api/conversation/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id, message }),
+        });
+        
+        if (response.ok) {
+          const newMessage = await response.json();
+          setMessages(prev => [...prev, newMessage]);
+        } else {
+          setError('Failed to send message');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to send message');
+      }
     },
-    [id, messages]
+    [id]
   );
 
   return (
     <ConversationContext.Provider
-      value={{ messages, refresh: fetchMessages, sendMessage }}
+      value={{ messages, refresh: fetchMessages, sendMessage, isLoading, error }}
     >
       {children}
     </ConversationContext.Provider>

@@ -23,6 +23,8 @@ export const CONVERSATIONS_FRIEND_ALL = "conversations/friend-all";
 export const FRIENDS_SEARCH = "friends/search";
 export const FRIENDS_LOAD_ID = "friends/load-id";
 export const FRIENDS_SEARCH_ALL = "friends/search-all";
+export const MESSAGES = "messages";
+export const MESSAGES_SEND = "messages/send";
 
 export const API_ROUTES: Record<string, ApiRouteConfig> = {
   // Authentication routes
@@ -107,6 +109,19 @@ export const API_ROUTES: Record<string, ApiRouteConfig> = {
     baseUrl: CHAT_API,
     endpoint: "/api/conversations/load-id-conversation",
     method: "GET",
+  },
+  // Message routes
+  [MESSAGES]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/messages",
+    method: "GET",
+    requiresAuth: true,
+  },
+  [MESSAGES_SEND]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/messages",
+    method: "POST",
+    requiresAuth: true,
   },
 };
 

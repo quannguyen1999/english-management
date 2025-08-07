@@ -5,7 +5,7 @@ import {
   SidebarHeader,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import FriendHeaderView from "@/modules/chats/friend-header-view";
+import FriendHeaderView from "@/modules/dashboards/friend-header-view";
 import { FriendsListHeader } from "@/modules/dashboards/friends-list-header";
 
 export default async function DashboardLayout({
@@ -28,7 +28,6 @@ export default async function DashboardLayout({
             <FriendsListHeader />
           </SidebarContent>
         </Sidebar>
-
         {children}
       </SidebarProvider>
     </div>

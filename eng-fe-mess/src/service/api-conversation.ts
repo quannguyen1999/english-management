@@ -6,7 +6,10 @@ import {
   CONVERSATIONS_PRIVATE,
   FRIENDS_LOAD_ID,
   FRIENDS_SEARCH,
+  MESSAGES,
+  MESSAGES_SEND,
 } from "./api-routes";
+import { Message, MessageResponse, MessageResponsePage } from "@/types/message";
 
 // Conversation methods
 export async function getConversations() {
@@ -49,4 +52,21 @@ export async function searchFriends(query: string) {
 
 export async function getConversationId(data: any) {
   return request(`${FRIENDS_LOAD_ID}?${new URLSearchParams(data).toString()}`);
+}
+
+// Message methods
+export async function loadMessages(conversationId: string, page: number = 0, size: number = 20): Promise<{ data: MessageResponsePage; status: number }> {
+  const params = new URLSearchParams({
+    conversationId,
+    page: page.toString(),
+    size: size.toString(),
+  });
+  return request<MessageResponsePage>(`${MESSAGES}?${params.toString()}`);
+}
+
+export async function sendMessage(message: Message): Promise<{ data: MessageResponse; status: number }> {
+  return request<MessageResponse>(MESSAGES_SEND, {
+    method: "POST",
+    body: JSON.stringify(message),
+  });
 }

@@ -5,7 +5,7 @@ import com.eng.models.response.ConversationResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ConversationMapper {
     ConversationMapper INSTANCE = Mappers.getMapper(ConversationMapper.class);
 
