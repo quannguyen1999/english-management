@@ -9,6 +9,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { renderMessageContent } from "@/modules/chats/conversation-type-view";
+import { formatTimestamp } from "@/service/utils";
 import { Message } from "@/types/message";
 import { getCurrentUserId } from "@/utils/auth";
 import EmojiPicker from "emoji-picker-react";
@@ -144,23 +145,6 @@ export default function ConversationContentView() {
       // Update local state
       setSelectedEmojis((prev) => ({ ...prev, [id]: emojiData.emoji }));
       setActivePickerId(null);
-    }
-  };
-
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } else if (diffInHours < 48) {
-      return "Yesterday";
-    } else {
-      return date.toLocaleDateString();
     }
   };
 
