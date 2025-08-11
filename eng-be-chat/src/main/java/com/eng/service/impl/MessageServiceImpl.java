@@ -67,41 +67,41 @@ public class MessageServiceImpl implements MessageService {
         
         while (retryCount < maxRetries) {
             try {
-                messageValidator.validateSendMessage(messageRequest, file);
+        messageValidator.validateSendMessage(messageRequest, file);
 
-                UUID currentUserId = SecurityUtil.getIDUser();
+        UUID currentUserId = SecurityUtil.getIDUser();
 
-                Message message = Message.builder()
-                        .conversation(conversationService.getConversation(messageRequest.getConversationId()))
-                        .senderId(currentUserId)
-                        .content(messageRequest.getContent())
-                        .type(messageRequest.getType())
-                        .replyTo(messageRequest.getReplyTo())
-                        .build();
+        Message message = Message.builder()
+                .conversation(conversationService.getConversation(messageRequest.getConversationId()))
+                .senderId(currentUserId)
+                .content(messageRequest.getContent())
+                .type(messageRequest.getType())
+                .replyTo(messageRequest.getReplyTo())
+                .build();
 
-                message = messageRepository.save(message);
-                conversationService.updateLastMessage(messageRequest.getConversationId(), message.getId());
+        message = messageRepository.save(message);
+        conversationService.updateLastMessage(messageRequest.getConversationId(), message.getId());
 
-                // Create message status for all participants
-                List<UUID> participantIds = message.getConversation().getParticipants().stream()
-                        .map(ConversationParticipant::getUserId)
-                        .toList();
+        // Create message status for all participants
+        List<UUID> participantIds = message.getConversation().getParticipants().stream()
+                .map(ConversationParticipant::getUserId)
+                .toList();
 
-                for (UUID participantId : participantIds) {
-                    MessageStatus status = MessageStatus.builder()
-                            .message(message)
-                            .userId(participantId)
-                            .status(MessageStatusType.SENT)
-                            .build();
-                    messageStatusRepository.save(status);
-                }
+        for (UUID participantId : participantIds) {
+            MessageStatus status = MessageStatus.builder()
+                    .message(message)
+                    .userId(participantId)
+                    .status(MessageStatusType.SENT)
+                    .build();
+            messageStatusRepository.save(status);
+        }
 
-                MessageResponse response = messageMapper.toResponse(message);
+        MessageResponse response = messageMapper.toResponse(message);
 
-                // Send real-time notification
-                webSocketService.sendMessage(messageRequest.getConversationId(), response);
+        // Send real-time notification
+        webSocketService.sendMessage(messageRequest.getConversationId(), response);
 
-                return response;
+        return response;
                 
             } catch (Exception e) {
                 // Check if it's a deadlock error

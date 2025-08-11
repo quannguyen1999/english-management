@@ -166,7 +166,7 @@ export default function ConversationContentView() {
   };
 
   useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
   if (!currentUserId) {

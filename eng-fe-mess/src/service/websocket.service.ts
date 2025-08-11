@@ -23,6 +23,7 @@ class WebSocketService {
   private connectionAttempts = 0;
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
   private pendingSubscriptions: Array<{ method: string; args: any[] }> = [];
+  private isConnecting = false; // Prevent multiple simultaneous connection attempts
 
   constructor() {
     // Don't connect immediately - wait for explicit connection request
@@ -30,7 +31,7 @@ class WebSocketService {
   }
 
   public initialize() {
-    if (typeof window !== "undefined" && localStorage.getItem("token")) {
+    if (typeof window !== "undefined" && localStorage.getItem("access_token")) {
       this.connect();
     } else {
       console.log(
@@ -47,6 +48,12 @@ class WebSocketService {
       return;
     }
 
+    if (this.isConnecting || this.isConnected) {
+      console.log("WebSocket connection already in progress or connected");
+      return;
+    }
+
+    this.isConnecting = true;
     console.log("Attempting to connect to WebSocket at:", this.BASE_URL);
 
     this.stompClient = new Client({
@@ -62,6 +69,7 @@ class WebSocketService {
       onConnect: (frame: any) => {
         console.log("STOMP connected:", frame);
         this.isConnected = true;
+        this.isConnecting = false;
         this.connectionAttempts = 0;
 
         // Process any pending subscriptions
@@ -71,6 +79,7 @@ class WebSocketService {
       onStompError: (frame: any) => {
         console.error("STOMP error:", frame);
         this.isConnected = false;
+        this.isConnecting = false;
         this.handleConnectionError();
       },
     });
@@ -78,18 +87,21 @@ class WebSocketService {
     this.stompClient.onWebSocketClose = (event: any) => {
       console.log("WebSocket closed:", event);
       this.isConnected = false;
+      this.isConnecting = false;
       this.handleConnectionError();
     };
 
     this.stompClient.onWebSocketError = (event: any) => {
       console.error("WebSocket error:", event);
       this.isConnected = false;
+      this.isConnecting = false;
       this.handleConnectionError();
     };
 
     this.stompClient.onDisconnect = (frame: any) => {
       console.log("STOMP disconnected:", frame);
       this.isConnected = false;
+      this.isConnecting = false;
       this.handleConnectionError();
     };
 
@@ -156,16 +168,23 @@ class WebSocketService {
   }
 
   public subscribeToConversation(conversationId: string) {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.log(
         "WebSocket not connected, queuing subscription for conversation:",
         conversationId
       );
-      // Queue the subscription to be executed when connection is established
-      this.pendingSubscriptions.push({
-        method: "subscribeToConversation",
-        args: [conversationId],
-      });
+      // Check if subscription is already queued to prevent duplicates
+      const alreadyQueued = this.pendingSubscriptions.some(
+        (sub) =>
+          sub.method === "subscribeToConversation" &&
+          sub.args[0] === conversationId
+      );
+      if (!alreadyQueued) {
+        this.pendingSubscriptions.push({
+          method: "subscribeToConversation",
+          args: [conversationId],
+        });
+      }
       return;
     }
 
@@ -193,7 +212,7 @@ class WebSocketService {
   ) {
     try {
       const subscription = this.stompClient?.subscribe(destination, callback, {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       });
       if (subscription) {
         this.subscriptions.push(subscription);
@@ -204,15 +223,22 @@ class WebSocketService {
   }
 
   public subscribeToTyping(conversationId: string) {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.log(
         "WebSocket not connected, queuing typing subscription for conversation:",
         conversationId
       );
-      this.pendingSubscriptions.push({
-        method: "subscribeToTyping",
-        args: [conversationId],
-      });
+      // Check if subscription is already queued to prevent duplicates
+      const alreadyQueued = this.pendingSubscriptions.some(
+        (sub) =>
+          sub.method === "subscribeToTyping" && sub.args[0] === conversationId
+      );
+      if (!alreadyQueued) {
+        this.pendingSubscriptions.push({
+          method: "subscribeToTyping",
+          args: [conversationId],
+        });
+      }
       return;
     }
 
@@ -230,15 +256,22 @@ class WebSocketService {
   }
 
   public subscribeStatusUserOnline(userId: string) {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.log(
         "WebSocket not connected, queuing status subscription for user:",
         userId
       );
-      this.pendingSubscriptions.push({
-        method: "subscribeStatusUserOnline",
-        args: [userId],
-      });
+      // Check if subscription is already queued to prevent duplicates
+      const alreadyQueued = this.pendingSubscriptions.some(
+        (sub) =>
+          sub.method === "subscribeStatusUserOnline" && sub.args[0] === userId
+      );
+      if (!alreadyQueued) {
+        this.pendingSubscriptions.push({
+          method: "subscribeStatusUserOnline",
+          args: [userId],
+        });
+      }
       return;
     }
 
@@ -253,7 +286,7 @@ class WebSocketService {
   }
 
   public publishStatusUser(userId: string, online: boolean) {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.error("Cannot publish: WebSocket is not connected");
       return;
     }
@@ -262,21 +295,21 @@ class WebSocketService {
       this.stompClient?.publish({
         destination: `/app/conversations/${userId}/status/online`,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
     } else {
       this.stompClient?.publish({
         destination: `/app/conversations/${userId}/status/offline`,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
     }
   }
 
   public publishTyping(conversationId: string, payload: Object) {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.error("Cannot publish: WebSocket is not connected");
       return;
     }
@@ -285,13 +318,13 @@ class WebSocketService {
       destination: `/app/conversations/${conversationId}/typing`,
       body: JSON.stringify(payload),
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
     });
   }
 
   public sendMessage(message: Partial<Message>): void {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.error("Cannot send message: WebSocket is not connected");
       return;
     }
@@ -301,7 +334,7 @@ class WebSocketService {
         destination: `/app/conversations/${message.conversationId}/send`,
         body: JSON.stringify(message),
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
     } catch (error) {
@@ -310,7 +343,7 @@ class WebSocketService {
   }
 
   public markAsRead(messageId: string, conversationId: string): void {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.error("Cannot mark as read: WebSocket is not connected");
       return;
     }
@@ -320,7 +353,7 @@ class WebSocketService {
         destination: `/app/conversations/${conversationId}/messages/${messageId}/read`,
         body: JSON.stringify({ messageId, conversationId }),
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
     } catch (error) {
@@ -329,7 +362,7 @@ class WebSocketService {
   }
 
   public markAsDelivered(messageId: string, conversationId: string): void {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.error("Cannot mark as delivered: WebSocket is not connected");
       return;
     }
@@ -339,7 +372,7 @@ class WebSocketService {
         destination: `/app/conversations/${conversationId}/messages/${messageId}/delivered`,
         body: JSON.stringify({ messageId, conversationId }),
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
     } catch (error) {
@@ -352,7 +385,7 @@ class WebSocketService {
     conversationId: string,
     reaction: string
   ): void {
-    if (!this.stompClient?.connected) {
+    if (!this.isConnected || !this.stompClient?.connected) {
       console.error("Cannot add reaction: WebSocket is not connected");
       return;
     }
@@ -362,7 +395,7 @@ class WebSocketService {
         destination: `/app/conversations/${conversationId}/messages/${messageId}/reaction`,
         body: JSON.stringify({ messageId, conversationId, reaction }),
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
     } catch (error) {
@@ -421,6 +454,9 @@ class WebSocketService {
       this.stompClient = null;
     }
 
+    this.isConnected = false;
+    this.isConnecting = false;
+
     // Clear all listeners
     this.messageListeners = [];
     this.typingListeners = [];
@@ -428,12 +464,12 @@ class WebSocketService {
   }
 
   public getConnectionStatus(): boolean {
-    return this.isConnected;
+    return this.isConnected && this.stompClient?.connected === true;
   }
 
   public connectWithToken(token: string) {
-    if (token && !this.stompClient?.connected) {
-      localStorage.setItem("token", token);
+    if (token && !this.isConnected && !this.isConnecting) {
+      localStorage.setItem("access_token", token);
       this.connect();
     }
   }
