@@ -16,8 +16,11 @@ interface ConversationContextProps {
   refresh: () => Promise<void>;
   sendMessage: (message: string) => Promise<void>;
   addMessage: (message: Message) => void;
+  loadMoreMessages: () => Promise<void>;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  hasMoreMessages: boolean;
 }
 
 const ConversationContext = createContext<ConversationContextProps | undefined>(
@@ -44,7 +47,11 @@ export function ConversationProvider({
 }: ConversationProviderProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [totalMessages, setTotalMessages] = useState(0);
 
   const fetchMessages = useCallback(async () => {
     if (!id) return;
@@ -57,6 +64,9 @@ export function ConversationProvider({
       if (response.status === 200) {
         const data = response.data as MessageResponsePage;
         setMessages(data.data.reverse());
+        setTotalMessages(data.total);
+        setCurrentPage(0);
+        setHasMoreMessages(data.data.length === 20 && data.total > 20);
       } else {
         setError("Failed to load messages");
       }
@@ -66,6 +76,38 @@ export function ConversationProvider({
       setIsLoading(false);
     }
   }, [id]);
+
+  const loadMoreMessages = useCallback(async () => {
+    if (!id || isLoadingMore || !hasMoreMessages) return;
+
+    setIsLoadingMore(true);
+    setError(null);
+
+    try {
+      const nextPage = currentPage + 1;
+      const response = await getMessages(id, nextPage, 20);
+      if (response.status === 200) {
+        const data = response.data as MessageResponsePage;
+        if (data.data.length > 0) {
+          setMessages((prev) => [...data.data.reverse(), ...prev]);
+          setCurrentPage(nextPage);
+          setHasMoreMessages(
+            data.data.length === 20 && (nextPage + 1) * 20 < data.total
+          );
+        } else {
+          setHasMoreMessages(false);
+        }
+      } else {
+        setError("Failed to load more messages");
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load more messages"
+      );
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [id, currentPage, isLoadingMore, hasMoreMessages]);
 
   useEffect(() => {
     fetchMessages();
@@ -116,8 +158,11 @@ export function ConversationProvider({
         refresh: fetchMessages,
         sendMessage,
         addMessage,
+        loadMoreMessages,
         isLoading,
+        isLoadingMore,
         error,
+        hasMoreMessages,
       }}
     >
       {children}

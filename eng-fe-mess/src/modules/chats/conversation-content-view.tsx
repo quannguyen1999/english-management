@@ -8,20 +8,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { renderMessageContent } from "@/modules/chats/conversation-type-view";
 import { Message } from "@/types/message";
 import { getCurrentUserId } from "@/utils/auth";
 import EmojiPicker from "emoji-picker-react";
-import { FileAudio, Play, SmileIcon } from "lucide-react";
+import { SmileIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export default function ConversationContentView() {
-  const { messages, addMessage, conversationId } = useConversation();
+  const {
+    messages,
+    addMessage,
+    conversationId,
+    loadMoreMessages,
+    isLoadingMore,
+    hasMoreMessages,
+    isLoading,
+  } = useConversation();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollableElementRef = useRef<HTMLDivElement | null>(null);
   const [activePickerId, setActivePickerId] = useState<string | null>(null);
   const [selectedEmojis, setSelectedEmojis] = useState<Record<string, string>>(
     {}
   );
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isScrollingUp, setIsScrollingUp] = useState(false);
 
   // WebSocket integration
   const {
@@ -30,22 +42,71 @@ export default function ConversationContentView() {
     onTyping,
     markAsRead,
     addReaction,
-    getConnectionStatus,
   } = useWebSocket();
 
   useEffect(() => {
     setCurrentUserId(getCurrentUserId());
+    loadMoreMessages();
   }, []);
 
-  // Subscribe to conversation when component mounts or conversationId changes
+  // Find the actual scrollable element within ScrollArea
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      // Look for the actual scrollable element within ScrollArea
+      const scrollableElement = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      ) as HTMLDivElement;
+
+      if (scrollableElement) {
+        scrollableElementRef.current = scrollableElement;
+
+        // Add direct scroll listener to the actual scrollable element
+        const handleDirectScroll = (e: Event) => {
+          const target = e.target as HTMLDivElement;
+          const { scrollTop, scrollHeight, clientHeight } = target;
+          const threshold = 100;
+
+          if (
+            scrollTop <= threshold &&
+            hasMoreMessages &&
+            !isLoadingMore &&
+            !isScrollingUp
+          ) {
+            setIsScrollingUp(true);
+
+            const currentScrollTop = scrollTop;
+            const currentScrollHeight = scrollHeight;
+
+            loadMoreMessages().finally(() => {
+              setIsScrollingUp(false);
+
+              if (scrollableElementRef.current) {
+                const newScrollHeight =
+                  scrollableElementRef.current.scrollHeight;
+                const scrollDiff = newScrollHeight - currentScrollHeight;
+                scrollableElementRef.current.scrollTop =
+                  currentScrollTop + scrollDiff;
+              }
+            });
+          }
+        };
+
+        scrollableElement.addEventListener("scroll", handleDirectScroll);
+
+        return () => {
+          scrollableElement.removeEventListener("scroll", handleDirectScroll);
+        };
+      } else {
+      }
+    }
+  }, [scrollAreaRef, hasMoreMessages, isLoadingMore, loadMoreMessages]);
+
   useEffect(() => {
     if (conversationId && currentUserId) {
-      // Subscribe to conversation (will be queued if not connected)
       subscribeToConversation(conversationId);
 
       // Listen for new messages
       const unsubscribeMessage = onMessage((message) => {
-        console.log("WebSocket received message:", message.id, message.content);
         addMessage(message);
 
         // Mark message as read if it's not from current user
@@ -57,7 +118,6 @@ export default function ConversationContentView() {
       // Listen for typing indicators
       const unsubscribeTyping = onTyping((typing) => {
         // Handle typing indicator logic here
-        console.log("User typing:", typing);
       });
 
       // Cleanup subscriptions
@@ -104,67 +164,6 @@ export default function ConversationContentView() {
     }
   };
 
-  const renderMessageContent = (message: Message) => {
-    if (message.deleted) {
-      return <p className="text-gray-400 italic">This message was deleted</p>;
-    }
-
-    switch (message.type) {
-      case "TEXT":
-        return (
-          <p className="bg-gray-200 dark:bg-gray-800 p-2 rounded-lg">
-            {message.content}
-            {message.edited && (
-              <span className="text-xs text-gray-500 ml-2">(edited)</span>
-            )}
-          </p>
-        );
-      case "AUDIO":
-        return (
-          <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg flex items-center gap-2">
-            <Play className="size-4 text-blue-500" />
-            <span className="text-sm">Audio message</span>
-            <FileAudio className="size-4 text-gray-500" />
-          </div>
-        );
-      case "IMAGE":
-        return (
-          <div className="bg-gray-200 dark:bg-gray-800 p-2 rounded-lg">
-            <img
-              src={message.content}
-              alt="Image"
-              className="max-w-full h-auto rounded"
-            />
-          </div>
-        );
-      case "VIDEO":
-        return (
-          <div className="bg-gray-200 dark:bg-gray-800 p-2 rounded-lg">
-            <video
-              src={message.content}
-              controls
-              className="max-w-full h-auto rounded"
-            />
-          </div>
-        );
-      case "FILE":
-        return (
-          <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg flex items-center gap-2">
-            <FileAudio className="size-4 text-blue-500" />
-            <span className="text-sm">
-              File: {message.content?.split("/").pop()}
-            </span>
-          </div>
-        );
-      default:
-        return (
-          <p className="bg-gray-200 dark:bg-gray-800 p-2 rounded-lg">
-            {message.content}
-          </p>
-        );
-    }
-  };
-
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
@@ -175,22 +174,47 @@ export default function ConversationContentView() {
     );
   }
 
-  const connectionStatus = getConnectionStatus();
+  if (isLoading) {
+    return (
+      <div className="h-full flex flex-col">
+        <div className="px-4 py-2 text-xs text-center bg-gray-100 dark:bg-gray-800">
+          Loading conversation...
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+            <p className="text-gray-600 dark:text-gray-400">
+              Loading messages...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">
-      {/* Connection status indicator */}
-      <div
-        className={`px-4 py-2 text-xs text-center ${
-          connectionStatus
-            ? "bg-green-100 text-green-800"
-            : "bg-red-100 text-red-800"
-        }`}
-      >
-        {connectionStatus ? "🟢 Connected" : "🔴 Disconnected"}
-      </div>
+      <ScrollArea className="flex-1 pb-2 h-full" ref={scrollAreaRef}>
+        {isLoadingMore && (
+          <div className="flex justify-center py-4">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              <p className="text-sm text-gray-500">Loading more messages...</p>
+            </div>
+          </div>
+        )}
 
-      <ScrollArea className="flex-1 pb-2 h-full">
+        {hasMoreMessages && (
+          <div className="text-center py-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Scroll up to load more messages
+              </span>
+            </div>
+          </div>
+        )}
+
         {messages.map((item: Message) => {
           const isCurrentUser = item.senderId === currentUserId;
           return (
