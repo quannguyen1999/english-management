@@ -1,19 +1,20 @@
 package com.eng.feignClient;
 
-import com.eng.config.FeignClientConfig;
-import com.eng.constants.PathApi;
-import com.eng.feignClient.fallBack.UserFallback;
-import com.eng.models.request.CommonPageInfo;
-import com.eng.models.response.UserResponse;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.eng.config.FeignClientConfig;
+import com.eng.constants.PathApi;
+import com.eng.feignClient.fallBack.UserFallback;
+import com.eng.models.request.CommonPageInfo;
+import com.eng.models.response.UserResponse;
 
 /**
  * Use for call external service
@@ -35,7 +36,8 @@ public interface UserServiceClient {
     CommonPageInfo<UserResponse> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String username
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) List<UUID> userIds
     );
 
     @PostMapping(value = PathApi.USER + PathApi.USER_BY_UUID)

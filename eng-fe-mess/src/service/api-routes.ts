@@ -3,7 +3,7 @@ import { CHAT_API, USER_API } from "@/config";
 export interface ApiRouteConfig {
   baseUrl: string;
   endpoint: string;
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD";
   requiresAuth?: boolean;
   transformRequest?: (body: any) => any;
   transformResponse?: (response: any) => any;
@@ -19,7 +19,7 @@ export const USER_SEARCH = "users/search";
 export const CONVERSATIONS = "conversations";
 export const CONVERSATIONS_PRIVATE = "conversations/private";
 export const CONVERSATIONS_GROUP = "conversations/group";
-export const CONVERSATIONS_FRIEND_ALL = "conversations/friend-all";
+export const CONVERSATIONS_LOAD_FRIEND = "conversations/load-friend";
 export const FRIENDS_SEARCH = "friends/search";
 export const FRIENDS_LOAD_ID = "friends/load-id";
 export const FRIENDS_SEARCH_ALL = "friends/search-all";
@@ -92,9 +92,9 @@ export const API_ROUTES: Record<string, ApiRouteConfig> = {
     method: "POST",
     requiresAuth: true,
   },
-  [CONVERSATIONS_FRIEND_ALL]: {
+  [CONVERSATIONS_LOAD_FRIEND]: {
     baseUrl: CHAT_API,
-    endpoint: "/api/conversations/friend-all",
+    endpoint: "/api/conversations/load-friend",
     method: "GET",
     requiresAuth: true,
   },

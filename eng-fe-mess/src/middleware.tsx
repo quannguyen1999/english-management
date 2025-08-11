@@ -30,6 +30,11 @@ function isAuthenticated(request: NextRequest): boolean {
   return !!(accessToken && refreshToken);
 }
 
+function clearCookies(request: NextRequest) {
+  request.cookies.delete("access_token");
+  request.cookies.delete("refresh_token");
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -57,6 +62,7 @@ export function middleware(request: NextRequest) {
       const locale = getLocale(request);
       const signInUrl = new URL(request.url);
       signInUrl.pathname = `/${locale}/sign-in`;
+      clearCookies(request);
       return NextResponse.redirect(signInUrl);
     }
   } else {

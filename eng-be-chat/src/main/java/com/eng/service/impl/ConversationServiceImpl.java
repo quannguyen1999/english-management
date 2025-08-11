@@ -1,13 +1,23 @@
 package com.eng.service.impl;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+
 import com.eng.entities.Conversation;
 import com.eng.entities.ConversationParticipant;
 import com.eng.entities.FriendRequest;
 import com.eng.entities.Message;
 import com.eng.feignClient.UserServiceClient;
 import com.eng.mappers.ConversationMapper;
-import com.eng.models.response.ConversationResponse;
 import com.eng.models.request.CommonPageInfo;
+import com.eng.models.response.ConversationResponse;
 import com.eng.models.response.PageResponse;
 import com.eng.models.response.UserRelationshipResponse;
 import com.eng.models.response.UserResponse;
@@ -19,14 +29,10 @@ import com.eng.service.ConversationService;
 import com.eng.service.UserStatusService;
 import com.eng.utils.SecurityUtil;
 import com.eng.validators.ConversationValidator;
+
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +59,8 @@ public class ConversationServiceImpl implements ConversationService {
         CommonPageInfo<UserResponse> userPage = userServiceClient.getUsers(
                 !ObjectUtils.isEmpty(page) ? page : 0,
                 !ObjectUtils.isEmpty(size) ? size : 20,
-                username
+                username,
+                null
         );
 
         // Get all friend requests for current user
@@ -118,11 +125,11 @@ public class ConversationServiceImpl implements ConversationService {
         List<FriendRequest> friendRequests = friendRequestRepository.findAllRequests(currentUserId);
 
         // Filter only accepted friend requests
-        List<UUID> friendIds = friendRequests.stream()
+        List<UUID> friendIdsAccepted = friendRequests.stream()
                 .filter(request -> request.getStatus() == FriendRequest.FriendRequestStatus.ACCEPTED)
                 .map(request -> request.getSenderId().equals(currentUserId) ? request.getReceiverId() : request.getSenderId()).toList();
 
-        if (friendIds.isEmpty()) {
+        if (friendIdsAccepted.isEmpty()) {
             // No friends found, return empty response
             response.setData(new ArrayList<>());
             response.setTotal(0L);
@@ -135,7 +142,8 @@ public class ConversationServiceImpl implements ConversationService {
         CommonPageInfo<UserResponse> userPage = userServiceClient.getUsers(
                 !ObjectUtils.isEmpty(page) ? page : 0,
                 !ObjectUtils.isEmpty(size) ? size : 20,
-                username
+                username,
+                friendIdsAccepted
         );
 
         // Get all conversations for current user
@@ -152,7 +160,7 @@ public class ConversationServiceImpl implements ConversationService {
 
         // Map to response, only including friends
         List<UserRelationshipResponse> userResponses = userPage.getData().stream()
-                .filter(user -> friendIds.contains(user.getId()))
+                .filter(user -> friendIdsAccepted.contains(user.getId()))
                 .map(user -> {
                     UserRelationshipResponse userResponse = new UserRelationshipResponse();
                     userResponse.setUserId(user.getId());
@@ -309,7 +317,7 @@ public class ConversationServiceImpl implements ConversationService {
         PageResponse<UserRelationshipResponse> response = new PageResponse<>();
 
         // Get current user's information
-        CommonPageInfo<UserResponse> userPage = userServiceClient.getUsers(0, 1, SecurityUtil.getUserName());
+        CommonPageInfo<UserResponse> userPage = userServiceClient.getUsers(0, 1, SecurityUtil.getUserName(), null);
         if (userPage.getData().isEmpty()) {
             return response;
         }

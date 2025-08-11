@@ -42,7 +42,7 @@ export default function ConversationInputView() {
     <div className="w-full border-t-2 flex flex-row gap-x-2">
       <Input
         placeholder="Type a message"
-        className="w-full h-[50px] border-none cursor-pointer focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="w-full h-[50px] border-none focus-visible:ring-0 focus-visible:ring-offset-0"
         type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}

@@ -1,6 +1,38 @@
 import { clearTokens, getAuthHeader, refreshAccessToken } from "@/utils/auth";
 import { getAllRoutes, getRouteConfig, routeExists } from "./api-routes";
+
 export const BASE_URL = process.env.BACKEND_API || "http://localhost:3000";
+
+// Function to handle authentication failure
+async function handleAuthFailure() {
+  try {
+    // Call logout API to clear HTTP-only cookies
+    await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+  } catch (error) {
+    console.error("Failed to call logout API:", error);
+  } finally {
+    // Clear client-side tokens
+    clearTokens();
+
+    // Get current locale from URL or default to 'en'
+    let locale = "en";
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      const localeMatch = currentPath.match(/^\/([a-z]{2})/);
+      if (localeMatch) {
+        locale = localeMatch[1];
+      }
+    }
+
+    // Redirect to sign-in page with proper locale
+    if (typeof window !== "undefined") {
+      window.location.href = `/${locale}/sign-in`;
+    }
+  }
+}
+
 export default async function request<T>(
   path: string,
   options: RequestInit = {}
@@ -63,9 +95,8 @@ export default async function request<T>(
         status: retryResponse.status,
       };
     } else {
-      // Refresh failed, clear tokens and redirect to login
-      clearTokens();
-      window.location.href = "/sign-in";
+      // Refresh failed, handle authentication failure
+      await handleAuthFailure();
       throw new Error("Authentication failed");
     }
   }

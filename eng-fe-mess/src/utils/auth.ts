@@ -21,7 +21,7 @@ export function saveTokens(tokens: AuthTokens): void {
   if (typeof window === "undefined") {
     return;
   }
-  
+
   localStorage.setItem("access_token", tokens.access_token);
   localStorage.setItem("refresh_token", tokens.refresh_token);
   localStorage.setItem("token_type", tokens.token_type);
@@ -35,7 +35,7 @@ export function getAccessToken(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  
+
   return localStorage.getItem("access_token");
 }
 
@@ -44,7 +44,7 @@ export function getRefreshToken(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  
+
   return localStorage.getItem("refresh_token");
 }
 
@@ -53,7 +53,7 @@ export function isTokenExpired(): boolean {
   if (typeof window === "undefined") {
     return true;
   }
-  
+
   const expiresIn = localStorage.getItem("expires_in");
   const tokenCreatedAt = localStorage.getItem("token_created_at");
 
@@ -89,8 +89,8 @@ export function getAuthHeader(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  
-  const token = localStorage.getItem('token');
+
+  const token = localStorage.getItem("access_token");
   return token ? `Bearer ${token}` : null;
 }
 
@@ -99,27 +99,27 @@ export async function refreshAccessToken(): Promise<boolean> {
   if (typeof window === "undefined") {
     return false;
   }
-  
-  const refreshToken = localStorage.getItem('refresh_token');
+
+  const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) return false;
 
   try {
-    const response = await fetch('/api/auth/refresh', {
-      method: 'POST',
+    const response = await fetch("/api/auth/refresh", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
     if (response.ok) {
       const data = await response.json();
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
       return true;
     }
   } catch (error) {
-    console.error('Error refreshing token:', error);
+    console.error("Error refreshing token:", error);
   }
 
   return false;
@@ -149,15 +149,15 @@ export function getCurrentUserId(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  
-  const token = localStorage.getItem('token');
+
+  const token = localStorage.getItem("token");
   if (!token) return null;
 
   try {
     const decodedToken = jwtDecode<JwtPayload>(token);
     return decodedToken.id;
   } catch (error) {
-    console.error('Error decoding token:', error);
+    console.error("Error decoding token:", error);
     return null;
   }
 }
@@ -166,15 +166,15 @@ export function getCurrentUsername(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  
-  const token = localStorage.getItem('token');
+
+  const token = localStorage.getItem("token");
   if (!token) return null;
 
   try {
     const decodedToken = jwtDecode<JwtPayload>(token);
     return decodedToken.user;
   } catch (error) {
-    console.error('Error decoding token:', error);
+    console.error("Error decoding token:", error);
     return null;
   }
 }

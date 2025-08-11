@@ -1,9 +1,10 @@
 package com.eng.service;
 
+import java.util.List;
+
 import com.eng.models.response.FriendRequestResponse;
 import com.eng.models.response.FriendResponse;
-
-import java.util.List;
+import com.eng.models.response.PageResponse;
 
 public interface FriendService {
 
@@ -15,7 +16,7 @@ public interface FriendService {
     
     List<FriendRequestResponse> getPendingRequests();
     
-    List<FriendResponse> getFriends();
+    PageResponse<FriendResponse> getFriends(Integer page, Integer size, String userName);
     
     void removeFriend(String friendId);
 

@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
   params.append("grant_type", GRANT_TYPE);
   params.append("client_id", CLIENT_ID);
   params.append("client_secret", CLIENT_SECRET);
-  console.log("params: ", params.toString());
   const response = await fetch(
     `${USER_API}/oauth2/token?${params.toString()}`,
     {

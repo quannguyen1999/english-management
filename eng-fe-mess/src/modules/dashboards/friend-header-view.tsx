@@ -1,7 +1,7 @@
 "use client";
 
 import { ModeToggle } from "@/components/mode-toggle";
-import { clearTokens, logout } from "@/utils/auth";
+import { logout } from "@/utils/auth";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -10,7 +10,6 @@ export default function FriendHeaderView({ dict }: { dict: any }) {
   const router = useRouter();
   const handleLogout = () => {
     logout();
-    clearTokens();
     toast.success(dict.login.logout_success);
     router.push("/sign-in");
   };

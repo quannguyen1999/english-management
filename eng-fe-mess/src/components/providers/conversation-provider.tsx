@@ -1,5 +1,7 @@
 "use client";
 
+import { getMessages, sendMessages } from "@/service/api-messages";
+import { Message, MessageResponsePage } from "@/types/message";
 import React, {
   createContext,
   useCallback,
@@ -7,12 +9,13 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { Message } from "@/types/message";
 
 interface ConversationContextProps {
   messages: Message[];
+  conversationId: string;
   refresh: () => Promise<void>;
   sendMessage: (message: string) => Promise<void>;
+  addMessage: (message: Message) => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -45,20 +48,20 @@ export function ConversationProvider({
 
   const fetchMessages = useCallback(async () => {
     if (!id) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch(`/api/conversation/${id}?page=0&size=20`);
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.data.reverse()); // Reverse to show newest first
+      const response = await getMessages(id, 0, 20);
+      if (response.status === 200) {
+        const data = response.data as MessageResponsePage;
+        setMessages(data.data.reverse());
       } else {
-        setError('Failed to load messages');
+        setError("Failed to load messages");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      setError(err instanceof Error ? err.message : "Failed to load messages");
     } finally {
       setIsLoading(false);
     }
@@ -71,32 +74,51 @@ export function ConversationProvider({
   const sendMessage = useCallback(
     async (message: string) => {
       if (!id) return;
-      
+
       try {
-        const response = await fetch('/api/conversation/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id, message }),
+        const response = await sendMessages({
+          conversationId: id,
+          content: message,
+          type: "TEXT",
         });
-        
-        if (response.ok) {
-          const newMessage = await response.json();
-          setMessages(prev => [...prev, newMessage]);
+
+        if (response.status === 200) {
+          // Don't add message here - wait for WebSocket confirmation
+          // This prevents duplicate messages from appearing
+          console.log(
+            "Message sent successfully, waiting for WebSocket confirmation"
+          );
         } else {
-          setError('Failed to send message');
+          setError("Failed to send message");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to send message');
+        setError(err instanceof Error ? err.message : "Failed to send message");
       }
     },
     [id]
   );
 
+  const addMessage = useCallback((message: Message) => {
+    setMessages((prev) => {
+      // Check if message already exists to prevent duplicates
+      if (message.id && prev.some((existing) => existing.id === message.id)) {
+        return prev; // Return existing array if message already exists
+      }
+      return [...prev, message];
+    });
+  }, []);
+
   return (
     <ConversationContext.Provider
-      value={{ messages, refresh: fetchMessages, sendMessage, isLoading, error }}
+      value={{
+        messages,
+        conversationId: id,
+        refresh: fetchMessages,
+        sendMessage,
+        addMessage,
+        isLoading,
+        error,
+      }}
     >
       {children}
     </ConversationContext.Provider>

@@ -1,17 +1,22 @@
 package com.eng.controllers;
 
-import com.eng.models.response.MessageTypingResponse;
-import com.eng.service.WebSocketService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import static com.eng.constants.PathApi.CONVERSATION;
+import static com.eng.constants.PathApi.CONVERSATION_SOCKET_STATUS_OFFLINE;
+import static com.eng.constants.PathApi.CONVERSATION_SOCKET_STATUS_ONLINE;
+import static com.eng.constants.PathApi.CONVERSATION_SOCKET_TYPING;
+
+import java.util.UUID;
+
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.UUID;
+import com.eng.models.response.MessageTypingResponse;
+import com.eng.service.WebSocketService;
 
-import static com.eng.constants.PathApi.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller

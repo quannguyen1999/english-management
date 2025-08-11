@@ -1,16 +1,18 @@
 package com.eng.feignClient.fallBack;
 
-import com.eng.feignClient.UserServiceClient;
-import com.eng.models.request.CommonPageInfo;
-import com.eng.models.response.UserResponse;
-import com.eng.utils.SecurityUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
+import com.eng.feignClient.UserServiceClient;
+import com.eng.models.request.CommonPageInfo;
+import com.eng.models.response.UserResponse;
+import com.eng.utils.SecurityUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -27,7 +29,7 @@ public class UserFallback implements UserServiceClient {
     }
 
     @Override
-    public CommonPageInfo<UserResponse> getUsers(int page, int size, String username) {
+    public CommonPageInfo<UserResponse> getUsers(int page, int size, String username, List<UUID> userIds) {
         log.error("Fallback triggered for getUsers with page={}, size={}, username={}", page, size, username);
         log.error("Stack trace:", new Exception("Fallback stack trace"));
         

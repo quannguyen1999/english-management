@@ -3,7 +3,6 @@
 import { GeneratedAvatar } from "@/components/ui/generated-avatar";
 import { splitWords } from "@/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import Image from "next/image";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -43,7 +42,7 @@ export const friendColumns: ColumnDef<any>[] = [
         <div className="flex flex-row gap-2 items-center py-3 border-b last:border-b-0 border-gray-100 bg-white hover:bg-gray-50 transition-colors duration-150">
           <div className="flex items-center gap-x-2 relative">
             <GeneratedAvatar
-              seed={row.original.username || "User"}
+              seed={row.original.username}
               variant="botttsNeutral"
               classname="w-10 h-10"
             />
@@ -66,5 +65,5 @@ export const friendColumns: ColumnDef<any>[] = [
         </div>
       );
     },
-  }
+  },
 ];

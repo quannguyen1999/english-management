@@ -1,5 +1,19 @@
 package com.eng.service.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import com.eng.config.UserCacheConfig;
 import com.eng.constants.UserRole;
 import com.eng.entities.User;
@@ -11,20 +25,8 @@ import com.eng.repositories.UserRepository;
 import com.eng.service.UserService;
 import com.eng.utils.SecurityUtil;
 import com.eng.validators.UserValidator;
-import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 
 /**
  * Implementation of UserService with Redis caching support.
@@ -74,11 +76,11 @@ public class UserImpl implements UserService {
      * @return Paginated user list
      */
     @Override
-    @Cacheable(value = UserCacheConfig.USER_CACHE, key = "#page + '-' + #size + '-' + #username")
-    public CommonPageInfo<UserResponse> listUser(Integer page, Integer size, String username) {
+    // @Cacheable(value = UserCacheConfig.USER_CACHE, key = "#page + '-' + #size + '-' + #username")
+    public CommonPageInfo<UserResponse> listUser(Integer page, Integer size, String username, List<UUID> userIds) {
         //Validate list user
         userValidator.validateGetList(page, size);
-        Page<User> user = userRepository.searchUsers(username, PageRequest.of(page, size));
+        Page<User> user = userRepository.searchUsers(username, userIds, PageRequest.of(page, size));
         return CommonPageInfo.<UserResponse>builder()
                 .total(user.getTotalElements())
                 .page(user.getNumber())

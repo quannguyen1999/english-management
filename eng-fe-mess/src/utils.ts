@@ -6,6 +6,9 @@ export const getRandomName = () => {
 };
 
 export const splitWords = (text: string, maxWords: number) => {
+  if (text === null || text === undefined || text === "") {
+    return "";
+  }
   if (text.length > maxWords) {
     return text.substring(0, maxWords).concat("...");
   }

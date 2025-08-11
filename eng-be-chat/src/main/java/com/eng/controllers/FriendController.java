@@ -1,14 +1,21 @@
 package com.eng.controllers;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.eng.constants.PathApi;
 import com.eng.models.response.FriendRequestResponse;
 import com.eng.models.response.FriendResponse;
+import com.eng.models.response.PageResponse;
 import com.eng.service.FriendService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(PathApi.FRIEND)
@@ -39,8 +46,10 @@ public class FriendController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FriendResponse>> getFriends() {
-        return ResponseEntity.ok(friendService.getFriends());
+    public ResponseEntity<PageResponse<FriendResponse>> getFriends(@RequestParam Integer page,
+                                                           @RequestParam Integer size,
+                                                        String username) {
+        return ResponseEntity.ok(friendService.getFriends(page, size, username));
     }
 
     @DeleteMapping

@@ -1,5 +1,16 @@
 package com.eng.service.impl;
 
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.eng.constants.MessageStatusType;
 import com.eng.entities.ConversationParticipant;
 import com.eng.entities.Message;
@@ -15,18 +26,9 @@ import com.eng.service.MessageService;
 import com.eng.service.WebSocketService;
 import com.eng.utils.SecurityUtil;
 import com.eng.validators.MessageValidator;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,41 +62,70 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public MessageResponse sendMessage(MessageRequest messageRequest, MultipartFile file) {
-        messageValidator.validateSendMessage(messageRequest, file);
+        int maxRetries = 3;
+        int retryCount = 0;
+        
+        while (retryCount < maxRetries) {
+            try {
+                messageValidator.validateSendMessage(messageRequest, file);
 
-        UUID currentUserId = SecurityUtil.getIDUser();
+                UUID currentUserId = SecurityUtil.getIDUser();
 
-        Message message = Message.builder()
-                .conversation(conversationService.getConversation(messageRequest.getConversationId()))
-                .senderId(currentUserId)
-                .content(messageRequest.getContent())
-                .type(messageRequest.getType())
-                .replyTo(messageRequest.getReplyTo())
-                .build();
+                Message message = Message.builder()
+                        .conversation(conversationService.getConversation(messageRequest.getConversationId()))
+                        .senderId(currentUserId)
+                        .content(messageRequest.getContent())
+                        .type(messageRequest.getType())
+                        .replyTo(messageRequest.getReplyTo())
+                        .build();
 
-        message = messageRepository.save(message);
-        conversationService.updateLastMessage(messageRequest.getConversationId(), message.getId());
+                message = messageRepository.save(message);
+                conversationService.updateLastMessage(messageRequest.getConversationId(), message.getId());
 
-        // Create message status for all participants
-        List<UUID> participantIds = message.getConversation().getParticipants().stream()
-                .map(ConversationParticipant::getUserId)
-                .toList();
+                // Create message status for all participants
+                List<UUID> participantIds = message.getConversation().getParticipants().stream()
+                        .map(ConversationParticipant::getUserId)
+                        .toList();
 
-        for (UUID participantId : participantIds) {
-            MessageStatus status = MessageStatus.builder()
-                    .message(message)
-                    .userId(participantId)
-                    .status(MessageStatusType.SENT)
-                    .build();
-            messageStatusRepository.save(status);
+                for (UUID participantId : participantIds) {
+                    MessageStatus status = MessageStatus.builder()
+                            .message(message)
+                            .userId(participantId)
+                            .status(MessageStatusType.SENT)
+                            .build();
+                    messageStatusRepository.save(status);
+                }
+
+                MessageResponse response = messageMapper.toResponse(message);
+
+                // Send real-time notification
+                webSocketService.sendMessage(messageRequest.getConversationId(), response);
+
+                return response;
+                
+            } catch (Exception e) {
+                // Check if it's a deadlock error
+                if (e.getMessage() != null && 
+                    (e.getMessage().contains("Deadlock") || 
+                     e.getMessage().contains("LockAcquisitionException")) && 
+                    retryCount < maxRetries - 1) {
+                    
+                    retryCount++;
+                    try {
+                        // Exponential backoff: 100ms, 200ms, 300ms
+                        Thread.sleep(100 * retryCount);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                    continue;
+                }
+                // If it's not a deadlock or we've exhausted retries, throw the exception
+                throw e;
+            }
         }
-
-        MessageResponse response = messageMapper.toResponse(message);
-
-        // Send real-time notification
-        webSocketService.sendMessage(messageRequest.getConversationId(), response);
-
-        return response;
+        
+        throw new RuntimeException("Failed to send message after " + maxRetries + " retries due to deadlocks");
     }
 
     @Override

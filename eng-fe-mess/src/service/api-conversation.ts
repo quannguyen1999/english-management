@@ -1,20 +1,13 @@
+import { MessageResponsePage } from "@/types/message";
 import request from "./api-config";
 import {
-  CONVERSATIONS,
-  CONVERSATIONS_FRIEND_ALL,
   CONVERSATIONS_GROUP,
+  CONVERSATIONS_LOAD_FRIEND,
   CONVERSATIONS_PRIVATE,
   FRIENDS_LOAD_ID,
   FRIENDS_SEARCH,
   MESSAGES,
-  MESSAGES_SEND,
 } from "./api-routes";
-import { Message, MessageResponse, MessageResponsePage } from "@/types/message";
-
-// Conversation methods
-export async function getConversations() {
-  return request(CONVERSATIONS);
-}
 
 export async function createPrivateConversation(data: any) {
   return request(CONVERSATIONS_PRIVATE, {
@@ -37,12 +30,13 @@ interface FriendSearchData {
 }
 
 export async function getFriendConversations(data: FriendSearchData) {
-  const params = new URLSearchParams({
-    username: data.username,
-    page: data.page.toString(),
-    size: data.size.toString(),
-  });
-  return request(`${CONVERSATIONS_FRIEND_ALL}?${params.toString()}`);
+  const params = new URLSearchParams();
+  if (data.username) {
+    params.append("username", data.username);
+  }
+  params.append("page", data.page.toString());
+  params.append("size", data.size.toString());
+  return request(`${CONVERSATIONS_LOAD_FRIEND}?${params.toString()}`);
 }
 
 // Friend methods
@@ -55,18 +49,15 @@ export async function getConversationId(data: any) {
 }
 
 // Message methods
-export async function loadMessages(conversationId: string, page: number = 0, size: number = 20): Promise<{ data: MessageResponsePage; status: number }> {
+export async function loadMessages(
+  conversationId: string,
+  page: number = 0,
+  size: number = 20
+): Promise<{ data: MessageResponsePage; status: number }> {
   const params = new URLSearchParams({
     conversationId,
     page: page.toString(),
     size: size.toString(),
   });
   return request<MessageResponsePage>(`${MESSAGES}?${params.toString()}`);
-}
-
-export async function sendMessage(message: Message): Promise<{ data: MessageResponse; status: number }> {
-  return request<MessageResponse>(MESSAGES_SEND, {
-    method: "POST",
-    body: JSON.stringify(message),
-  });
 }

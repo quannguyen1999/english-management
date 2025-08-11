@@ -1,20 +1,31 @@
 package com.eng.controllers;
 
-import com.eng.constants.PathApi;
-import com.eng.models.request.CommonPageInfo;
-import com.eng.models.request.UserRequest;
-import com.eng.models.response.UserResponse;
-import com.eng.service.UserService;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import static com.eng.constants.PathApi.USER_BY_UUID;
+import static com.eng.constants.PathApi.USER_CURRENT_PROFILE;
+import static com.eng.constants.PathApi.USER_FIND_NAME;
+import static com.eng.constants.PathApi.USER_LIST_NAME;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.eng.constants.PathApi.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.eng.constants.PathApi;
+import com.eng.models.request.CommonPageInfo;
+import com.eng.models.request.UserRequest;
+import com.eng.models.response.UserResponse;
+import com.eng.service.UserService;
+
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping(value = PathApi.USER)
@@ -41,8 +52,8 @@ public class UserController {
      * @return A response entity containing the list of users.
      */
     @GetMapping
-    public ResponseEntity<CommonPageInfo<UserResponse>> getListUser(@RequestParam Integer page, @RequestParam Integer size, String username) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.listUser(page, size, username));
+    public ResponseEntity<CommonPageInfo<UserResponse>> getListUser(@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) String username, @RequestParam(required = false) List<UUID> userIds) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.listUser(page, size, username, userIds));
     }
 
     @PostMapping(value = USER_BY_UUID)
