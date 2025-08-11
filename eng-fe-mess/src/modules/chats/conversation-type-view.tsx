@@ -9,7 +9,7 @@ export const renderMessageContent = (message: Message) => {
   switch (message.type) {
     case "TEXT":
       return (
-        <p className="bg-gray-200 dark:bg-gray-800 p-2 rounded-lg">
+        <p className="bg-gray-200 dark:bg-gray-800 px-3 py-1 rounded-lg">
           {message.content}
           {message.edited && (
             <span className="text-xs text-gray-500 ml-2">(edited)</span>

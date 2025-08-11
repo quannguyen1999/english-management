@@ -52,7 +52,7 @@ export default function ConversationInputView() {
       <div className="flex flex-row gap-x-4 items-center">
         <DropdownMenu open={showPicker} onOpenChange={setShowPicker}>
           <DropdownMenuTrigger>
-            <SmileIcon />
+            <SmileIcon className="size-5 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <EmojiPicker
@@ -64,10 +64,10 @@ export default function ConversationInputView() {
         </DropdownMenu>
 
         <SendIcon
-          className="size-6 cursor-pointer"
+          className="size-5 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           onClick={() => handleSend()}
         />
-        <MicIcon className="size-6 cursor-pointer" />
+        <MicIcon className="size-5 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" />
       </div>
     </div>
   );

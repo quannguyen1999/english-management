@@ -27,8 +27,8 @@ export default function MeetingPage({
             <p>12:00</p>
           </div>
           <div className="flex flex-row gap-x-2">
-            <Video className="size-6 cursor-pointer" />
-            <MicIcon className="size-6 cursor-pointer" />
+            <Video className="size-5 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" />
+            <MicIcon className="size-5 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" />
           </div>
         </div>
         <div className="flex-1 overflow-hidden px-4">
