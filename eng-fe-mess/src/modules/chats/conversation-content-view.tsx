@@ -230,18 +230,18 @@ export default function ConversationContentView() {
                 >
                   <DropdownMenuTrigger asChild>
                     <div
-                      className={
+                      className={`absolute ${
                         isCurrentUser
-                          ? "absolute -bottom-3 -left-3 text-2xl"
-                          : "absolute -bottom-3 -right-3 text-2xl"
-                      }
+                          ? "-bottom-1 -left-4"
+                          : "-bottom-1 -right-4"
+                      } p-1 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors`}
                     >
                       {selectedEmojis[item.id ?? ""] ? (
-                        <span className="text-2xl cursor-pointer">
+                        <span className="text-lg cursor-pointer block">
                           {selectedEmojis[item.id ?? ""]}
                         </span>
                       ) : (
-                        <SmileIcon className="size-6 cursor-pointer" />
+                        <SmileIcon className="size-4 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" />
                       )}
                     </div>
                   </DropdownMenuTrigger>
