@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "eng-be-ai"
+version = "0.1.0"
+description = "English Management AI Backend with Flask and AI integration"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "controller"}, {include = "service"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^3.1.1"
+flask-restful = "^0.3.10"
+flask-sqlalchemy = "^3.1.1"
+requests = "^2.32.4"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+black = "^23.0.0"
+flake8 = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "main:app" 

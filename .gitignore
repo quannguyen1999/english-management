@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 node_modules/
+venv/
+pycache/
+__pycache__/
 
 ### STS ###
 .apt_generated
@@ -2203,3 +2206,10 @@ docker
 /eng-be-ai/venv/Lib/site-packages/flask_jsonpify.py
 /eng-be-ai/venv/Lib/site-packages/six.py
 /eng-be-ai/venv/Lib/site-packages/typing_extensions.py
+eng-be-ai/.env
+eng-be-ai/config/__pycache__/config.cpython-311.pyc
+eng-be-ai/venv/Lib/site-packages/__pycache__/flask_jsonpify.cpython-311.pyc
+eng-be-ai/venv/Lib/site-packages/__pycache__/six.cpython-311.pyc
+eng-be-ai/venv/Lib/site-packages/__pycache__/typing_extensions.cpython-311.pyc
+eng-be-ai/venv/Lib/site-packages/_distutils_hack/__pycache__/__init__.cpython-311.pyc
+eng-be-ai/venv/Lib/site-packages/_distutils_hack/__pycache__/override.cpython-311.pyc

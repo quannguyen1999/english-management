@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Streaming Test UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .response-container {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .response-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .response-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-streaming {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .response-text {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+            min-height: 100px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #dc3545;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Streaming Test</h1>
+            <p>Test the real-time AI response streaming API</p>
+        </div>
+        
+        <div class="content">
+            <form id="aiForm">
+                <div class="form-group">
+                    <label for="prompt">Your Prompt:</label>
+                    <textarea 
+                        id="prompt" 
+                        class="form-control" 
+                        rows="4" 
+                        placeholder="Enter your prompt here..."
+                        required
+                    ></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="model">Model:</label>
+                        <select id="model" class="form-control">
+                            <option value="gemma2:2b">Gemma2:2B</option>
+                            <option value="llama3.2">Llama3.2</option>
+                            <option value="mistral">Mistral</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxTokens">Max Tokens:</label>
+                        <input 
+                            type="number" 
+                            id="maxTokens" 
+                            class="form-control" 
+                            value="1000" 
+                            min="100" 
+                            max="4000"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="temperature">Temperature:</label>
+                        <input 
+                            type="number" 
+                            id="temperature" 
+                            class="form-control" 
+                            value="0.5" 
+                            min="0.1" 
+                            max="2.0" 
+                            step="0.1"
+                        >
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn" id="submitBtn">
+                    🚀 Generate AI Response
+                </button>
+            </form>
+            
+            <div id="responseContainer" class="response-container hidden">
+                <div class="response-header">
+                    <div class="response-title">AI Response</div>
+                    <div id="responseStatus" class="response-status status-streaming">
+                        <span class="loading"></span>Streaming...
+                    </div>
+                </div>
+                <div id="responseText" class="response-text">Waiting for response...</div>
+            </div>
+            
+            <div id="errorMessage" class="error-message hidden"></div>
+            <div id="successMessage" class="success-message hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('aiForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const responseContainer = document.getElementById('responseContainer');
+        const responseStatus = document.getElementById('responseStatus');
+        const responseText = document.getElementById('responseText');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const prompt = document.getElementById('prompt').value;
+            const model = document.getElementById('model').value;
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            
+            if (!prompt.trim()) {
+                showError('Please enter a prompt');
+                return;
+            }
+            
+            // Reset UI
+            hideMessages();
+            responseContainer.classList.remove('hidden');
+            responseStatus.className = 'response-status status-streaming';
+            responseStatus.innerHTML = '<span class="loading"></span>Streaming...';
+            responseText.textContent = '';
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Generating...';
+            
+            try {
+                const response = await fetch('/ai/stream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt,
+                        model,
+                        max_tokens: maxTokens,
+                        temperature
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                
+                                if (data.error) {
+                                    throw new Error(data.error);
+                                }
+                                
+                                if (data.chunk) {
+                                    fullResponse += data.chunk;
+                                    responseText.textContent = fullResponse;
+                                }
+                                
+                                if (data.done) {
+                                    responseStatus.className = 'response-status status-complete';
+                                    responseStatus.textContent = '✅ Complete';
+                                    showSuccess('AI response generated successfully!');
+                                    break;
+                                }
+                            } catch (parseError) {
+                                console.warn('Failed to parse SSE data:', parseError);
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                responseStatus.className = 'response-status status-error';
+                responseStatus.textContent = '❌ Error';
+                showError(`Error: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Generate AI Response';
+            }
+        });
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+        
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.remove('hidden');
+        }
+        
+        function hideMessages() {
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+        }
+    </script>
+</body>
+</html> 
