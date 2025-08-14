@@ -8,6 +8,7 @@ load_dotenv()
 app = Flask(__name__)
 api = Api(app)
 
+# main process
 # Serve the test UI
 @app.route('/')
 def test_ui():
