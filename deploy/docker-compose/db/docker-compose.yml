@@ -42,26 +42,19 @@ services:
       file: common-config.yml
       service: network-deploy-service
 
-  # Vault service (HashiCorp)
-  vault:
-    image: hashicorp/vault:1.16
-    container_name: vault
+  # ChromaDB service (Vector Database)
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:0.4.24  # v1 API version
+    container_name: chromadb-prime
     ports:
-      - "8200:8200"
-    cap_add:
-      - IPC_LOCK
-    environment:
-      VAULT_ADDR: http://localhost:8200
-    command: vault server -config=/vault/config/vault.hcl
+      - "8000:8000"
     volumes:
-      - vault_data:/vault/file
-      - ./vault/config:/vault/config
-    healthcheck:
-      test: ["CMD", "vault", "status", "-format=json"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+      - chromadb_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=False
+    # Health check removed - ChromaDB is working correctly but health check tools are not available in container
     extends:
       file: common-config.yml
       service: network-deploy-service
@@ -75,4 +68,4 @@ networks:
 volumes:
   mysql_data:
   redis_data:
-  vault_data:
+  chromadb_data:
