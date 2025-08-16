@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -50,13 +51,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class GoogleOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
+    @Value("${custom-security.issuer}")
+    private String issuer;
     public final UserRepository userRepository;
     public final GoogleOAuth2ServiceImpl googleOAuth2Service;
-    public final RSAKey rsaKey;
     public final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
     public final OAuth2AuthorizationService authorizationService;
     public final RegisteredClientRepository registeredClientRepository;
+    public final RSAKey rsaKey;// Reuse RSAKey bean from SecurityConfig
 
     @Value("${custom-security.frontend}")
     protected String frontendUrl;
@@ -64,16 +66,16 @@ public class GoogleOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
     public GoogleOAuth2SuccessHandler(
             UserRepository userRepository,
             GoogleOAuth2ServiceImpl googleOAuth2Service,
-            RSAKey rsaKey,
             OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
             OAuth2AuthorizationService authorizationService,
-            RegisteredClientRepository registeredClientRepository) {
+            RegisteredClientRepository registeredClientRepository,
+            RSAKey rsaKey) {
         this.userRepository = userRepository;
         this.googleOAuth2Service = googleOAuth2Service;
-        this.rsaKey = rsaKey;
         this.tokenGenerator = tokenGenerator;
         this.authorizationService = authorizationService;
         this.registeredClientRepository = registeredClientRepository;
+        this.rsaKey = rsaKey; // Reuse RSAKey bean defined in SecurityConfig
     }
 
     @Override
@@ -126,7 +128,7 @@ public class GoogleOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
     private String generateJwtToken(OAuth2User oauth2User) throws JOSEException {
         Map<String, Object> attributes = oauth2User.getAttributes();
         String email = (String) attributes.get("email");
-        
+
         // Find or create user to get user ID
         User user = userRepository.findByEmail(email);
         if (user == null) {
@@ -134,23 +136,27 @@ public class GoogleOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
             throw new RuntimeException("User not found after OAuth2 processing");
         }
 
-        // Create JWT claims
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
-                .issuer("http://localhost:8070")
-                .audience("http://localhost:3000")
+                .subject(email) // or user.getId().toString()
+                .issuer(issuer) // injected from application.yml: custom-security.issuer
                 .issueTime(Date.from(Instant.now()))
                 .expirationTime(Date.from(Instant.now().plus(Duration.ofDays(1))))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("authorities", Set.of(user.getRole().name()))
                 .claim("user", user.getUsername())
                 .claim("id", user.getId())
-                .claim("email", user.getEmail())
                 .build();
 
-        // Sign the JWT
-        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
+        // ✅ Reuse RSAKey bean defined in SecurityConfig (avoid mismatch)
+        JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
+                .keyID(rsaKey.getKeyID())
+                .build();
+
+        SignedJWT signedJWT = new SignedJWT(jwsHeader, claimsSet);
         signedJWT.sign(new RSASSASigner(rsaKey.toPrivateKey()));
+
+        log.info("Generated JWT for {} with issuer {} expiring at {}",
+                user.getUsername(), issuer, claimsSet.getExpirationTime());
 
         return signedJWT.serialize();
     }
@@ -159,11 +165,16 @@ public class GoogleOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         try {
             Map<String, Object> attributes = oauth2User.getAttributes();
             String email = (String) attributes.get("email");
-            
+
             // Find user to get user ID
             User user = userRepository.findByEmail(email);
             if (user == null) {
                 throw new RuntimeException("User not found after OAuth2 processing");
+            }
+
+            // Ensure we have a valid username
+            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+                throw new RuntimeException("User username is null or empty");
             }
 
             // Get a registered client (you might need to adjust this based on your client configuration)
@@ -177,9 +188,9 @@ public class GoogleOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
             // Create token context for refresh token
             DefaultOAuth2TokenContext.Builder tokenContextBuilder = DefaultOAuth2TokenContext.builder()
                     .registeredClient(registeredClient)
-                    .principal(authentication)
                     .authorizedScopes(Set.of("read", "write"))
-                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
+                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                    .put("org.springframework.security.core.Authentication.PRINCIPAL", user.getUsername());
 
             OAuth2TokenContext tokenContext = tokenContextBuilder.tokenType(OAuth2TokenType.REFRESH_TOKEN).build();
             OAuth2Token generatedRefreshToken = this.tokenGenerator.generate(tokenContext);

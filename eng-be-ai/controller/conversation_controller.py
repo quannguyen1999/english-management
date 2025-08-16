@@ -79,18 +79,24 @@ class MessageResource(Resource):
             role = data["role"]
             content = data["content"]
             timestamp = data.get("timestamp")  # Optional
+            is_first_message = data.get("is_first_message", False)  # New parameter
+            additional_metadata = data.get("additional_metadata")  # Optional additional metadata
             
-            # Add message to ChromaDB
+            # Add message to ChromaDB with enhanced functionality
             message_id = self.chroma_service.add_message(
                 conversation_id=conversation_id,
                 role=role,
                 content=content,
-                timestamp=timestamp
+                timestamp=timestamp,
+                additional_metadata=additional_metadata,
+                is_first_message=is_first_message
             )
             
             return {
                 "status": "success",
-                "message_id": message_id
+                "message_id": message_id,
+                "is_first_message": is_first_message,
+                "conversation_id": conversation_id
             }, 201
             
         except ValueError as e:
@@ -137,73 +143,6 @@ class ConversationResource(Resource):
                 "status": "error",
                 "message": f"Failed to retrieve conversation: {str(e)}"
             }, 500
-
-
-class SearchResource(Resource):
-    """Handle POST /search endpoint for semantic search"""
-    
-    def __init__(self):
-        self._chroma_service = None
-    
-    @property
-    def chroma_service(self):
-        """Lazy load ChromaService to avoid connection issues during initialization"""
-        if self._chroma_service is None:
-            try:
-                self._chroma_service = ChromaService()
-            except Exception as e:
-                # Return error response instead of crashing
-                raise Exception(f"ChromaDB service unavailable: {str(e)}")
-        return self._chroma_service
-    
-    def post(self):
-        """Search for messages in a conversation using semantic search"""
-        try:
-            data = request.get_json()
-            
-            # Validate required fields
-            required_fields = ["conversation_id", "query"]
-            for field in required_fields:
-                if field not in data:
-                    return {
-                        "status": "error",
-                        "message": f"Missing required field: {field}"
-                    }, 400
-            
-            # Extract data
-            conversation_id = data["conversation_id"]
-            query = data["query"]
-            n_results = data.get("n_results", 3)  # Default to 3 results
-            
-            # Validate n_results
-            if not isinstance(n_results, int) or n_results < 1:
-                return {
-                    "status": "error",
-                    "message": "n_results must be a positive integer"
-                }, 400
-            
-            # Perform search
-            results = self.chroma_service.search_conversation(
-                conversation_id=conversation_id,
-                query=query,
-                n_results=n_results
-            )
-            
-            return {
-                "results": results
-            }, 200
-            
-        except ValueError as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }, 400
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": f"Failed to perform search: {str(e)}"
-            }, 500
-
 
 class ConversationStatsResource(Resource):
     """Handle GET /conversations/{conversation_id}/stats endpoint"""
@@ -326,16 +265,19 @@ class ChatWithAIResource(Resource):
             
             # Get conversation history for context BEFORE adding the new message
             conversation_history = self.chroma_service.get_conversation(conversation_id)
+            is_first_message = len(conversation_history) == 0
             
-            # Debug: Log the conversation history
-            print(f"🔍 Conversation history for {conversation_id}: {len(conversation_history)} messages")
-            for i, msg in enumerate(conversation_history):
-                print(f"  Message {i}: role={msg.get('role', 'N/A')}, content={msg.get('content', 'N/A')[:50]}...")
+            print(f"📊 Conversation history: {len(conversation_history)} messages")
+            if is_first_message:
+                print(f"🎯 This is the first message in the conversation")
+            else:
+                for i, msg in enumerate(conversation_history):
+                    print(f"  Message {i}: role={msg.get('role', 'N/A')}, content={msg.get('content', 'N/A')[:50]}...")
             
             # Build context from conversation history (last 5 messages)
             context = ""
-            if len(conversation_history) > 0:  # If there are previous messages
-                # Get last 5 messages
+            if not is_first_message and len(conversation_history) > 0:
+                # Get last 5 messages for context
                 recent_messages = conversation_history[-5:] if len(conversation_history) > 5 else conversation_history
                 print(f"📝 Building context from {len(recent_messages)} recent messages")
                 context = "\n".join([
@@ -346,16 +288,75 @@ class ChatWithAIResource(Resource):
             else:
                 print(f"⚠️  No previous context available (first message in conversation)")
             
-            # Store user message in ChromaDB
+            # Store user message in ChromaDB with first message detection
             user_message_id = self.chroma_service.add_message(
                 conversation_id=conversation_id,
                 role="user",
-                content=user_message
+                content=user_message,
+                is_first_message=is_first_message
             )
             print(f"✅ User message stored with ID: {user_message_id}")
             
+            # If this is the first message, save the initial system messages to ChromaDB
+            if is_first_message:
+                from utils.constant import create_initial_messages
+                initial_messages = create_initial_messages()
+                
+                print(f"🔧 Saving initial system messages to conversation history...")
+                # Save system message and examples (skip the last user message as we already saved it)
+                for msg in initial_messages[:-1]:  # Exclude the last user message
+                    if msg["role"] == "system":
+                        system_msg_id = self.chroma_service.add_message(
+                            conversation_id=conversation_id,
+                            role="system",
+                            content=msg["content"],
+                            is_first_message=False,
+                            additional_metadata={"message_type": "system_prompt"}
+                        )
+                        print(f"✅ System prompt saved with ID: {system_msg_id}")
+                    elif msg["role"] == "assistant":
+                        example_msg_id = self.chroma_service.add_message(
+                            conversation_id=conversation_id,
+                            role="assistant",
+                            content=msg["content"],
+                            is_first_message=False,
+                            additional_metadata={"message_type": "example_response"}
+                        )
+                        print(f"✅ Example response saved with ID: {example_msg_id}")
+                    elif msg["role"] == "user":
+                        example_user_msg_id = self.chroma_service.add_message(
+                            conversation_id=conversation_id,
+                            role="user",
+                            content=msg["content"],
+                            is_first_message=False,
+                            additional_metadata={"message_type": "example_user_input"}
+                        )
+                        print(f"✅ Example user input saved with ID: {example_user_msg_id}")
+                
+                print(f"✅ All initial system messages saved to conversation history")
+            
             # Create full prompt with context
-            full_prompt = context + f"User: {user_message}\nAI:"
+            if is_first_message:
+                # For first message, use reminder_prompt to get properly formatted context
+                from utils.constant import reminder_prompt
+                formatted_messages = reminder_prompt(user_message, is_first_message=True)
+                
+                # Build prompt from formatted messages
+                full_prompt = ""
+                for msg in formatted_messages:
+                    if msg["role"] == "system":
+                        full_prompt += f"System: {msg['content']}\n\n"
+                    elif msg["role"] == "user":
+                        full_prompt += f"User: {msg['content']}\n\n"
+                    elif msg["role"] == "assistant":
+                        full_prompt += f"Assistant: {msg['content']}\n\n"
+                
+                full_prompt += "Assistant: "
+                print(f"🤖 First message prompt built with reminder_prompt formatting")
+            else:
+                # For subsequent messages, use conversation context
+                full_prompt = context + f"User: {user_message}\nAI:"
+            
             print(f"🤖 AI Prompt: {full_prompt[:200]}...")
             
             # Generate AI response
@@ -366,7 +367,8 @@ class ChatWithAIResource(Resource):
             ai_message_id = self.chroma_service.add_message(
                 conversation_id=conversation_id,
                 role="assistant",
-                content=ai_response
+                content=ai_response,
+                is_first_message=False  # AI response is never the first message
             )
             
             return {
@@ -375,7 +377,11 @@ class ChatWithAIResource(Resource):
                 "user_message_id": user_message_id,
                 "ai_message_id": ai_message_id,
                 "ai_response": ai_response,
-                "context_used": context.strip() if context else "No previous context"
+                "is_first_message": is_first_message,
+                "context_used": context.strip() if context else "First message - no previous context",
+                "total_messages": len(conversation_history) + 2,  # +2 for user and AI messages just added
+                "system_messages_saved": is_first_message,  # Indicates if system messages were saved
+                "conversation_type": "new" if is_first_message else "existing"
             }, 200
             
         except ValueError as e:

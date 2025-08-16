@@ -53,23 +53,23 @@ export default function SignInView({
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             {dict.login.title}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             {dict.login.description}{" "}
             <a
               href="/sign-up"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-primary hover:text-primary/80 transition-colors"
             >
               {dict.login.create_account}
             </a>
           </p>
         </div>
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-card py-8 px-4 shadow-sm border border-border rounded-lg sm:px-10">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -82,11 +82,14 @@ export default function SignInView({
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{dict.login.username}</FormLabel>
+                          <FormLabel className="text-foreground">
+                            {dict.login.username}
+                          </FormLabel>
                           <FormControl>
                             <Input
                               type="text"
                               placeholder="Username"
+                              className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-ring"
                               {...field}
                             />
                           </FormControl>
@@ -104,11 +107,14 @@ export default function SignInView({
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{dict.login.password}</FormLabel>
+                          <FormLabel className="text-foreground">
+                            {dict.login.password}
+                          </FormLabel>
                           <FormControl>
                             <Input
                               type="password"
                               placeholder="Password"
+                              className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-ring"
                               {...field}
                             />
                           </FormControl>
@@ -123,10 +129,10 @@ export default function SignInView({
                   <button
                     type="submit"
                     disabled={form.formState.isSubmitting}
-                    className="w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
+                    className="w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:bg-muted disabled:text-muted-foreground transition-colors"
                   >
                     {form.formState.isSubmitting ? (
-                      <Loader2Icon className="size-6 animate-spin text-white" />
+                      <Loader2Icon className="size-6 animate-spin text-primary-foreground" />
                     ) : (
                       <span className="flex items-center">
                         {"  "}
@@ -141,10 +147,10 @@ export default function SignInView({
             <div className="mt-6 space-y-5">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                  <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
+                  <span className="px-2 bg-card text-muted-foreground">
                     {dict.login.new_on_platform}
                   </span>
                 </div>

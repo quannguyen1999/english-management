@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import os
 from config.chroma_config import CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME, COLLECTION_METADATA, MAX_MESSAGE_LENGTH, MAX_CONVERSATION_MESSAGES
+from utils.constant import reminder_prompt
 
 
 class MockChromaClient:
@@ -83,8 +84,6 @@ class ChromaService:
         self.port = port or CHROMA_PORT
         
         try:
-            print(f"Attempting to connect to ChromaDB at {self.host}:{self.port}")
-            
             # Try to create a real ChromaDB client
             try:
                 self.client = chromadb.HttpClient(
@@ -145,51 +144,124 @@ class ChromaService:
             )
     
     def add_message(self, conversation_id: str, role: str, content: str, 
-                   timestamp: Optional[str] = None) -> str:
+                   timestamp: Optional[str] = None, additional_metadata: Optional[Dict[str, Any]] = None, 
+                   is_first_message: bool = False) -> str:
         """
-        Add a message to the collection
+        Add a message to the collection with enhanced validation and metadata support.
+        Automatically uses reminder_prompt for first messages to ensure proper bilingual formatting.
         
         Args:
             conversation_id: Unique conversation identifier
             role: Message role (user, assistant, system)
             content: Message content
             timestamp: ISO8601 timestamp string (auto-generated if not provided)
+            additional_metadata: Optional additional metadata to include
+            is_first_message: Whether this is the first message in the conversation
             
         Returns:
             Generated message ID
+            
+        Raises:
+            ValueError: If input validation fails
+            Exception: If ChromaDB operation fails
         """
-        # Validate input
+        # Enhanced input validation
+        if not conversation_id or not conversation_id.strip():
+            raise ValueError("Conversation ID cannot be empty")
+        
+        if not role or not role.strip():
+            raise ValueError("Message role cannot be empty")
+        
         if not content or len(content.strip()) == 0:
             raise ValueError("Message content cannot be empty")
         
+        # Validate role values
+        valid_roles = ["user", "assistant", "system"]
+        if role.lower() not in valid_roles:
+            raise ValueError(f"Invalid role '{role}'. Must be one of: {', '.join(valid_roles)}")
+        
+        # Validate content length
         if len(content) > MAX_MESSAGE_LENGTH:
             raise ValueError(f"Message content exceeds maximum length of {MAX_MESSAGE_LENGTH} characters")
         
+        # Generate timestamp if not provided
         if timestamp is None:
             timestamp = datetime.utcnow().isoformat() + "Z"
+        else:
+            # Validate timestamp format (basic ISO8601 check)
+            try:
+                datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            except ValueError:
+                raise ValueError("Invalid timestamp format. Must be ISO8601 format")
         
-        # Generate unique message ID
-        message_id = f"msg_{uuid.uuid4().hex[:8]}"
+        # Generate unique message ID with better format
+        message_id = f"msg_{conversation_id}_{uuid.uuid4().hex[:12]}_{int(datetime.utcnow().timestamp())}"
         
-        print(f"💾 Storing message: id={message_id}, conversation_id='{conversation_id}', role={role}")
+        # Prepare metadata with enhanced structure
+        metadata = {
+            "conversation_id": conversation_id.strip(),
+            "role": role.lower().strip(),
+            "timestamp": timestamp,
+            "content_length": len(content),
+            "created_at": datetime.utcnow().isoformat() + "Z",
+            "is_first_message": is_first_message
+        }
+        
+        # Add any additional metadata if provided
+        if additional_metadata:
+            if not isinstance(additional_metadata, dict):
+                raise ValueError("Additional metadata must be a dictionary")
+            
+            # Validate additional metadata keys (prevent conflicts)
+            reserved_keys = {"conversation_id", "role", "timestamp", "content_length", "created_at", "is_first_message"}
+            conflicting_keys = set(additional_metadata.keys()) & reserved_keys
+            if conflicting_keys:
+                raise ValueError(f"Additional metadata cannot contain reserved keys: {conflicting_keys}")
+            
+            metadata.update(additional_metadata)
         
         try:
+            # If this is the first message, use reminder_prompt to format the content
+            if is_first_message and role.lower() == "user":
+                print(f"🔧 First message detected, applying reminder_prompt formatting...")
+                # Get formatted messages from reminder_prompt
+                formatted_messages = reminder_prompt(content, is_first_message=True)
+                
+                # Find the user message in the formatted messages
+                user_message = None
+                for msg in formatted_messages:
+                    if msg["role"] == "user" and msg["content"] == content:
+                        user_message = msg
+                        break
+                
+                # If we found the user message, use its formatted content
+                if user_message:
+                    # The content is already properly formatted by reminder_prompt
+                    print(f"✅ Content formatted with reminder_prompt for first message")
+                else:
+                    print(f"⚠️  Could not find formatted user message, using original content")
+            
             # Add document to collection
             self.collection.add(
                 documents=[content],
-                metadatas=[{
-                    "conversation_id": conversation_id,
-                    "role": role,
-                    "timestamp": timestamp
-                }],
+                metadatas=[metadata],
                 ids=[message_id]
             )
             
-            print(f"✅ Message stored successfully with ID: {message_id}")
+            print(f"✅ Message added successfully: {message_id} (conversation: {conversation_id})")
+            if is_first_message:
+                print(f"   📝 First message in conversation - bilingual formatting applied")
             return message_id
+            
         except Exception as e:
-            print(f"❌ Failed to store message: {str(e)}")
-            raise Exception(f"Failed to add message to ChromaDB: {str(e)}")
+            error_msg = f"Failed to add message to ChromaDB: {str(e)}"
+            print(f"❌ {error_msg}")
+            print(f"   Message ID: {message_id}")
+            print(f"   Conversation ID: {conversation_id}")
+            print(f"   Role: {role}")
+            print(f"   Content length: {len(content)}")
+            print(f"   Is first message: {is_first_message}")
+            raise Exception(error_msg)
     
     def get_conversation(self, conversation_id: str) -> List[Dict[str, Any]]:
         """
@@ -202,16 +274,12 @@ class ChromaService:
             List of messages ordered by timestamp
         """
         try:
-            print(f"🔍 Querying ChromaDB for conversation: '{conversation_id}'")
-            
             # Query by conversation_id metadata
             results = self.collection.query(
                 query_texts=[""],  # Empty query to get all documents
                 where={"conversation_id": conversation_id},
                 n_results=MAX_CONVERSATION_MESSAGES
             )
-            
-            print(f"📊 Query results: {len(results['ids'][0]) if results['ids'] and results['ids'][0] else 0} messages found")
             
             if not results['ids'] or not results['ids'][0]:
                 print(f"⚠️  No results found for conversation_id: '{conversation_id}'")
@@ -227,66 +295,13 @@ class ChromaService:
                     "timestamp": results['metadatas'][0][i]["timestamp"]
                 }
                 messages.append(message)
-                print(f"  📝 Message {i}: role={message['role']}, content={message['content'][:50]}...")
             
             # Sort by timestamp
             messages.sort(key=lambda x: x["timestamp"])
-            print(f"✅ Returning {len(messages)} messages for conversation '{conversation_id}'")
-            
             return messages
         except Exception as e:
             print(f"❌ Error in get_conversation: {str(e)}")
             raise Exception(f"Failed to retrieve conversation: {str(e)}")
-    
-    def search_conversation(self, conversation_id: str, query: str, 
-                           n_results: int = 3) -> List[Dict[str, Any]]:
-        """
-        Search for messages in a conversation using semantic search
-        
-        Args:
-            conversation_id: Conversation identifier
-            query: Search query text
-            n_results: Number of results to return
-            
-        Returns:
-            List of search results with scores
-        """
-        if not query or len(query.strip()) == 0:
-            raise ValueError("Search query cannot be empty")
-        
-        if n_results > MAX_CONVERSATION_MESSAGES:
-            n_results = MAX_CONVERSATION_MESSAGES
-        
-        try:
-            # Perform semantic search within the conversation
-            results = self.collection.query(
-                query_texts=[query],
-                where={"conversation_id": conversation_id},
-                n_results=n_results,
-                include=["metadatas", "documents", "distances"]
-            )
-            
-            if not results['ids'] or not results['ids'][0]:
-                return []
-            
-            # Combine results with scores
-            search_results = []
-            for i in range(len(results['ids'][0])):
-                # Convert distance to similarity score (1 - distance)
-                score = 1 - results['distances'][0][i] if results['distances'][0][i] is not None else 0
-                
-                result = {
-                    "id": results['ids'][0][i],
-                    "role": results['metadatas'][0][i]["role"],
-                    "content": results['documents'][0][i],
-                    "timestamp": results['metadatas'][0][i]["timestamp"],
-                    "score": round(score, 2)
-                }
-                search_results.append(result)
-            
-            return search_results
-        except Exception as e:
-            raise Exception(f"Failed to perform search: {str(e)}")
     
     def delete_conversation(self, conversation_id: str) -> bool:
         """
@@ -315,93 +330,3 @@ class ChromaService:
         except Exception as e:
             raise Exception(f"Failed to delete conversation: {str(e)}")
     
-    def get_conversation_stats(self, conversation_id: str) -> Dict[str, Any]:
-        """
-        Get statistics for a conversation
-        
-        Args:
-            conversation_id: Conversation identifier
-            
-        Returns:
-            Dictionary with conversation statistics
-        """
-        try:
-            messages = self.get_conversation(conversation_id)
-            
-            if not messages:
-                return {
-                    "conversation_id": conversation_id,
-                    "message_count": 0,
-                    "user_messages": 0,
-                    "assistant_messages": 0,
-                    "system_messages": 0
-                }
-            
-            user_count = sum(1 for msg in messages if msg["role"] == "user")
-            assistant_count = sum(1 for msg in messages if msg["role"] == "assistant")
-            system_count = sum(1 for msg in messages if msg["role"] == "system")
-            
-            return {
-                "conversation_id": conversation_id,
-                "message_count": len(messages),
-                "user_messages": user_count,
-                "assistant_messages": assistant_count,
-                "system_messages": system_count,
-                "first_message": messages[0]["timestamp"],
-                "last_message": messages[-1]["timestamp"]
-            }
-        except Exception as e:
-            raise Exception(f"Failed to get conversation stats: {str(e)}")
-    
-    def health_check(self) -> Dict[str, Any]:
-        """Check ChromaDB connection health"""
-        try:
-            # Check which type of client we're using
-            if isinstance(self.client, MockChromaClient):
-                client_type = "mock"
-                # Show some debug info about stored conversations
-                debug_info = {}
-                for conv_id, collection in self.client._collections.items():
-                    debug_info[conv_id] = {
-                        "message_count": len(collection.documents),
-                        "last_message": collection.documents[-1] if collection.documents else "None"
-                    }
-                
-                return {
-                    "status": "mock",
-                    "message": "Using mock ChromaDB client - data will NOT persist between restarts",
-                    "client_type": client_type,
-                    "collections": len(self.client._collections),
-                    "is_mock": True,
-                    "debug_info": debug_info
-                }
-            elif hasattr(self.client, '_persist_directory'):
-                # This is a PersistentClient
-                client_type = "persistent"
-                collections = self.client.list_collections()
-                return {
-                    "status": "healthy",
-                    "message": "Using persistent local ChromaDB - data WILL persist between restarts",
-                    "client_type": client_type,
-                    "collections": len(collections),
-                    "persist_directory": "./chroma_db_local",
-                    "is_mock": False
-                }
-            else:
-                # This is an HttpClient
-                client_type = "http"
-                collections = self.client.list_collections()
-                return {
-                    "status": "healthy",
-                    "message": "Using ChromaDB server - data persists on server",
-                    "client_type": client_type,
-                    "collections": len(collections),
-                    "is_mock": False
-                }
-                
-        except Exception as e:
-            return {
-                "status": "unhealthy",
-                "error": str(e),
-                "is_mock": False
-            } 

@@ -1,21 +1,20 @@
 package com.eng.service.impl;
 
+import java.util.Map;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+
 import com.eng.constants.UserRole;
 import com.eng.entities.User;
 import com.eng.mappers.UserMapper;
 import com.eng.models.response.UserResponse;
 import com.eng.repositories.UserRepository;
 import com.eng.service.GoogleOAuth2Service;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Implementation of Google OAuth2 service for handling Google authentication
