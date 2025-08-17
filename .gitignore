@@ -8,6 +8,9 @@ venv/
 pycache/
 __pycache__/
 chroma_db_local/
+.DS_Store
+.env
+eng-be-ai/venv/
 
 ### STS ###
 .apt_generated
