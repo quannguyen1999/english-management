@@ -199,11 +199,11 @@ export default function ConversationContentView() {
           </div>
         )}
 
-        {messages.map((item: Message) => {
+        {messages.map((item: Message, index: number) => {
           const isCurrentUser = item.senderId === currentUserId;
           return (
             <div
-              key={item.id}
+              key={`${item.id || "temp"}_${index}`}
               className={`flex ${
                 isCurrentUser ? "justify-end" : "justify-start"
               } space-x-2 mb-4`}

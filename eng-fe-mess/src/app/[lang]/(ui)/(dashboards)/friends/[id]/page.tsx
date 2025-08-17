@@ -4,15 +4,18 @@ import ConversationContentView from "@/modules/chats/conversation-content-view";
 import ConversationInputView from "@/modules/chats/conversation-input-view";
 import { MicIcon, Video } from "lucide-react";
 
-export default function MeetingPage({
+export default async function MeetingPage({
   params,
   searchParams,
 }: {
-  params: { id: string; lang: string };
-  searchParams: { username?: string };
+  params: Promise<{ id: string; lang: string }>;
+  searchParams: Promise<{ username?: string }>;
 }) {
-  const { id } = params;
-  const username = searchParams.username ?? "Unknown";
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const { id } = resolvedParams;
+  const username = resolvedSearchParams.username ?? "Unknown";
+
   return (
     <ConversationProvider id={id}>
       <div className="flex flex-col w-full h-full">

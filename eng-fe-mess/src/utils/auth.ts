@@ -150,7 +150,7 @@ export function getCurrentUserId(): string | null {
     return null;
   }
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) return null;
 
   try {
@@ -167,7 +167,7 @@ export function getCurrentUsername(): string | null {
     return null;
   }
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) return null;
 
   try {

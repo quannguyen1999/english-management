@@ -89,7 +89,19 @@ export function ConversationProvider({
       if (response.status === 200) {
         const data = response.data as MessageResponsePage;
         if (data.data.length > 0) {
-          setMessages((prev) => [...data.data.reverse(), ...prev]);
+          setMessages((prev) => {
+            // Filter out any messages that already exist to prevent duplicates
+            const newMessages = data.data.filter(
+              (newMsg) => !prev.some((existing) => existing.id === newMsg.id)
+            );
+
+            // If no new unique messages, don't update
+            if (newMessages.length === 0) {
+              return prev;
+            }
+
+            return [...newMessages.reverse(), ...prev];
+          });
           setCurrentPage(nextPage);
           setHasMoreMessages(
             data.data.length === 20 && (nextPage + 1) * 20 < data.total
@@ -146,6 +158,15 @@ export function ConversationProvider({
       if (message.id && prev.some((existing) => existing.id === message.id)) {
         return prev; // Return existing array if message already exists
       }
+
+      // If no ID, generate a temporary unique ID to prevent duplicate key errors
+      if (!message.id) {
+        message = {
+          ...message,
+          id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        };
+      }
+
       return [...prev, message];
     });
   }, []);
