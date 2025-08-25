@@ -3,8 +3,6 @@ from chromadb.config import Settings
 from typing import List, Dict, Any, Optional
 import uuid
 from datetime import datetime
-import json
-import os
 from config.chroma_config import CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME, COLLECTION_METADATA, MAX_MESSAGE_LENGTH, MAX_CONVERSATION_MESSAGES
 from utils.constant import reminder_prompt
 
