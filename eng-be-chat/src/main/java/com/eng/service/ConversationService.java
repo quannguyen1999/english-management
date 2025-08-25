@@ -21,6 +21,10 @@ public interface ConversationService {
 
     ConversationResponse createGroupConversation(String name, List<UUID> participantIds);
 
+    ConversationResponse createAIConversation();
+
+    List<ConversationResponse> getAIConversations();
+
     void updateLastMessage(UUID conversationId, UUID messageId);
 
     Conversation getConversation(UUID conversationId);

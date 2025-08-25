@@ -70,4 +70,14 @@ public class ConversationController {
                 request.getParticipantIds()
         ));
     }
+
+    @PostMapping(PathApi.CONVERSATION_AI)
+    public ResponseEntity<ConversationResponse> createAIConversation() {
+        return ResponseEntity.ok(conversationService.createAIConversation());
+    }
+
+    @GetMapping(PathApi.CONVERSATION_AI)
+    public ResponseEntity<List<ConversationResponse>> getAIConversations() {
+        return ResponseEntity.ok(conversationService.getAIConversations());
+    }
 } 

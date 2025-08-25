@@ -64,6 +64,8 @@ public interface PathApi {
 
     String CONVERSATION_GROUP = "/group";
 
+    String CONVERSATION_AI = "/ai";
+
     String CONVERSATION_SOCKET_TYPING = "/{conversationId}/typing";
 
     String CONVERSATION_SOCKET_STATUS_ONLINE = "/{userId}/status/online";

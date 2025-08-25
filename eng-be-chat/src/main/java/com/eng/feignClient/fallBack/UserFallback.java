@@ -57,6 +57,11 @@ public class UserFallback implements UserServiceClient {
 
     @Override
     public List<UserResponse> getUsersByUUID(List<UUID> userIds) {
-        return null;
+        log.error("Fallback triggered for getUsersByUUID with userIds: {}", userIds);
+        log.error("Stack trace:", new Exception("Fallback stack trace"));
+        
+        // Return empty list instead of null to prevent NullPointerException
+        log.error("Returning empty list as fallback for getUsersByUUID");
+        return List.of();
     }
 }

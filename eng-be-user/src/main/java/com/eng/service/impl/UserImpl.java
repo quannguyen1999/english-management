@@ -61,10 +61,11 @@ public class UserImpl implements UserService {
         userValidator.validateCreate(userRequest);
         if (userRequest.getRole() == UserRole.AI_TEACHER) {
             userRequest.setPassword(DEFAULT_PASS_AI_TEACHER);
-        }else{
+        } else {
             userRequest.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+            // Only set default role to USER if not AI_TEACHER
+            userRequest.setRole(UserRole.USER);
         }
-        userRequest.setRole(UserRole.USER);
         User user = userRepository.save(userMapper.userRequestToUser(userRequest));
         return userMapper.userToUserResponse(user);
     }

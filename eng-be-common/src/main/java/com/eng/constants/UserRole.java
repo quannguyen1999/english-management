@@ -25,5 +25,14 @@ public enum UserRole {
      * - Access projects they are assigned to
      * - Update their own profile
      */
-    USER
+    USER,
+
+    /**
+     * AI teacher role with limited access.
+     * Users with this role can:
+     * - View and manage their own tasks
+     * - Access projects they are assigned to
+     * - Update their own profile
+     */
+    AI_TEACHER
 }

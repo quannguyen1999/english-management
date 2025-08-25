@@ -295,6 +295,178 @@ public class ConversationServiceImpl implements ConversationService {
 
     @Override
     @Transactional
+    public ConversationResponse createAIConversation() {
+        UUID currentUserId = SecurityUtil.getIDUser();
+
+        // Find or create default AI teacher user
+        UUID aiTeacherId = findOrCreateDefaultAITeacher();
+
+        // Check if AI conversation already exists
+        Conversation existingConversation = conversationRepository.findPrivateConversation(currentUserId, aiTeacherId);
+        if (existingConversation != null) {
+            return conversationMapper.toResponse(existingConversation);
+        }
+
+        // Create conversation
+        Conversation conversation = new Conversation();
+        conversation.setGroup(false);
+        conversation.setName("AI English Teacher");
+        conversation.setCreatedBy(currentUserId);
+
+        // Save conversation first to get ID
+        conversation = conversationRepository.save(conversation);
+        entityManager.flush(); // Ensure conversation is persisted and has ID
+
+        // Create participants
+        List<ConversationParticipant> participants = new ArrayList<>();
+
+        // Add current user
+        ConversationParticipant participant1 = new ConversationParticipant();
+        participant1.setUserId(currentUserId);
+        participant1.setConversationId(conversation.getId());
+        participants.add(participant1);
+
+        // Add AI teacher
+        ConversationParticipant participant2 = new ConversationParticipant();
+        participant2.setUserId(aiTeacherId);
+        participant2.setConversationId(conversation.getId());
+        participants.add(participant2);
+
+        // Save participants
+        conversationParticipantRepository.saveAll(participants);
+
+        return conversationMapper.toResponse(conversation);
+    }
+
+    @Override
+    public List<ConversationResponse> getAIConversations() {
+        UUID currentUserId = SecurityUtil.getIDUser();
+        
+        // Get all conversations for current user
+        List<Conversation> conversations = conversationRepository.findByParticipantsUserId(currentUserId);
+        
+        // Filter AI conversations
+        return conversations.stream()
+                .filter(Conversation::isAIConversation)
+                .map(conversationMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Finds or creates a default AI teacher user
+     * @return UUID of the AI teacher user
+     */
+    private UUID findOrCreateDefaultAITeacher() {
+        // First, test if user service is reachable
+        if (!isUserServiceReachable()) {
+            throw new RuntimeException(
+                "User service is not reachable. Please ensure:\n" +
+                "1. The user service is running on http://localhost:8070\n" +
+                "2. Network connectivity is working\n" +
+                "3. No firewall is blocking the connection"
+            );
+        }
+        
+        // Try to find existing AI teacher by username
+        try {
+            System.out.println("🔍 Searching for AI teacher by username 'ai_teacher'...");
+            CommonPageInfo<UserResponse> aiTeacherPage = userServiceClient.getUsers(0, 1, "ai_teacher", null);
+            System.out.println("✅ User service call successful, found " + aiTeacherPage.getData().size() + " users");
+            
+            if (!aiTeacherPage.getData().isEmpty()) {
+                UserResponse aiTeacher = aiTeacherPage.getData().get(0);
+                System.out.println("👤 Found user: " + aiTeacher.getUsername() + " with role: " + aiTeacher.getRole());
+                
+                if (aiTeacher.getRole() != null && aiTeacher.getRole().name().equals("AI_TEACHER")) {
+                    System.out.println("🎯 Found AI teacher with ID: " + aiTeacher.getId());
+                    return aiTeacher.getId();
+                } else {
+                    System.out.println("⚠️ User found but role is not AI_TEACHER: " + aiTeacher.getRole());
+                }
+            } else {
+                System.out.println("ℹ️ No users found with username 'ai_teacher'");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error finding existing AI teacher by username: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Try to find by the predefined UUID
+        String defaultAiTeacherId = "00000000-0000-0000-0000-000000000001";
+        
+        try {
+            System.out.println("🔍 Searching for AI teacher by UUID: " + defaultAiTeacherId);
+            UUID aiTeacherId = UUID.fromString(defaultAiTeacherId);
+            
+            // Create the list with the UUID
+            List<UUID> uuidList = List.of(aiTeacherId);
+            System.out.println("📤 Sending request to user service with UUIDs: " + uuidList);
+            System.out.println("📤 UUID list type: " + uuidList.getClass().getName());
+            System.out.println("📤 First UUID: " + uuidList.get(0) + " (type: " + uuidList.get(0).getClass().getName() + ")");
+            
+            // Verify the user exists by trying to get it
+            List<UserResponse> aiTeacherList = userServiceClient.getUsersByUUID(uuidList);
+            System.out.println("✅ User service call successful, received " + aiTeacherList.size() + " users");
+            
+            if (!aiTeacherList.isEmpty()) {
+                UserResponse aiTeacher = aiTeacherList.get(0);
+                System.out.println("👤 Found user by UUID: " + aiTeacher.getUsername() + " with role: " + aiTeacher.getRole());
+                
+                if (aiTeacher.getRole() != null && aiTeacher.getRole().name().equals("AI_TEACHER")) {
+                    System.out.println("🎯 Found AI teacher by UUID with ID: " + aiTeacher.getId());
+                    return aiTeacherId;
+                } else {
+                    System.out.println("⚠️ User found by UUID but role is not AI_TEACHER: " + aiTeacher.getRole());
+                }
+            } else {
+                System.out.println("ℹ️ No users found with UUID: " + defaultAiTeacherId);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error verifying default AI teacher by UUID: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Additional debugging for the specific error
+            if (e.getMessage() != null && e.getMessage().contains("extracting response")) {
+                System.err.println("🔍 This appears to be a JSON parsing error from the user service");
+                System.err.println("🔍 The user service might be returning malformed JSON or not running");
+            }
+        }
+        
+        // If we still can't find an AI teacher, provide clear instructions
+        throw new RuntimeException(
+            "AI Teacher user not found. Please ensure one of the following:\n" +
+            "1. The user service is running and accessible at http://localhost:8070\n" +
+            "2. Run the database migration V20250825230000__create_ai_teacher_user.sql\n" +
+            "3. Create an AI_TEACHER user manually with:\n" +
+            "   - Username: 'ai_teacher'\n" +
+            "   - Role: 'AI_TEACHER'\n" +
+            "   - UUID: '00000000-0000-0000-0000-000000000001' (optional)\n" +
+            "4. Check if the user service is properly configured and running\n" +
+            "5. Verify network connectivity between chat service and user service\n" +
+            "6. Check user service logs for any errors"
+        );
+    }
+
+    /**
+     * Simple health check to test if user service is reachable
+     * @return true if user service is reachable, false otherwise
+     */
+    private boolean isUserServiceReachable() {
+        try {
+            System.out.println("🏥 Testing user service connectivity...");
+            // Try a simple call to see if the service responds
+            CommonPageInfo<UserResponse> testResponse = userServiceClient.getUsers(0, 1, null, null);
+            System.out.println("✅ User service is reachable, received response with " + testResponse.getData().size() + " users");
+            return true;
+        } catch (Exception e) {
+            System.err.println("❌ User service is not reachable: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
     public void updateLastMessage(UUID conversationId, UUID messageId) {
         conversationValidator.validateUpdateLastMessage(conversationId, messageId);
 
