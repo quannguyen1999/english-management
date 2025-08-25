@@ -16,7 +16,10 @@ export default function FriendHeaderView({ dict }: { dict: any }) {
   return (
     <div className="flex flex-row items-center justify-between p-4">
       {/* Logo and Brand */}
-      <div className="flex items-center space-x-3">
+      <div
+        className="flex items-center space-x-3 cursor-pointer"
+        onClick={() => router.push("/")}
+      >
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">L</span>
@@ -26,10 +29,13 @@ export default function FriendHeaderView({ dict }: { dict: any }) {
           </div>
         </div>
       </div>
-      
+
       {/* Right side actions */}
       <div className="flex items-center space-x-3">
-        <LogOut className="size-5 cursor-pointer text-gray-600 hover:text-gray-800" onClick={handleLogout} />
+        <LogOut
+          className="size-5 cursor-pointer text-gray-600 hover:text-gray-800"
+          onClick={handleLogout}
+        />
         <ModeToggle />
       </div>
     </div>
