@@ -14,10 +14,24 @@ export default function FriendHeaderView({ dict }: { dict: any }) {
     router.push("/sign-in");
   };
   return (
-    <div className="flex flex-row items-center justify-between">
-      <h2 className="text-lg font-semibold">{dict.dashboard.title}</h2>
-      <LogOut className="size-6 cursor-pointer" onClick={handleLogout} />
-      <ModeToggle />
+    <div className="flex flex-row items-center justify-between p-4">
+      {/* Logo and Brand */}
+      <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">L</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Learn.io</h1>
+          </div>
+        </div>
+      </div>
+      
+      {/* Right side actions */}
+      <div className="flex items-center space-x-3">
+        <LogOut className="size-5 cursor-pointer text-gray-600 hover:text-gray-800" onClick={handleLogout} />
+        <ModeToggle />
+      </div>
     </div>
   );
 }

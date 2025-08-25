@@ -1,12 +1,5 @@
 import { getDictionary } from "@/app/[lang]/dictionaries";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-import FriendHeaderView from "@/modules/dashboards/friend-header-view";
-import { FriendsListHeader } from "@/modules/dashboards/friends-list-header";
+import { DashboardLayoutClient } from "@/modules/dashboards/dashboard-layout-client";
 
 export default async function DashboardLayout({
   params,
@@ -17,19 +10,6 @@ export default async function DashboardLayout({
 }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
-  return (
-    <div className="flex h-screen">
-      <SidebarProvider>
-        <Sidebar>
-          <SidebarHeader>
-            <FriendHeaderView dict={dict} />
-          </SidebarHeader>
-          <SidebarContent>
-            <FriendsListHeader />
-          </SidebarContent>
-        </Sidebar>
-        {children}
-      </SidebarProvider>
-    </div>
-  );
+  
+  return <DashboardLayoutClient dict={dict}>{children}</DashboardLayoutClient>;
 }
