@@ -18,6 +18,20 @@ export async function GET(
     "/api",
     ""
   )}${searchParams ? `?${searchParams}` : ""}`;
+
+  console.log("=== DEBUG INFO ===");
+  console.log("Original path:", path);
+  console.log("Route config:", routeConfig);
+  console.log("Base URL:", routeConfig.baseUrl);
+  console.log("Endpoint:", routeConfig.endpoint);
+  console.log(
+    "Endpoint after replace:",
+    routeConfig.endpoint.replace("/api", "")
+  );
+  console.log("Search params:", searchParams);
+  console.log("Full URL:", fullUrl);
+  console.log("==================");
+
   const response = await fetch(fullUrl, {
     method: routeConfig.method,
     headers: {
@@ -25,6 +39,9 @@ export async function GET(
       ...Object.fromEntries(req.headers.entries()),
     },
   });
+
+  console.log("Response status:", response.status);
+  console.log("Response URL:", response.url);
 
   return commonResponse(response);
 }

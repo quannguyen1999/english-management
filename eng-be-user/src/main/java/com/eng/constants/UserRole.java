@@ -6,5 +6,6 @@ package com.eng.constants;
 public enum UserRole {
     USER,
     ADMIN,
-    MODERATOR
+    MODERATOR,
+    AI_TEACHER
 } 

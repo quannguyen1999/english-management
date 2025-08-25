@@ -20,6 +20,7 @@ export const CONVERSATIONS = "conversations";
 export const CONVERSATIONS_PRIVATE = "conversations/private";
 export const CONVERSATIONS_GROUP = "conversations/group";
 export const CONVERSATIONS_LOAD_FRIEND = "conversations/load-friend";
+export const CONVERSATION_PARTICIPANTS = "conversations/load-id-conversation";
 export const FRIENDS_SEARCH = "friends/search";
 export const FRIENDS_LOAD_ID = "friends/load-id";
 export const FRIENDS_SEARCH_ALL = "friends/search-all";
@@ -98,6 +99,12 @@ export const API_ROUTES: Record<string, ApiRouteConfig> = {
     method: "GET",
     requiresAuth: true,
   },
+  [CONVERSATION_PARTICIPANTS]: {
+    baseUrl: CHAT_API,
+    endpoint: "/api/conversations/load-id-conversation",
+    method: "GET",
+    requiresAuth: true,
+  },
   // Friend routes
   [FRIENDS_SEARCH]: {
     baseUrl: CHAT_API,
@@ -109,6 +116,7 @@ export const API_ROUTES: Record<string, ApiRouteConfig> = {
     baseUrl: CHAT_API,
     endpoint: "/api/conversations/load-id-conversation",
     method: "GET",
+    requiresAuth: true,
   },
   // Message routes
   [MESSAGES]: {

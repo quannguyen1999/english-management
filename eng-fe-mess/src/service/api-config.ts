@@ -47,6 +47,12 @@ export default async function request<T>(
 
   const routeConfig = getRouteConfig(path);
 
+  if (routeConfig?.endpoint.includes("load-id-conversation")) {
+    console.log("fuckhere");
+    console.log(routeConfig?.endpoint);
+    console.log("ended");
+  }
+
   // Extract query parameters from the path
   const urlParts = path.split("?");
   const basePath = urlParts[0];

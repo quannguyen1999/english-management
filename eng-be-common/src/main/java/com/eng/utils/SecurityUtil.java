@@ -1,17 +1,19 @@
 package com.eng.utils;
 
-import com.eng.constants.MessageErrors;
-import com.eng.constants.RolePrefix;
-import com.eng.constants.UserRole;
-import com.eng.exceptions.UnauthorizedRequestException;
-import lombok.experimental.UtilityClass;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.util.ObjectUtils;
 
-import java.util.List;
-import java.util.UUID;
+import com.eng.constants.MessageErrors;
+import com.eng.constants.RolePrefix;
+import com.eng.constants.UserRole;
+import com.eng.exceptions.UnauthorizedRequestException;
+
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class SecurityUtil {

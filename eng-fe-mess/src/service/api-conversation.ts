@@ -1,6 +1,7 @@
 import { MessageResponsePage } from "@/types/message";
 import request from "./api-config";
 import {
+  CONVERSATION_PARTICIPANTS,
   CONVERSATIONS_GROUP,
   CONVERSATIONS_LOAD_FRIEND,
   CONVERSATIONS_PRIVATE,
@@ -61,3 +62,30 @@ export async function loadMessages(
   });
   return request<MessageResponsePage>(`${MESSAGES}?${params.toString()}`);
 }
+
+export interface ConversationParticipant {
+  userId: string;
+  username: string;
+  email: string;
+  createdAt: string; // Backend returns Instant, frontend receives as string
+  hasConversation: boolean;
+  conversationId: string;
+  friendStatus: string;
+  isRequestSentByMe: boolean;
+  isOnline: boolean;
+}
+
+export const getConversationParticipants = async (
+  conversationId: string
+): Promise<{ data: ConversationParticipant[]; status: number }> => {
+  const params = new URLSearchParams({
+    conversationId,
+  });
+  const response = await request<ConversationParticipant[]>(
+    `${CONVERSATION_PARTICIPANTS}?${params.toString()}`
+  );
+
+  // The backend returns a List<UserRelationshipResponse> directly
+  // The request function wraps it in {data, status}, so we can return it as is
+  return response;
+};

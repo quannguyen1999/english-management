@@ -95,4 +95,26 @@ public interface PathApi {
     String FRIEND_REJECT = "/reject";
 
     String FRIEND_REQUEST_PENDING = "/pending";
+
+    // Audio Call Endpoints
+    /**
+     * Base path for all audio call-related operations
+     */
+    String AUDIO_CALL = "/audio-calls";
+
+    String AUDIO_CALL_INITIATE = "/initiate";
+
+    String AUDIO_CALL_ACCEPT = "/accept";
+
+    String AUDIO_CALL_REJECT = "/reject";
+
+    String AUDIO_CALL_END = "/end";
+
+    String AUDIO_CALL_SOCKET_OFFER = "/{callId}/offer";
+
+    String AUDIO_CALL_SOCKET_ANSWER = "/{callId}/answer";
+
+    String AUDIO_CALL_SOCKET_ICE_CANDIDATE = "/{callId}/ice-candidate";
+
+    String AUDIO_CALL_SOCKET_END = "/{callId}/end";
 }

@@ -44,3 +44,45 @@ export interface MessageStatusUserResponse {
   userId?: string;
   online?: boolean;
 }
+
+// Audio Call Types
+export interface AudioCallResponse {
+  callId: string;
+  conversationId: string;
+  callerId: string;
+  calleeId: string;
+  callType: string;
+  status: string;
+  offerSdp?: string;
+  answerSdp?: string;
+  initiatedAt: string;
+  answeredAt?: string;
+  endedAt?: string;
+  duration?: number;
+}
+
+export interface IncomingCallNotification {
+  type: "INCOMING_CALL";
+  data: AudioCallResponse;
+}
+
+export interface CallAcceptedNotification {
+  type: "CALL_ACCEPTED";
+  data: AudioCallResponse;
+}
+
+export interface CallRejectedNotification {
+  type: "CALL_REJECTED";
+  data: AudioCallResponse;
+}
+
+export interface CallEndedNotification {
+  type: "CALL_ENDED";
+  data: AudioCallResponse;
+}
+
+export type AudioCallNotification =
+  | IncomingCallNotification
+  | CallAcceptedNotification
+  | CallRejectedNotification
+  | CallEndedNotification;

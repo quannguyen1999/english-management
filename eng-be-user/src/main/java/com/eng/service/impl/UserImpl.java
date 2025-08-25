@@ -38,7 +38,7 @@ import lombok.AllArgsConstructor;
 @Service
 public class UserImpl implements UserService {
 
-    private static final String DEFAULT_PASS = "123456";
+    private static final String DEFAULT_PASS_AI_TEACHER = "no-pass";
 
     private final UserRepository userRepository;
     private final UserValidator userValidator;
@@ -59,7 +59,11 @@ public class UserImpl implements UserService {
     public UserResponse createUser(UserRequest userRequest) {
         //Validate create user
         userValidator.validateCreate(userRequest);
-        userRequest.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        if (userRequest.getRole() == UserRole.AI_TEACHER) {
+            userRequest.setPassword(DEFAULT_PASS_AI_TEACHER);
+        }else{
+            userRequest.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        }
         userRequest.setRole(UserRole.USER);
         User user = userRepository.save(userMapper.userRequestToUser(userRequest));
         return userMapper.userToUserResponse(user);

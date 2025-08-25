@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import websocketService from "../service/websocket.service";
 import {
+  AudioCallNotification,
   Message,
   MessageStatusUserResponse,
   MessageTypingResponse,
@@ -62,81 +63,57 @@ export const useWebSocket = () => {
     []
   );
 
+  // Listen to audio call notifications
+  const onAudioCall = useCallback(
+    (callback: (notification: AudioCallNotification) => void) => {
+      const unsubscribe = websocketService.onAudioCall(callback);
+      unsubscribeRefs.current.push(unsubscribe);
+      return unsubscribe;
+    },
+    []
+  );
+
   // Send message
-  const sendMessage = useCallback((message: Partial<Message>) => {
-    websocketService.sendMessage(message);
+  const sendMessage = useCallback((conversationId: string, message: any) => {
+    websocketService.sendMessage(conversationId, message);
   }, []);
 
-  // Mark message as read
-  const markAsRead = useCallback(
-    (messageId: string, conversationId: string) => {
-      websocketService.markAsRead(messageId, conversationId);
+  // Send typing indicator
+  const sendTyping = useCallback(
+    (conversationId: string, typingData: MessageTypingResponse) => {
+      websocketService.sendTyping(conversationId, typingData);
     },
     []
   );
 
-  // Mark message as delivered
-  const markAsDelivered = useCallback(
-    (messageId: string, conversationId: string) => {
-      websocketService.markAsDelivered(messageId, conversationId);
-    },
-    []
-  );
-
-  // Add reaction to message
-  const addReaction = useCallback(
-    (messageId: string, conversationId: string, reaction: string) => {
-      websocketService.addReaction(messageId, conversationId, reaction);
-    },
-    []
-  );
-
-  // Publish typing indicator
-  const publishTyping = useCallback(
-    (conversationId: string, payload: Object) => {
-      websocketService.publishTyping(conversationId, payload);
-    },
-    []
-  );
-
-  // Publish user status
-  const publishUserStatus = useCallback((userId: string, online: boolean) => {
-    websocketService.publishStatusUser(userId, online);
+  // Send user status
+  const sendUserStatus = useCallback((userId: string, isOnline: boolean) => {
+    websocketService.sendUserStatus(userId, isOnline);
   }, []);
 
-  // Get connection status
-  const getConnectionStatus = useCallback(() => {
-    return websocketService.getConnectionStatus();
+  // Check connection status
+  const isConnected = useCallback(() => {
+    return websocketService.isWebSocketConnected();
   }, []);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return cleanup;
-  }, [cleanup]);
+  // Disconnect
+  const disconnect = useCallback(() => {
+    websocketService.disconnect();
+  }, []);
 
   return {
-    // Connection management
     subscribeToConversation,
     subscribeToTyping,
     subscribeToUserStatus,
-    getConnectionStatus,
-
-    // Event listeners
     onMessage,
     onTyping,
     onUserStatus,
-
-    // Message actions
+    onAudioCall,
     sendMessage,
-    markAsRead,
-    markAsDelivered,
-    addReaction,
-
-    // Publishing
-    publishTyping,
-    publishUserStatus,
-
-    // Cleanup
+    sendTyping,
+    sendUserStatus,
+    isConnected,
+    disconnect,
     cleanup,
   };
 };
