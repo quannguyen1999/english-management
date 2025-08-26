@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Date;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -334,6 +335,20 @@ public class ConversationServiceImpl implements ConversationService {
 
         // Save participants
         conversationParticipantRepository.saveAll(participants);
+
+        // Create friend request record so AI teacher appears in friend list
+        // Check if friend request already exists
+        FriendRequest existingFriendRequest = friendRequestRepository.findPendingRequest(currentUserId, aiTeacherId);
+        if (existingFriendRequest == null) {
+            // Create a friend request that's automatically accepted
+            FriendRequest friendRequest = FriendRequest.builder()
+                    .senderId(currentUserId)
+                    .receiverId(aiTeacherId)
+                    .status(FriendRequest.FriendRequestStatus.ACCEPTED)
+                    .acceptedAt(new Date())
+                    .build();
+            friendRequestRepository.save(friendRequest);
+        }
 
         return conversationMapper.toResponse(conversation);
     }

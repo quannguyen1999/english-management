@@ -47,7 +47,7 @@ public class FriendValidator extends CommonValidator{
                     return otherUserId.equals(UUID.fromString(friendId)) && request.getStatus() == FriendRequest.FriendRequestStatus.ACCEPTED;
                 })
                 .findFirst()
-                .orElseThrow(null);
+                .orElse(null);
 
         checkEmpty().accept(friendRequest, FRIEND_NOT_FOUND);
 

@@ -63,13 +63,16 @@ export async function POST(
     ""
   )}${searchParams ? `?${searchParams}` : ""}`;
   const body = await req.json();
+  
+  // Convert headers iterator to array before filtering
+  const headers = Object.fromEntries(req.headers.entries());
+  delete headers["content-type"]; // Remove content-type header
+  
   const response = await fetch(fullUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...Object.fromEntries(
-        req.headers.entries().filter(([key]) => key !== "content-type")
-      ),
+      ...headers,
       accept: "application/json",
     },
     body: JSON.stringify(body),
@@ -90,18 +93,22 @@ export async function PUT(
     return new Response("API route not found", { status: 404 });
   }
 
+  const url = new URL(req.url);
+  const searchParams = url.searchParams.toString();
+  const fullUrl = `${routeConfig.baseUrl}${routeConfig.endpoint.replace(
+    "/api",
+    ""
+  )}${searchParams ? `?${searchParams}` : ""}`;
+  
   const body = await req.json();
-  const response = await fetch(
-    `${routeConfig.baseUrl}${routeConfig.endpoint}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-        ...Object.fromEntries(req.headers.entries()),
-      },
-    }
-  );
+  const response = await fetch(fullUrl, {
+    method: "PUT",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      ...Object.fromEntries(req.headers.entries()),
+    },
+  });
 
   return commonResponse(response);
 }
