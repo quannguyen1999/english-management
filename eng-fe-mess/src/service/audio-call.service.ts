@@ -172,42 +172,68 @@ class AudioCallService {
     this.onCallEnded?.(callData);
   }
 
-  private async handleCallUpdate(updateData: any) {
-    console.log("Call update received:", updateData);
+  private async handleSdpUpdate(sdpData: any) {
+    console.log("=== SDP UPDATE RECEIVED ===");
+    console.log("SDP update received via WebSocket:", sdpData);
+    console.log("Current call ID:", this.currentCallId);
+    console.log("Is initiator:", this.isInitiator);
+    console.log("Peer connection exists:", !!this.peerConnection);
+    console.log("SDP data type:", sdpData.type);
+    console.log("SDP data callId:", sdpData.callId);
+    console.log("SDP data offerSdp:", sdpData.offerSdp);
+    console.log("SDP data answerSdp:", sdpData.answerSdp);
+    console.log("===========================");
 
-    if (updateData.callId === this.currentCallId) {
-      if (updateData.offerSdp && !this.isInitiator) {
-        // Set remote offer
-        try {
-          await this.setRemoteDescription({
+    if (sdpData.callId === this.currentCallId && this.peerConnection) {
+      try {
+        if (sdpData.type === "offer" && !this.isInitiator) {
+          console.log("Setting remote offer from WebSocket");
+          await this.peerConnection.setRemoteDescription({
             type: "offer",
-            sdp: updateData.offerSdp,
+            sdp: sdpData.offerSdp,
           });
-        } catch (error) {
-          console.error("Error setting remote offer:", error);
-        }
-      } else if (updateData.answerSdp && this.isInitiator) {
-        // Set remote answer
-        try {
-          await this.setRemoteDescription({
+          console.log("Remote offer set successfully from WebSocket");
+
+          // Create and send answer
+          const answer = await this.peerConnection.createAnswer();
+          await this.peerConnection.setLocalDescription(answer);
+          this.sendSdpAnswer(answer);
+        } else if (sdpData.type === "answer" && this.isInitiator) {
+          console.log("Setting remote answer from WebSocket");
+          await this.peerConnection.setRemoteDescription({
             type: "answer",
-            sdp: updateData.answerSdp,
+            sdp: sdpData.answerSdp,
           });
-        } catch (error) {
-          console.error("Error setting remote answer:", error);
+          console.log("Remote answer set successfully from WebSocket");
         }
+      } catch (error) {
+        console.error("Error handling SDP update from WebSocket:", error);
+      }
+    } else {
+      console.log("SDP update not processed - conditions not met");
+      if (sdpData.callId !== this.currentCallId) {
+        console.log(
+          "Call ID mismatch:",
+          sdpData.callId,
+          "!=",
+          this.currentCallId
+        );
+      }
+      if (!this.peerConnection) {
+        console.log("No peer connection available");
       }
     }
   }
 
-  private async handleIceCandidate(candidateData: any) {
-    console.log("ICE candidate received:", candidateData);
+  private async handleIceCandidateUpdate(candidateData: any) {
+    console.log("ICE candidate received via WebSocket:", candidateData);
 
     if (candidateData.callId === this.currentCallId && this.peerConnection) {
       try {
         await this.peerConnection.addIceCandidate(candidateData.candidate);
+        console.log("ICE candidate added successfully from WebSocket");
       } catch (error) {
-        console.error("Error adding ICE candidate:", error);
+        console.error("Error adding ICE candidate from WebSocket:", error);
       }
     }
   }
@@ -361,9 +387,23 @@ class AudioCallService {
    */
   public setCurrentUserId(userId: string) {
     console.log("Setting current user ID for audio call service:", userId);
+    console.log("User ID type:", typeof userId);
+    console.log("User ID length:", userId.length);
     this.currentUserId = userId;
+
+    // Check WebSocket service status
+    console.log("WebSocket service status check:");
+    console.log("- WebSocket service exists:", !!websocketService);
+    console.log(
+      "- WebSocket connected:",
+      websocketService?.isWebSocketConnected()
+    );
+    console.log("- STOMP client exists:", !!websocketService?.stompClient);
+
     // Subscribe to user-specific notifications
     websocketService.subscribeStatusUserOnline(userId);
+    // Set current user ID in WebSocket service for call updates
+    websocketService.setCurrentUserId(userId);
     console.log(
       "Subscribed to user status and audio call notifications for user:",
       userId
@@ -447,6 +487,43 @@ class AudioCallService {
 
       this.currentCallId = callResponse.callId;
       this.isInitiator = true;
+
+      // Subscribe to call updates via WebSocket
+      console.log(
+        `Subscribing to call updates for call: ${callResponse.callId}`
+      );
+
+      // Check if WebSocket is connected
+      if (!websocketService.isWebSocketConnected()) {
+        console.warn(
+          "WebSocket not connected, cannot subscribe to call updates"
+        );
+        console.log("Attempting to initialize WebSocket connection...");
+        websocketService.initialize();
+        // Wait a bit for connection to establish
+        setTimeout(() => {
+          if (websocketService.isWebSocketConnected()) {
+            console.log("WebSocket now connected, subscribing to call updates");
+            websocketService.subscribeToCallUpdates(
+              callResponse.callId,
+              this.handleSdpUpdate.bind(this),
+              this.handleIceCandidateUpdate.bind(this)
+            );
+          } else {
+            console.error("WebSocket still not connected after initialization");
+          }
+        }, 2000);
+      } else {
+        websocketService.subscribeToCallUpdates(
+          callResponse.callId,
+          this.handleSdpUpdate.bind(this),
+          this.handleIceCandidateUpdate.bind(this)
+        );
+      }
+
+      console.log(
+        `Call updates subscription completed for call: ${callResponse.callId}`
+      );
 
       // Send SDP offer via WebSocket for real-time updates
       console.log("Sending SDP offer via WebSocket...");
@@ -538,6 +615,39 @@ class AudioCallService {
 
       this.currentCallId = callId;
       this.isInitiator = false;
+
+      // Subscribe to call updates via WebSocket
+      console.log(`Subscribing to call updates for call: ${callId}`);
+
+      // Check if WebSocket is connected
+      if (!websocketService.isWebSocketConnected()) {
+        console.warn(
+          "WebSocket not connected, cannot subscribe to call updates"
+        );
+        console.log("Attempting to initialize WebSocket connection...");
+        websocketService.initialize();
+        // Wait a bit for connection to establish
+        setTimeout(() => {
+          if (websocketService.isWebSocketConnected()) {
+            console.log("WebSocket now connected, subscribing to call updates");
+            websocketService.subscribeToCallUpdates(
+              callId,
+              this.handleSdpUpdate.bind(this),
+              this.handleIceCandidateUpdate.bind(this)
+            );
+          } else {
+            console.error("WebSocket still not connected after initialization");
+          }
+        }, 2000);
+      } else {
+        websocketService.subscribeToCallUpdates(
+          callId,
+          this.handleSdpUpdate.bind(this),
+          this.handleIceCandidateUpdate.bind(this)
+        );
+      }
+
+      console.log(`Call updates subscription completed for call: ${callId}`);
 
       // Send SDP answer via WebSocket for real-time updates
       console.log("Sending SDP answer via WebSocket...");
@@ -809,31 +919,38 @@ class AudioCallService {
    * Cleanup resources
    */
   private cleanup() {
+    console.log("Cleaning up audio call service");
+
     // Stop connection check
     this.stopConnectionCheck();
 
-    if (this.localStream) {
-      this.localStream.getTracks().forEach((track) => track.stop());
-      this.localStream = null;
+    // Unsubscribe from call updates if there's an active call
+    if (this.currentCallId) {
+      websocketService.unsubscribeFromCallUpdates(this.currentCallId);
     }
 
+    // Close peer connection
     if (this.peerConnection) {
       this.peerConnection.close();
       this.peerConnection = null;
     }
 
+    // Stop local stream tracks
+    if (this.localStream) {
+      this.localStream.getTracks().forEach((track) => track.stop());
+      this.localStream = null;
+    }
+
+    // Clear remote stream
     this.remoteStream = null;
+
+    // Reset state
     this.currentCallId = null;
     this.isInitiator = false;
-    this.isInitialized = false;
     this.pendingOffer = null;
     this.pendingAnswer = null;
 
-    // Reinitialize peer connection for future calls
-    if (this.isWebRTCAvailable()) {
-      this.initializePeerConnection();
-      this.isInitialized = true;
-    }
+    console.log("Audio call service cleanup completed");
   }
 
   /**

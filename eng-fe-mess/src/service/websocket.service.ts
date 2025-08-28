@@ -24,10 +24,13 @@ class WebSocketService {
   private audioCallListeners: ((
     notification: AudioCallNotification
   ) => void)[] = [];
+  private sdpUpdateListeners: Map<string, (data: any) => void> = new Map();
+  private iceCandidateListeners: Map<string, (data: any) => void> = new Map();
   private connectionAttempts = 0;
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
   private pendingSubscriptions: Array<{ method: string; args: any[] }> = [];
   private isConnecting = false; // Prevent multiple simultaneous connection attempts
+  private currentUserId: string | null = null; // To store the current user's ID
 
   constructor() {
     // Don't connect immediately - wait for explicit connection request
@@ -286,6 +289,7 @@ class WebSocketService {
       }
     );
 
+    // Store subscriptions for cleanup
     this.subscriptions.push(
       statusSubscription,
       incomingCallSubscription,
@@ -293,8 +297,160 @@ class WebSocketService {
       callRejectedSubscription,
       callEndedSubscription
     );
+  }
 
-    console.log(`Subscribed to user status and calls for user: ${userId}`);
+  /**
+   * Set the current user ID for subscriptions
+   */
+  public setCurrentUserId(userId: string) {
+    this.currentUserId = userId;
+    console.log("WebSocket service current user ID set to:", userId);
+    console.log("WebSocket connected status:", this.isConnected);
+    console.log("STOMP client exists:", !!this.stompClient);
+    if (this.stompClient) {
+      console.log("STOMP client connected:", this.stompClient.connected);
+    }
+  }
+
+  /**
+   * Subscribe to audio call SDP updates and ICE candidates for a specific call
+   */
+  public subscribeToCallUpdates(
+    callId: string,
+    onSdpUpdate?: (data: any) => void,
+    onIceCandidate?: (data: any) => void
+  ) {
+    if (!this.stompClient || !this.isConnected) {
+      console.warn("WebSocket not connected, cannot subscribe to call updates");
+      return;
+    }
+
+    if (!this.currentUserId) {
+      console.warn("Current user ID not set, cannot subscribe to call updates");
+      return;
+    }
+
+    console.log(`Subscribing to call updates for call: ${callId}`);
+    console.log(`Current user ID: ${this.currentUserId}`);
+    console.log(`WebSocket connected: ${this.isConnected}`);
+
+    // Store callbacks for this call
+    if (onSdpUpdate) {
+      this.sdpUpdateListeners.set(callId, onSdpUpdate);
+      console.log(`SDP update callback registered for call: ${callId}`);
+    }
+    if (onIceCandidate) {
+      this.iceCandidateListeners.set(callId, onIceCandidate);
+      console.log(`ICE candidate callback registered for call: ${callId}`);
+    }
+
+    // Subscribe to SDP offer updates (user-specific topic)
+    const offerTopic = `/topic/user/${this.currentUserId}/call-offer`;
+    console.log(`Subscribing to offer topic: ${offerTopic}`);
+    const offerSubscription = this.stompClient.subscribe(
+      offerTopic,
+      (message) => {
+        try {
+          console.log("Raw offer message received:", message);
+          const offerData = JSON.parse(message.body);
+          console.log("SDP offer received via WebSocket:", offerData);
+          // Forward to registered callback
+          const callback = this.sdpUpdateListeners.get(callId);
+          if (callback) {
+            console.log(`Calling SDP update callback for call: ${callId}`);
+            callback({ type: "offer", ...offerData });
+          } else {
+            console.warn(`No SDP update callback found for call: ${callId}`);
+          }
+        } catch (error) {
+          console.error("Error parsing SDP offer message:", error);
+        }
+      }
+    );
+
+    // Subscribe to SDP answer updates (user-specific topic)
+    const answerTopic = `/topic/user/${this.currentUserId}/call-answer`;
+    console.log(`Subscribing to answer topic: ${answerTopic}`);
+    const answerSubscription = this.stompClient.subscribe(
+      answerTopic,
+      (message) => {
+        try {
+          console.log("Raw answer message received:", message);
+          const answerData = JSON.parse(message.body);
+          console.log("SDP answer received via WebSocket:", answerData);
+          // Forward to registered callback
+          const callback = this.sdpUpdateListeners.get(callId);
+          if (callback) {
+            console.log(`Calling SDP update callback for call: ${callId}`);
+            callback({ type: "answer", ...answerData });
+          } else {
+            console.warn(`No SDP update callback found for call: ${callId}`);
+          }
+        } catch (error) {
+          console.error("Error parsing SDP answer message:", error);
+        }
+      }
+    );
+
+    // Subscribe to ICE candidate updates (user-specific topic)
+    const iceTopic = `/topic/user/${this.currentUserId}/ice-candidate`;
+    console.log(`Subscribing to ICE candidate topic: ${iceTopic}`);
+    const iceCandidateSubscription = this.stompClient.subscribe(
+      iceTopic,
+      (message) => {
+        try {
+          console.log("Raw ICE candidate message received:", message);
+          const candidateData = JSON.parse(message.body);
+          console.log("ICE candidate received via WebSocket:", candidateData);
+          // Forward to registered callback
+          const callback = this.iceCandidateListeners.get(callId);
+          if (callback) {
+            console.log(`Calling ICE candidate callback for call: ${callId}`);
+            callback(candidateData);
+          } else {
+            console.warn(`No ICE candidate callback found for call: ${callId}`);
+          }
+        } catch (error) {
+          console.error("Error parsing ICE candidate message:", error);
+        }
+      }
+    );
+
+    // Store subscriptions for cleanup
+    this.subscriptions.push(
+      offerSubscription,
+      answerSubscription,
+      iceCandidateSubscription
+    );
+
+    console.log(`Subscribed to call updates for call: ${callId}`);
+    console.log(`Total subscriptions: ${this.subscriptions.length}`);
+  }
+
+  /**
+   * Unsubscribe from call updates for a specific call
+   */
+  public unsubscribeFromCallUpdates(callId: string) {
+    console.log(`Unsubscribing from call updates for call: ${callId}`);
+
+    // Remove callbacks for this call
+    this.sdpUpdateListeners.delete(callId);
+    this.iceCandidateListeners.delete(callId);
+
+    // Remove subscriptions for this call (user-specific topics)
+    this.subscriptions = this.subscriptions.filter((sub) => {
+      const destination = (sub as any).destination;
+      if (
+        destination &&
+        (destination.includes(`/user/${this.currentUserId}/call-offer`) ||
+          destination.includes(`/user/${this.currentUserId}/call-answer`) ||
+          destination.includes(`/user/${this.currentUserId}/ice-candidate`))
+      ) {
+        sub.unsubscribe();
+        return false; // Remove from array
+      }
+      return true; // Keep in array
+    });
   }
 
   public onMessage(callback: (message: Message) => void) {
