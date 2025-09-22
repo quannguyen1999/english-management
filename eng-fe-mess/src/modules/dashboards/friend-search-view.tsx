@@ -112,7 +112,7 @@ export const FriendSearchView = () => {
 
   return (
     <div className="flex-1">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-lg  border-gray-100 overflow-hidden">
         <div className="p-4">
           {data?.data && data.data.length > 0 ? (
             <>
@@ -141,8 +141,8 @@ export const FriendSearchView = () => {
               )}
             </>
           ) : (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
                 <svg
                   className="w-6 h-6 text-gray-400"
                   fill="none"
@@ -157,7 +157,7 @@ export const FriendSearchView = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-sm font-medium text-gray-900 mb-1">
+              <h3 className="text-sm font-medium text-gray-900">
                 No friends found
               </h3>
               <p className="text-xs text-gray-500">
