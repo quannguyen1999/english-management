@@ -30,20 +30,16 @@ export function DashboardLayoutClient({
 
   return (
     <div className="flex h-screen">
-      <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden border-r-2 border-gray-200 ${
-          showFriendsSidebar
-            ? "w-64 opacity-100 translate-x-0"
-            : "w-0 opacity-0 translate-x-full"
-        }`}
-      >
-        <div className="h-full">
-          <FriendSearchFilter />
-          <FriendSearchView />
+      {showFriendsSidebar && (
+        <div className="w-64 border-r-2 border-gray-200 overflow-hidden">
+          <div className="h-full">
+            <FriendSearchFilter />
+            <FriendSearchView />
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex items-center">
+      <div className="flex items-center z-10">
         <Button
           onClick={toggleFriendsSidebar}
           variant="ghost"
@@ -60,8 +56,10 @@ export function DashboardLayoutClient({
           </div>
         </Button>
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
-      <div className="flex items-center">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        {children}
+      </div>
+      <div className="flex items-center bg-transparent">
         <Button
           onClick={toggleLeftSidebar}
           variant="ghost"
@@ -83,22 +81,18 @@ export function DashboardLayoutClient({
         </Button>
       </div>
 
-      <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden border-r-2 border-gray-200 ${
-          showLeftSidebar
-            ? "w-64 opacity-100 translate-x-0"
-            : "w-0 opacity-0 translate-x-full"
-        }`}
-      >
-        <div className="h-full">
-          <div>
-            <FriendHeaderView dict={dict} />
-            <div className="flex-1 overflow-y-auto no-scrollbar">
-              <LearningSidebarContent />
+      {showLeftSidebar && (
+        <div className="w-64 border-r-2 border-gray-200 overflow-hidden">
+          <div className="h-full">
+            <div>
+              <FriendHeaderView dict={dict} />
+              <div className="flex-1 overflow-y-auto no-scrollbar">
+                <LearningSidebarContent />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

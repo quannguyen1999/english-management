@@ -6,6 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { GeneratedAvatar } from "@/components/ui/generated-avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { renderMessageContent } from "@/modules/chats/conversation-type-view";
@@ -16,7 +17,11 @@ import EmojiPicker from "emoji-picker-react";
 import { SmileIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export default function ConversationContentView() {
+export default function ConversationContentView({
+  username,
+}: {
+  username: string;
+}) {
   const {
     messages,
     addMessage,
@@ -35,15 +40,10 @@ export default function ConversationContentView() {
   );
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isScrollingUp, setIsScrollingUp] = useState(false);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
 
   // WebSocket integration
-  const {
-    subscribeToConversation,
-    onMessage,
-    onTyping,
-    markAsRead,
-    addReaction,
-  } = useWebSocket();
+  const { subscribeToConversation, onMessage, onTyping } = useWebSocket();
 
   useEffect(() => {
     setCurrentUserId(getCurrentUserId());
@@ -111,9 +111,10 @@ export default function ConversationContentView() {
         addMessage(message);
 
         // Mark message as read if it's not from current user
-        if (message.senderId !== currentUserId && message.id) {
-          markAsRead(message.id, conversationId);
-        }
+        // Note: markAsRead function is not available in current WebSocket hook
+        // if (message.senderId !== currentUserId && message.id) {
+        //   markAsRead(message.id, conversationId);
+        // }
       });
 
       // Listen for typing indicators
@@ -134,15 +135,11 @@ export default function ConversationContentView() {
     onMessage,
     onTyping,
     addMessage,
-    markAsRead,
   ]);
 
   const handleEmojiClick = (emojiData: any, id: string) => {
-    if (id && conversationId) {
-      // Add reaction via WebSocket
-      addReaction(id, conversationId, emojiData.emoji);
-
-      // Update local state
+    if (id) {
+      // Update local state only (reaction functionality not implemented yet)
       setSelectedEmojis((prev) => ({ ...prev, [id]: emojiData.emoji }));
       setActivePickerId(null);
     }
@@ -178,7 +175,10 @@ export default function ConversationContentView() {
 
   return (
     <div className="h-full flex flex-col">
-      <ScrollArea className="flex-1 pb-2 h-full" ref={scrollAreaRef}>
+      <ScrollArea
+        className="flex-1 pb-2 h-full [&_[data-slot=scroll-area-scrollbar]]:hidden"
+        ref={scrollAreaRef}
+      >
         {isLoadingMore && (
           <div className="flex justify-center py-4">
             <div className="flex items-center gap-2">
@@ -205,22 +205,38 @@ export default function ConversationContentView() {
             <div
               key={`${item.id || "temp"}_${index}`}
               className={`flex ${
-                isCurrentUser ? "justify-end" : "justify-start"
+                isCurrentUser ? "justify-end mr-2" : "justify-start ml-2"
               } space-x-2 mb-4`}
+              onMouseEnter={() => setHoveredMessageId(item.id ?? null)}
+              onMouseLeave={() => setHoveredMessageId(null)}
             >
-              <div className="flex flex-col max-w-[70%] gap-y-2 relative">
+              {!isCurrentUser && (
+                <GeneratedAvatar
+                  variant="botttsNeutral"
+                  seed={username}
+                  classname="size-8 rounded-full mt-7"
+                />
+              )}
+
+              <div className="flex flex-col max-w-[70%] min-w-0 gap-y-2 relative">
                 <div className="flex items-center gap-2">
                   <p className="text-sm text-gray-500">
-                    {isCurrentUser
-                      ? "You"
-                      : `User ${item.senderId?.slice(0, 8)}`}
+                    {isCurrentUser ? "You" : `${username}`}
                   </p>
                   <span className="text-xs text-gray-400">
                     {formatTimestamp(item.createdAt ?? 0)}
                   </span>
                 </div>
-
                 {renderMessageContent(item)}
+
+                {/* Selected emoji display - positioned at bottom right of message bubble */}
+                {selectedEmojis[item.id ?? ""] && (
+                  <div className="absolute -bottom-3 -right-1">
+                    <span className="text-lg">
+                      {selectedEmojis[item.id ?? ""]}
+                    </span>
+                  </div>
+                )}
 
                 <DropdownMenu
                   open={activePickerId === item.id}
@@ -232,21 +248,27 @@ export default function ConversationContentView() {
                     <div
                       className={`absolute ${
                         isCurrentUser
-                          ? "-bottom-1 -left-4"
-                          : "-bottom-1 -right-4"
-                      } p-1 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors`}
+                          ? "-bottom-0.5 -left-10"
+                          : "-bottom-0.5 -right-10"
+                      } p-1 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                        hoveredMessageId === item.id ||
+                        activePickerId === item.id
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }`}
                     >
-                      {selectedEmojis[item.id ?? ""] ? (
-                        <span className="text-lg cursor-pointer block">
-                          {selectedEmojis[item.id ?? ""]}
-                        </span>
-                      ) : (
-                        <SmileIcon className="size-4 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" />
-                      )}
+                      <SmileIcon
+                        className={`size-4 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-opacity duration-200`}
+                      />
                     </div>
                   </DropdownMenuTrigger>
 
-                  <DropdownMenuContent className="bg-transparent border-none">
+                  <DropdownMenuContent
+                    className="border-none bg-transparent shadow-none p-0"
+                    side="top"
+                    align="center"
+                    sideOffset={5}
+                  >
                     <EmojiPicker
                       onEmojiClick={(emoji) =>
                         handleEmojiClick(emoji, item.id ?? "")

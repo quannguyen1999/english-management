@@ -199,7 +199,7 @@ export default function MeetingPage({
 
   return (
     <ConversationProvider id={id}>
-      <div className="flex flex-col w-full h-full">
+      <div className="flex flex-col w-full h-full min-w-0">
         <div className="w-full h-16 border-b-2 flex flex-row items-center px-2 gap-x-2">
           <GeneratedAvatar
             variant="botttsNeutral"
@@ -253,9 +253,9 @@ export default function MeetingPage({
             </Button>
           </div>
         </div>
-        <div className="flex-1 overflow-hidden px-4">
+        <div className="flex-1 overflow-hidden min-w-0">
           {" "}
-          <ConversationContentView />
+          <ConversationContentView username={username} />
         </div>
         <ConversationInputView />
 
