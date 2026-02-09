@@ -12,17 +12,20 @@ A Flask-based backend service for English language management with AI capabiliti
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd eng-be-ai
 ```
 
 2. Install dependencies using Poetry:
+
 ```bash
 poetry install
 ```
 
 3. Start ChromaDB server (in a separate terminal):
+
 ```bash
 # Install ChromaDB if you haven't already
 pip install chromadb
@@ -36,11 +39,13 @@ chroma run --host localhost --port 8000
 ### Using Git Bash (Recommended for Windows)
 
 1. **Activate the virtual environment:**
+
 ```bash
 source venv/Scripts/activate
 ```
 
 2. **Run the application:**
+
 ```bash
 python main.py
 ```
@@ -48,11 +53,13 @@ python main.py
 ### Alternative: Using PowerShell
 
 1. **Activate the virtual environment:**
+
 ```powershell
 .\venv\Scripts\Activate.ps1
 ```
 
 2. **Run the application:**
+
 ```powershell
 python main.py
 ```
@@ -62,10 +69,10 @@ python main.py
 ```
 eng-be-ai/
 ├── config/          # Configuration files
-│   ├── config.py    # General configuration
-│   └── chroma_config.py  # ChromaDB configuration
+│   └── config.py    # General & ChromaDB configuration
 ├── controller/      # API controllers
-│   ├── ai_controller.py      # AI endpoints
+│   ├── ai_controller.py         # AI endpoints
+│   ├── chroma_controller.py     # ChromaDB health & data management
 │   └── conversation_controller.py  # Conversation endpoints
 ├── service/         # Business logic services
 │   ├── ai_service.py        # AI service
@@ -78,11 +85,13 @@ eng-be-ai/
 ## Features
 
 ### AI Capabilities
+
 - Text generation using Ollama
 - Streaming AI responses
 - Chat functionality
 
 ### Conversation Storage with ChromaDB
+
 - Store and retrieve conversation messages
 - Semantic search within conversations
 - Message metadata tracking (role, timestamp, conversation_id)
@@ -91,12 +100,14 @@ eng-be-ai/
 ## API Endpoints
 
 ### AI Endpoints
+
 - `POST /ai/generate` - Generate text using AI
 - `POST /ai/chat` - Chat with AI
 - `POST /ai/stream` - Stream AI responses
 - `GET /ai/health` - AI service health check
 
 ### Conversation Endpoints
+
 - `POST /messages` - Add a new message to a conversation
 - `GET /conversations/{conversation_id}` - Get all messages in a conversation
 - `POST /search` - Semantic search within a conversation
@@ -104,23 +115,61 @@ eng-be-ai/
 - `DELETE /conversations/{conversation_id}` - Delete a conversation
 - `POST /chat` - Send a message and get AI response (stores both in conversation)
 - `GET /chroma/health` - ChromaDB connection health check
+- `DELETE /chroma/data` - Delete all data in ChromaDB (all messages and conversations)
+
+### Delete All ChromaDB Data
+
+Use this endpoint to wipe all stored conversations and messages:
+
+**Request:**
+
+```
+DELETE /chroma/data
+```
+
+No request body. No path parameters.
+
+**Response (200):**
+
+```json
+{
+  "status": "success",
+  "message": "All data deleted.",
+  "deleted_count": 42
+}
+```
+
+**Response (500 on error):**
+
+```json
+{
+  "status": "error",
+  "message": "Error details..."
+}
+```
 
 ### New Chat Endpoint
 
 The `/chat` endpoint combines AI conversation with automatic storage:
 
 **Request:**
+
 ```json
 POST /chat
 {
   "conversation_id": "conv_12345",
   "message": "Hello, how are you?",
-  "max_tokens": 1000,
+  "max_tokens": 280,
   "temperature": 0.5
 }
 ```
 
+- `conversation_id` (required), `message` (required)
+- `max_tokens` (optional, default `280` so lists like "weather, hobbies, food" fit)
+- `temperature` (optional, default `0.5`)
+
 **Response:**
+
 ```json
 {
   "status": "success",
@@ -133,6 +182,7 @@ POST /chat
 ```
 
 This endpoint automatically:
+
 1. Stores the user message in ChromaDB
 2. Retrieves conversation history for context
 3. Generates an AI response using the context
@@ -164,6 +214,7 @@ python test_chroma.py
 ```
 
 This will test:
+
 - Adding messages to conversations
 - Retrieving conversation history
 - Semantic search functionality
@@ -172,6 +223,7 @@ This will test:
 ## Environment Variables
 
 Copy the example environment file and configure your settings:
+
 ```bash
 cp env.example .env
 ```

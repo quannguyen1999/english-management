@@ -2,24 +2,18 @@ from flask import Flask, render_template
 from flask_restful import Api
 from controller.ai_controller import AIStreamResource
 from controller.conversation_controller import (
-    MessageResource, 
-    ConversationResource, 
+    MessageResource,
+    ConversationResource,
     ConversationDeleteResource,
-    ChromaHealthResource,
-    ChatWithAIResource
+    ChatWithAIResource,
 )
+from controller.chroma_controller import ChromaHealthResource, ChromaDeleteAllResource
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
 api = Api(app)
-
-# main process
-# Serve the test UI
-# @app.route('/')
-# def test_ui():
-#     return render_template('test_ui.html')
 
 # AI endpoints
 api.add_resource(AIStreamResource, '/ai/stream')
@@ -30,8 +24,9 @@ api.add_resource(ConversationResource, '/conversations/<string:conversation_id>'
 api.add_resource(ConversationDeleteResource, '/conversations/<string:conversation_id>')
 api.add_resource(ChatWithAIResource, '/chat')
 
-# ChromaDB health check
+# ChromaDB health check and data management
 api.add_resource(ChromaHealthResource, '/chroma/health')
+api.add_resource(ChromaDeleteAllResource, '/chroma/data')
 
 if __name__ == '__main__':
     app.run(debug=True)

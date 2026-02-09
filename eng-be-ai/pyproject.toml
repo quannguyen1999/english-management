@@ -7,14 +7,18 @@ readme = "README.md"
 packages = [{include = "controller"}, {include = "service"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.14"
 flask = "^3.1.1"
 flask-restful = "^0.3.10"
 flask-sqlalchemy = "^3.1.1"
 requests = "^2.32.4"
 python-dotenv = "^1.0.0"
-chromadb = "0.5.23"
-numpy = "^1.24.0,<2.0.0"
+chromadb = ">=0.6.0"
+numpy = "^2.0.0"
+torch = "^2.8.0"
+transformers = "^4.56.1"
+scipy = "^1.16.2"
+datasets = "^4.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
