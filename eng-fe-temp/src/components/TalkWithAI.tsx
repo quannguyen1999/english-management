@@ -14,6 +14,13 @@ const CONVERSATIONS_API = "/api/conversations";
 const TRANSCRIBE_API = "/api/transcribe";
 const SPEAK_API = "/api/speak";
 
+// TTS WebSocket URL - requires Python server from refenrence/ to be running.
+// Set NEXT_PUBLIC_TTS_WS_URL in .env.local to override (e.g. ws://localhost:6000/tts).
+// To start: cd refenrence && pip install -r requirements.txt && uvicorn server:app --port 8000 --reload
+const TTS_WS_URL =
+  process.env.NEXT_PUBLIC_TTS_WS_URL || "ws://localhost:8000/tts";
+const TTS_VOICE = "en-US-AriaNeural";
+
 const SILENCE_MS = 3000;
 const IDLE_STOP_MS = 120000; // 2 minutes of silence after AI speaks → stop conversation
 
@@ -43,12 +50,18 @@ export default function TalkWithAI() {
   const [isWaitingChat, setIsWaitingChat] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ttsWsConnected, setTtsWsConnected] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const ttsWsRef = useRef<WebSocket | null>(null);
+  const ttsMediaSourceRef = useRef<MediaSource | null>(null);
+  const ttsSourceBufferRef = useRef<SourceBuffer | null>(null);
+  const ttsAudioQueueRef = useRef<Uint8Array[]>([]);
+  const ttsEndOfStreamRequestedRef = useRef(false);
   const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recognitionRef = useRef<InstanceType<typeof SpeechRecognition> | null>(
@@ -94,6 +107,38 @@ export default function TalkWithAI() {
     loadConversation(conversationId);
   }, [conversationId, loadConversation]);
 
+  // Connect TTS WebSocket on page load so it's ready for first speak
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const ws = new WebSocket(TTS_WS_URL);
+    ws.binaryType = "arraybuffer";
+    ttsWsRef.current = ws;
+
+    ws.onopen = () => {
+      setTtsWsConnected(true);
+      setError(null);
+    };
+
+    ws.onerror = () => {
+      setTtsWsConnected(false);
+      setError(
+        "TTS WebSocket failed. Start the server: cd refenrence && uvicorn server:app --port 8000 --reload"
+      );
+    };
+
+    ws.onclose = () => {
+      setTtsWsConnected(false);
+      ttsWsRef.current = null;
+    };
+
+    return () => {
+      ws.close();
+      ttsWsRef.current = null;
+      setTtsWsConnected(false);
+    };
+  }, []);
+
   const clearSilenceTimer = useCallback(() => {
     if (silenceTimeoutRef.current) {
       clearTimeout(silenceTimeoutRef.current);
@@ -121,76 +166,167 @@ export default function TalkWithAI() {
       audioRef.current = null;
     }
 
-    const useRealtimeTTS = true;
+    if (typeof window === "undefined") return;
 
-    // Realtime streaming TTS over WebSocket (gapless)
-    if (useRealtimeTTS && typeof window !== "undefined") {
-      try {
-        const audio = document.createElement("audio");
-        audio.autoplay = true;
+    try {
+      const audio = document.createElement("audio");
+      audio.autoplay = true;
+      audioRef.current = audio;
 
-        const mediaSource = new MediaSource();
-        const objectUrl = URL.createObjectURL(mediaSource);
-        audio.src = objectUrl;
+      const mediaSource = new MediaSource();
+      const objectUrl = URL.createObjectURL(mediaSource);
+      audio.src = objectUrl;
+      ttsMediaSourceRef.current = mediaSource;
 
-        mediaSource.addEventListener("sourceopen", () => {
+      mediaSource.addEventListener(
+        "sourceopen",
+        () => {
           const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
-          const ws = new WebSocket("ws://localhost:6000/tts");
-          ws.binaryType = "arraybuffer";
+          ttsSourceBufferRef.current = sourceBuffer;
+          ttsAudioQueueRef.current = [];
+          ttsEndOfStreamRequestedRef.current = false;
+
+          const processQueue = () => {
+            const sb = ttsSourceBufferRef.current;
+            if (!sb) return;
+            if (sb.updating) return;
+            const next = ttsAudioQueueRef.current.shift();
+            if (next) {
+              try {
+                sb.appendBuffer(next as BufferSource);
+              } catch (e) {
+                console.error("Error appending TTS buffer:", e);
+              }
+            } else if (ttsEndOfStreamRequestedRef.current) {
+              const ms = ttsMediaSourceRef.current;
+              if (ms && ms.readyState === "open") {
+                try {
+                  ms.endOfStream();
+                } catch (e) {
+                  console.error("Error ending MediaSource stream:", e);
+                }
+              }
+            }
+          };
+
+          sourceBuffer.addEventListener("updateend", processQueue);
+
+          // Reuse pre-opened WebSocket from page load, or create new if not ready
+          let ws = ttsWsRef.current;
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (ttsWsRef.current) {
+              ttsWsRef.current.close();
+              ttsWsRef.current = null;
+            }
+            ws = new WebSocket(TTS_WS_URL);
+            ws.binaryType = "arraybuffer";
+            ttsWsRef.current = ws;
+            ws.onopen = () => {
+              setTtsWsConnected(true);
+              const payload = {
+                text: trimmed,
+                lang: "en",
+                voice: TTS_VOICE,
+                is_last: true,
+              };
+              ttsWsRef.current?.send(JSON.stringify(payload));
+            };
+            ws.onclose = () => {
+              ttsWsRef.current = null;
+              setTtsWsConnected(false);
+            };
+            ws.onerror = () => setTtsWsConnected(false);
+          } else {
+            // Already connected - send immediately
+            const payload = {
+              text: trimmed,
+              lang: "en",
+              voice: TTS_VOICE,
+              is_last: true,
+            };
+            ws.send(JSON.stringify(payload));
+          }
 
           ws.onmessage = (event) => {
             if (typeof event.data === "string") {
               if (event.data === "__END__") {
-                try {
-                  mediaSource.endOfStream();
-                } catch {
-                  // ignore
+                ttsEndOfStreamRequestedRef.current = true;
+                if (
+                  !sourceBuffer.updating &&
+                  ttsAudioQueueRef.current.length === 0
+                ) {
+                  if (mediaSource.readyState === "open") {
+                    mediaSource.endOfStream();
+                  }
                 }
-                ws.close();
+              } else if (event.data.startsWith("__ERROR__")) {
+                const errorMsg = event.data.replace("__ERROR__:", "").trim();
+                setError(errorMsg);
+                setIsSpeaking(false);
+                if (mediaSource.readyState === "open") {
+                  mediaSource.endOfStream();
+                }
+                onEnd?.();
               }
               return;
             }
 
-            try {
-              sourceBuffer.appendBuffer(new Uint8Array(event.data));
-            } catch {
-              // ignore buffer errors for now
+            ttsAudioQueueRef.current.push(
+              new Uint8Array(event.data as ArrayBuffer)
+            );
+            if (!sourceBuffer.updating) {
+              const sb = ttsSourceBufferRef.current;
+              if (sb && !sb.updating) {
+                const next = ttsAudioQueueRef.current.shift();
+                if (next) {
+                  try {
+                    sb.appendBuffer(next as BufferSource);
+                  } catch (e) {
+                    console.error("Error appending TTS buffer:", e);
+                  }
+                }
+              }
             }
           };
 
-          ws.onopen = () => {
-            ws.send(trimmed);
-          };
-
           ws.onerror = () => {
-            ws.close();
-            setError("Realtime TTS connection failed");
+            setError(
+              "TTS WebSocket failed. Start the server: cd refenrence && uvicorn server:app --port 8000 --reload"
+            );
             setIsSpeaking(false);
             onEnd?.();
           };
-        });
 
-        audio.onplay = () => setIsSpeaking(true);
-        audio.onended = () => {
-          setIsSpeaking(false);
-          URL.revokeObjectURL(objectUrl);
-          audioRef.current = null;
-          onEnd?.();
-        };
-        audio.onerror = () => {
-          setIsSpeaking(false);
-          setError("Failed to play realtime audio");
-          URL.revokeObjectURL(objectUrl);
-          audioRef.current = null;
-          onEnd?.();
-        };
+          ws.onclose = () => {
+            ttsWsRef.current = null;
+          };
+        },
+        { once: true }
+      );
 
-        audioRef.current = audio;
-        return;
-      } catch (err) {
-        // Fallback to HTTP TTS below
-        console.error("Realtime TTS failed, falling back to HTTP:", err);
-      }
+      mediaSource.addEventListener("error", (e) => {
+        console.error("MediaSource error:", e);
+      });
+
+      audio.onplay = () => setIsSpeaking(true);
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(objectUrl);
+        audioRef.current = null;
+        ttsMediaSourceRef.current = null;
+        ttsSourceBufferRef.current = null;
+        onEnd?.();
+      };
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        setError("Failed to play realtime audio");
+        URL.revokeObjectURL(objectUrl);
+        audioRef.current = null;
+        onEnd?.();
+      };
+      return;
+    } catch (err) {
+      console.error("Realtime TTS failed, falling back to HTTP:", err);
     }
 
     // Fallback: existing HTTP TTS endpoint
@@ -462,6 +598,10 @@ export default function TalkWithAI() {
 
   const startNewConversation = useCallback(() => {
     stopListening();
+    if (ttsWsRef.current) {
+      ttsWsRef.current.close();
+      ttsWsRef.current = null;
+    }
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -477,6 +617,10 @@ export default function TalkWithAI() {
       isListeningRef.current = false;
       clearSilenceTimer();
       clearIdleStopTimer();
+      if (ttsWsRef.current) {
+        ttsWsRef.current.close();
+        ttsWsRef.current = null;
+      }
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -608,6 +752,23 @@ export default function TalkWithAI() {
         </div>
         <p className="mt-2 text-center text-xs text-zinc-400 dark:text-zinc-500">
           Conversation: {conversationId || "—"}
+          <span
+            className={`ml-2 inline-flex items-center gap-1 ${
+              ttsWsConnected ? "text-emerald-600 dark:text-emerald-400" : ""
+            }`}
+            title={
+              ttsWsConnected
+                ? "TTS connected"
+                : "TTS connecting or disconnected"
+            }
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                ttsWsConnected ? "bg-emerald-500" : "bg-zinc-400"
+              }`}
+            />
+            {ttsWsConnected ? "TTS ready" : "TTS…"}
+          </span>
         </p>
       </div>
 

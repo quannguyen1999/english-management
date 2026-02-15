@@ -7,7 +7,7 @@ A Flask-based backend service for English language management with AI capabiliti
 - Python 3.11 or higher
 - Poetry (Python dependency manager)
 - Git Bash (for Windows users)
-- ChromaDB server running on localhost:8000
+- ChromaDB server running on localhost:8008
 
 ## Installation
 
@@ -31,7 +31,7 @@ poetry install
 pip install chromadb
 
 # Start ChromaDB server
-chroma run --host localhost --port 8000
+chroma run --host localhost --port 8008
 ```
 
 ## Running the Application
@@ -237,7 +237,7 @@ MODEL_OLLAMA=gemma2:2b
 
 # ChromaDB Configuration
 CHROMA_HOST=localhost
-CHROMA_PORT=8000
+CHROMA_PORT=8008
 ```
 
 ## Development

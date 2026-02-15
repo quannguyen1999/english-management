@@ -8,7 +8,6 @@ from controller.conversation_controller import (
     ChatWithAIResource,
 )
 from controller.chroma_controller import ChromaHealthResource, ChromaDeleteAllResource
-from controller.tts_controller import TTSResource
 from dotenv import load_dotenv
 
 load_dotenv()

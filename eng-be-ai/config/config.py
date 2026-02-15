@@ -9,7 +9,7 @@ model = os.getenv("MODEL_OLLAMA") or "gemma2:2b"
 
 # ChromaDB Configuration
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
-CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
+CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8008"))
 
 # Collection Configuration
 COLLECTION_NAME = "chat_messages"
