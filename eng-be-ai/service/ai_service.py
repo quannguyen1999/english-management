@@ -159,11 +159,8 @@ def process_chat_with_storage(
         "conversation_type": "new" if is_first_message else "existing"
     }
 
-def handle_stream_request(user_input: str, max_tokens=1000, temperature=0.5, conversation_history: List[Dict[str, str]] = None):
-    """Streaming version that yields each response chunk"""
-    messages = reminder_prompt(user_input, conversation_history=conversation_history)
-    prompt = _messages_to_prompt(messages)
-
+def stream_from_prompt(prompt: str, max_tokens: int = 1000, temperature: float = 0.5):
+    """Stream chunks from Ollama given a raw prompt string."""
     try:
         data = {
             "prompt": prompt,
@@ -173,20 +170,20 @@ def handle_stream_request(user_input: str, max_tokens=1000, temperature=0.5, con
         }
         response = requests.post(url, json=data, timeout=30, stream=True)
         response.raise_for_status()
-        
+
         for line in response.iter_lines():
             if line:
                 try:
-                    json_line = line.decode('utf-8')
+                    json_line = line.decode("utf-8")
                     if json_line.strip():
                         json_data = json.loads(json_line)
-                        if 'response' in json_data:
-                            yield json_data['response']
-                        if json_data.get('done', False):
+                        if "response" in json_data:
+                            yield json_data["response"]
+                        if json_data.get("done", False):
                             break
-                except (ValueError, json.JSONDecodeError) as e:
+                except (ValueError, json.JSONDecodeError):
                     continue
-                    
+
     except requests.exceptions.ConnectionError:
         raise Exception("AI service is not running. Please start the Ollama service on localhost:11434")
     except requests.exceptions.Timeout:
@@ -195,6 +192,106 @@ def handle_stream_request(user_input: str, max_tokens=1000, temperature=0.5, con
         raise Exception(f"Error communicating with AI service: {str(e)}")
     except Exception as e:
         raise Exception(f"Unexpected error: {str(e)}")
+
+
+def handle_stream_request(user_input: str, max_tokens=1000, temperature=0.5, conversation_history: List[Dict[str, str]] = None):
+    """Streaming version that yields each response chunk"""
+    messages = reminder_prompt(user_input, conversation_history=conversation_history)
+    prompt = _messages_to_prompt(messages)
+    yield from stream_from_prompt(prompt, max_tokens, temperature)
+
+
+def process_chat_with_storage_stream(
+    chroma_service,
+    conversation_id: str,
+    user_message: str,
+    max_tokens: int = 280,
+    temperature: float = 0.5
+):
+    """
+    Streaming version of process_chat_with_storage.
+    Yields chunks, then at end stores AI response in ChromaDB.
+    Yields: {"done": False, "chunk": "..."} for each chunk, then {"done": True, "ai_message_id": "...", "ai_response": "..."}
+    """
+    conversation_id = str(conversation_id).strip()
+    if not conversation_id:
+        raise ValueError("conversation_id cannot be empty")
+
+    conversation_history = chroma_service.get_conversation(conversation_id)
+    is_first_message = len(conversation_history) == 0
+
+    context = ""
+    if not is_first_message and len(conversation_history) > 0:
+        recent_messages = conversation_history[-5:] if len(conversation_history) > 5 else conversation_history
+        context = "\n".join([
+            f"{msg['role'].title()}: {msg['content']}"
+            for msg in recent_messages
+        ]) + "\n"
+
+    user_message_id = chroma_service.add_message(
+        conversation_id=conversation_id,
+        role="user",
+        content=user_message,
+        is_first_message=is_first_message
+    )
+
+    if is_first_message:
+        initial_messages = create_initial_messages()
+        for msg in initial_messages[:-1]:
+            if msg["role"] == "system":
+                chroma_service.add_message(
+                    conversation_id=conversation_id,
+                    role="system",
+                    content=msg["content"],
+                    is_first_message=False,
+                    additional_metadata={"message_type": "system_prompt"}
+                )
+            elif msg["role"] == "assistant":
+                chroma_service.add_message(
+                    conversation_id=conversation_id,
+                    role="assistant",
+                    content=msg["content"],
+                    is_first_message=False,
+                    additional_metadata={"message_type": "example_response"}
+                )
+            elif msg["role"] == "user":
+                chroma_service.add_message(
+                    conversation_id=conversation_id,
+                    role="user",
+                    content=msg["content"],
+                    is_first_message=False,
+                    additional_metadata={"message_type": "example_user_input"}
+                )
+
+    if is_first_message:
+        formatted_messages = reminder_prompt(user_message, is_first_message=True)
+        full_prompt = _messages_to_prompt(formatted_messages)
+    else:
+        full_prompt = context + f"User: {user_message}\nAI:"
+
+    full_response = ""
+    try:
+        for chunk in stream_from_prompt(full_prompt, max_tokens, temperature):
+            full_response += chunk
+            yield {"done": False, "chunk": chunk}
+
+        ai_response = summarize_response(full_response)
+        ai_message_id = chroma_service.add_message(
+            conversation_id=conversation_id,
+            role="assistant",
+            content=ai_response,
+            is_first_message=False
+        )
+
+        yield {
+            "done": True,
+            "ai_message_id": ai_message_id,
+            "ai_response": ai_response,
+            "conversation_id": conversation_id,
+            "user_message_id": user_message_id,
+        }
+    except Exception as e:
+        yield {"done": True, "error": str(e)}
 
 
 

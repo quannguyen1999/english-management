@@ -1,8 +1,10 @@
-from flask import request
+import json
+
+from flask import request, Response
 from flask_restful import Resource
 
 from controller.base_controller import ChromaResourceMixin, handle_errors
-from service.ai_service import process_chat_with_storage
+from service.ai_service import process_chat_with_storage_stream
 from validate import validate_add_message, validate_chat_request
 
 
@@ -71,7 +73,7 @@ class ConversationDeleteResource(ChromaResourceMixin, Resource):
 
 
 class ChatWithAIResource(ChromaResourceMixin, Resource):
-    @handle_errors("Failed to process chat")
+    @handle_errors("Failed to process chat", catch_value_error=False, include_status=False, error_key="error")
     def post(self):
         data = request.get_json()
 
@@ -84,11 +86,17 @@ class ChatWithAIResource(ChromaResourceMixin, Resource):
         max_tokens = data.get("max_tokens", 280)
         temperature = data.get("temperature", 0.5)
 
-        result = process_chat_with_storage(
-            chroma_service=self.chroma_service,
-            conversation_id=conversation_id,
-            user_message=user_message,
-            max_tokens=max_tokens,
-            temperature=temperature
-        )
-        return result, 200 
+        def generate():
+            try:
+                for event in process_chat_with_storage_stream(
+                    chroma_service=self.chroma_service,
+                    conversation_id=conversation_id,
+                    user_message=user_message,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                ):
+                    yield f"data: {json.dumps(event)}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'done': True, 'error': str(e)})}\n\n"
+
+        return Response(generate(), mimetype="text/event-stream")

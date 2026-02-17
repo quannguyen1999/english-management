@@ -30,16 +30,25 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
       return NextResponse.json(
-        { error: data.error || "Chat request failed" },
+        { error: data.error || data.message || "Chat request failed" },
         { status: res.status }
       );
     }
 
-    return NextResponse.json(data);
+    if (!res.body) {
+      return NextResponse.json({ error: "No response body" }, { status: 500 });
+    }
+
+    return new Response(res.body, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      },
+    });
   } catch (error) {
     console.error("[Chat API]", error);
     const message =

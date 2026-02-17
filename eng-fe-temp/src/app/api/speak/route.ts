@@ -6,6 +6,7 @@ const openai = new OpenAI({
 });
 
 export async function POST(request: NextRequest) {
+  console.log("fuck your self");
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
@@ -19,10 +20,7 @@ export async function POST(request: NextRequest) {
     const { text, voice = "nova", model = "tts-1-hd" } = body;
 
     if (!text || typeof text !== "string" || !text.trim()) {
-      return NextResponse.json(
-        { error: "Text is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
     if (text.length > 4096) {

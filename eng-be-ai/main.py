@@ -8,6 +8,7 @@ from controller.conversation_controller import (
     ChatWithAIResource,
 )
 from controller.chroma_controller import ChromaHealthResource, ChromaDeleteAllResource
+from controller.translate_controller import TranslateResource
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,6 +24,9 @@ api.add_resource(MessageResource, '/messages')
 api.add_resource(ConversationResource, '/conversations/<string:conversation_id>')
 api.add_resource(ConversationDeleteResource, '/conversations/<string:conversation_id>')
 api.add_resource(ChatWithAIResource, '/chat')
+
+# Translation
+api.add_resource(TranslateResource, '/translate')
 
 # ChromaDB health check and data management
 api.add_resource(ChromaHealthResource, '/chroma/health')
